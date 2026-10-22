@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="tvDeckName" type="id" />
+    <item name="tvDeckInfo" type="id" />
+    <item name="tvDeckProgress" type="id" />
+    <item name="progressDeck" type="id" />
+</resources>

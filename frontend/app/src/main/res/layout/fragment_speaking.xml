@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/sm_background">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Luyện nói với AI"
+                android:textColor="@color/sm_text_primary"
+                android:textSize="26sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Chọn trình độ và tình huống bạn muốn luyện tập."
+                android:textColor="@color/sm_text_secondary"
+                android:textSize="15sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="28dp"
+                android:text="Chọn trình độ"
+                android:textColor="@color/sm_text_primary"
+                android:textSize="19sp"
+                android:textStyle="bold" />
+
+            <RadioGroup
+                android:id="@+id/rgLevel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:checkedButton="@id/rbA2"
+                android:orientation="horizontal"
+                android:baselineAligned="false">
+
+                <RadioButton
+                    android:id="@+id/rbA1"
+                    android:layout_width="0dp"
+                    android:layout_height="80dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/bg_option"
+                    android:button="@null"
+                    android:gravity="center"
+                    android:padding="4dp"
+                    android:text="A1"
+                    android:textColor="@color/sm_text_primary"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <RadioButton
+                    android:id="@+id/rbA2"
+                    android:layout_width="0dp"
+                    android:layout_height="80dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/bg_option"
+                    android:button="@null"
+                    android:gravity="center"
+                    android:padding="4dp"
+                    android:text="A2"
+                    android:textColor="@color/sm_text_primary"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <RadioButton
+                    android:id="@+id/rbB1"
+                    android:layout_width="0dp"
+                    android:layout_height="80dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:background="@drawable/bg_option"
+                    android:button="@null"
+                    android:gravity="center"
+                    android:padding="4dp"
+                    android:text="B1"
+                    android:textColor="@color/sm_text_primary"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <RadioButton
+                    android:id="@+id/rbB2"
+                    android:layout_width="0dp"
+                    android:layout_height="80dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="4dp"
+                    android:background="@drawable/bg_option"
+                    android:button="@null"
+                    android:gravity="center"
+                    android:padding="4dp"
+                    android:text="B2"
+                    android:textColor="@color/sm_text_primary"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+            </RadioGroup>
+
+            <TextView
+                android:id="@+id/tvLevelDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:minHeight="48dp"
+                android:text="A2 · Luyện các tình huống giao tiếp hằng ngày."
+                android:textColor="@color/sm_text_secondary"
+                android:textSize="14sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="Chọn chủ đề"
+                android:textColor="@color/sm_text_primary"
+                android:textSize="19sp"
+                android:textStyle="bold" />
+
+            <RadioGroup
+                android:id="@+id/rgTopic"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:checkedButton="@id/rbFood"
+                android:orientation="vertical">
+
+                <RadioButton
+                    android:id="@+id/rbIntroduction"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="76dp"
+                    android:background="@drawable/bg_option"
+                    android:button="@null"
+                    android:gravity="center_vertical"
+                    android:padding="18dp"
+                    android:text="Introducing Yourself\nGiới thiệu bản thân"
+                    android:textColor="@color/sm_text_primary"
+                    android:textSize="15sp" />
+
+                <RadioButton
+                    android:id="@+id/rbFood"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:minHeight="76dp"
+                    android:background="@drawable/bg_option"
+                    android:button="@null"
+                    android:gravity="center_vertical"
+                    android:padding="18dp"
+                    android:text="Ordering Food\nGọi món tại nhà hàng"
+                    android:textColor="@color/sm_text_primary"
+                    android:textSize="15sp" />
+
+                <RadioButton
+                    android:id="@+id/rbTravel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:minHeight="76dp"
+                    android:background="@drawable/bg_option"
+                    android:button="@null"
+                    android:gravity="center_vertical"
+                    android:padding="18dp"
+                    android:text="Travel\nDu lịch và di chuyển"
+                    android:textColor="@color/sm_text_primary"
+                    android:textSize="15sp" />
+
+                <RadioButton
+                    android:id="@+id/rbUniversity"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:minHeight="76dp"
+                    android:background="@drawable/bg_option"
+                    android:button="@null"
+                    android:gravity="center_vertical"
+                    android:padding="18dp"
+                    android:text="University Life\nCuộc sống đại học"
+                    android:textColor="@color/sm_text_primary"
+                    android:textSize="15sp" />
+
+            </RadioGroup>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnBeginConversation"
+        android:layout_width="match_parent"
+        android:layout_height="54dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/bg_button_primary"
+        android:backgroundTint="@null"
+        android:text="Bắt đầu hội thoại"
+        android:textAllCaps="false"
+        android:textColor="@color/sm_background"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+</LinearLayout>

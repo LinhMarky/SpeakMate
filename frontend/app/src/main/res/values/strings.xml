@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">SpeakMate</string>
+    <string name="flashcard_deck_info">%1$d từ · %2$s</string>
+    <string name="flashcard_deck_progress">%1$d/%2$d từ đã nhớ · %3$d%%</string>
+    <string name="flashcard_deck_count">%1$d bộ thẻ · Dữ liệu demo</string>
+    <string name="flashcard_decks_empty">Không tìm thấy bộ thẻ phù hợp.</string>
+    <string name="flashcard_create_ai_demo">Màn hình tạo thẻ AI sẽ được nối ở bước sau.</string>
+    <string name="flashcard_create_manual_demo">Màn hình tạo thủ công sẽ được nối ở bước sau.</string>
 </resources>

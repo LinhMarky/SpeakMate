@@ -1,5 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <!-- Màu mặc định của project -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Nền -->
+    <color name="sm_background">#12112C</color>
+    <color name="sm_surface">#24233F</color>
+    <color name="sm_surface_light">#302E50</color>
+
+    <!-- Màu chủ đạo -->
+    <color name="sm_primary">#8654FF</color>
+    <color name="sm_cyan">#20D9F4</color>
+    <color name="sm_blue">#397BFF</color>
+
+    <!-- Chữ -->
+    <color name="sm_text_primary">#F5F3FF</color>
+    <color name="sm_text_secondary">#B8B5D6</color>
+    <color name="sm_text_hint">#9692B5</color>
+
+    <!-- Viền và đường phân cách -->
+    <color name="sm_border">#45416B</color>
+    <color name="sm_divider">#34314F</color>
+
+    <!-- Trạng thái -->
+    <color name="sm_success">#35D6A0</color>
+    <color name="sm_warning">#FFC66D</color>
+    <color name="sm_error">#FF668C</color>
+
 </resources>

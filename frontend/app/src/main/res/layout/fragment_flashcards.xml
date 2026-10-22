@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/sm_background"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Bộ thẻ của tôi"
+        android:textColor="@color/sm_text_primary"
+        android:textSize="26sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:text="Học và ôn tập từ vựng theo chủ đề."
+        android:textColor="@color/sm_text_secondary"
+        android:textSize="14sp" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/etSearchDeck"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/bg_card"
+        android:backgroundTint="@null"
+        android:hint="Tìm tên bộ thẻ..."
+        android:inputType="text"
+        android:singleLine="true"
+        android:imeOptions="actionDone"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:textColor="@color/sm_text_primary"
+        android:textColorHint="@color/sm_text_hint"
+        android:textSize="15sp" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnCreateDeckAi"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/bg_button_primary"
+        android:backgroundTint="@null"
+        android:text="Tạo bộ thẻ bằng AI"
+        android:textAllCaps="false"
+        android:textColor="@color/sm_background"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnCreateDeckManual"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/bg_card"
+        android:backgroundTint="@null"
+        android:text="+ Tạo thủ công"
+        android:textAllCaps="false"
+        android:textColor="@color/sm_cyan"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/tvDeckCount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="22dp"
+        android:layout_marginBottom="12dp"
+        android:textColor="@color/sm_text_secondary"
+        android:textSize="14sp" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:id="@+id/deckContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+    </ScrollView>
+
+</LinearLayout>
