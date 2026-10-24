@@ -13,6 +13,8 @@ import java.util.List;
 
 public class DeckDetailFragment extends Fragment {
 
+    private static final String ARG_DECK_ID = "deckId";
+
     private boolean openingStudy;
 
     public DeckDetailFragment() {
@@ -23,7 +25,7 @@ public class DeckDetailFragment extends Fragment {
         DeckDetailFragment fragment = new DeckDetailFragment();
 
         Bundle arguments = new Bundle();
-        arguments.putString("deckId", deckId);
+        arguments.putString(ARG_DECK_ID, deckId);
 
         fragment.setArguments(arguments);
 
@@ -37,22 +39,63 @@ public class DeckDetailFragment extends Fragment {
     ) {
         super.onViewCreated(view, savedInstanceState);
 
-        String deckId = requireArguments().getString(
-                "deckId", ""
-        );
-
-        DemoFlashcardRepository repository =
-                new DemoFlashcardRepository();
-
-        FlashcardDeck deck = repository.getDeckById(deckId);
+        openingStudy = false;
 
         view.findViewById(R.id.btnBackDeck)
                 .setOnClickListener(v -> {
-                    if (!getParentFragmentManager().isStateSaved()) {
-                        getParentFragmentManager()
-                                .popBackStackImmediate();
+                    if (!isAdded()
+                            || getParentFragmentManager().isStateSaved()) {
+                        return;
                     }
+
+                    getParentFragmentManager()
+                            .popBackStackImmediate();
                 });
+
+        view.findViewById(R.id.btnStudyDeck)
+                .setOnClickListener(v -> openStudy());
+
+        // Hiển thị danh sách từ khi tạo giao diện.
+        renderDeck(view, true);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        openingStudy = false;
+
+        View view = getView();
+
+        if (view != null) {
+            // Đọc lại tiến độ khi quay về từ màn hình học.
+            renderDeck(view, false);
+        }
+    }
+
+    private String getDeckId() {
+        Bundle arguments = getArguments();
+
+        if (arguments == null) {
+            return "";
+        }
+
+        String deckId = arguments.getString(ARG_DECK_ID);
+
+        return deckId == null ? "" : deckId;
+    }
+
+    private void renderDeck(
+            @NonNull View view,
+            boolean rebuildCardList
+    ) {
+        DemoFlashcardRepository repository =
+                new DemoFlashcardRepository(requireContext());
+
+        String deckId = getDeckId();
+
+        FlashcardDeck deck =
+                repository.getDeckById(deckId);
 
         TextView title =
                 view.findViewById(R.id.tvDetailDeckName);
@@ -69,20 +112,36 @@ public class DeckDetailFragment extends Fragment {
         if (deck == null) {
             title.setText("Không tìm thấy bộ thẻ");
             info.setText("Vui lòng quay lại thư viện.");
+
+            container.removeAllViews();
             studyButton.setEnabled(false);
+
             return;
         }
 
-        List<Flashcard> cards = repository.getCards(deckId);
+        List<Flashcard> cards =
+                repository.getCards(deckId);
 
         title.setText(deck.getName());
+
+        String source = deckId.startsWith("local_")
+                ? "Tự tạo trên thiết bị"
+                : "Dữ liệu demo";
 
         info.setText(
                 "Trình độ: " + deck.getLevel()
                         + "\nSố từ: " + cards.size()
                         + "\nĐã nhớ: " + deck.getLearnedCards()
-                        + "\nNguồn: Dữ liệu demo"
+                        + "\nNguồn: " + source
         );
+
+        studyButton.setEnabled(
+                !openingStudy && !cards.isEmpty()
+        );
+
+        if (!rebuildCardList) {
+            return;
+        }
 
         container.removeAllViews();
 
@@ -106,52 +165,54 @@ public class DeckDetailFragment extends Fragment {
             meaning.setText(card.getMeaning());
             example.setText(card.getExample());
 
+            boolean hasExample = card.getExample() != null
+                    && !card.getExample().trim().isEmpty();
+
+            example.setVisibility(
+                    hasExample ? View.VISIBLE : View.GONE
+            );
+
             container.addView(item);
         }
-
-        studyButton.setEnabled(!cards.isEmpty());
-
-        studyButton.setOnClickListener(v -> {
-            if (getParentFragmentManager().isStateSaved()
-                    || openingStudy
-                    || cards.isEmpty()) {
-                return;
-            }
-
-            openingStudy = true;
-            studyButton.setEnabled(false);
-
-            getParentFragmentManager()
-                    .beginTransaction()
-                    .setReorderingAllowed(true)
-                    .replace(
-                            R.id.fragmentContainer,
-                            StudyFragment.newInstance(deckId)
-                    )
-                    .addToBackStack("study")
-                    .commit();
-        });
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
+    private void openStudy() {
+        View view = getView();
 
-        openingStudy = false;
+        if (view == null
+                || !isAdded()
+                || openingStudy
+                || getParentFragmentManager().isStateSaved()) {
+            return;
+        }
 
-        String deckId = requireArguments().getString(
-                "deckId", ""
-        );
+        String deckId = getDeckId();
 
         DemoFlashcardRepository repository =
-                new DemoFlashcardRepository();
+                new DemoFlashcardRepository(requireContext());
 
-        boolean canStudy =
-                repository.getDeckById(deckId) != null
-                        && !repository.getCards(deckId).isEmpty();
+        FlashcardDeck deck =
+                repository.getDeckById(deckId);
 
-        requireView()
-                .findViewById(R.id.btnStudyDeck)
-                .setEnabled(canStudy);
+        if (deck == null
+                || repository.getCards(deckId).isEmpty()) {
+            renderDeck(view, false);
+            return;
+        }
+
+        openingStudy = true;
+
+        view.findViewById(R.id.btnStudyDeck)
+                .setEnabled(false);
+
+        getParentFragmentManager()
+                .beginTransaction()
+                .setReorderingAllowed(true)
+                .replace(
+                        R.id.fragmentContainer,
+                        StudyFragment.newInstance(deckId)
+                )
+                .addToBackStack("study")
+                .commit();
     }
 }

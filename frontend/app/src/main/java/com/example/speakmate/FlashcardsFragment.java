@@ -14,12 +14,20 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 public class FlashcardsFragment extends Fragment {
 
-    private List<FlashcardDeck> decks;
+    private List<FlashcardDeck> decks = new ArrayList<>();
+
+    private EditText search;
+    private LinearLayout container;
+    private TextView countText;
+
+    private TextWatcher searchWatcher;
+
     private boolean openingDeck;
 
     public FlashcardsFragment() {
@@ -35,27 +43,11 @@ public class FlashcardsFragment extends Fragment {
 
         openingDeck = false;
 
-        DemoFlashcardRepository repository =
-                new DemoFlashcardRepository();
+        search = view.findViewById(R.id.etSearchDeck);
+        container = view.findViewById(R.id.deckContainer);
+        countText = view.findViewById(R.id.tvDeckCount);
 
-        decks = repository.getDecks();
-
-        EditText search = view.findViewById(R.id.etSearchDeck);
-
-        LinearLayout container =
-                view.findViewById(R.id.deckContainer);
-
-        TextView countText =
-                view.findViewById(R.id.tvDeckCount);
-
-        showDecks(
-                search.getText(),
-                container,
-                countText
-        );
-
-        search.addTextChangedListener(new TextWatcher() {
-
+        searchWatcher = new TextWatcher() {
             @Override
             public void beforeTextChanged(
                     CharSequence s,
@@ -72,17 +64,15 @@ public class FlashcardsFragment extends Fragment {
                     int before,
                     int count
             ) {
-                showDecks(
-                        s,
-                        container,
-                        countText
-                );
+                showDecks(s);
             }
 
             @Override
             public void afterTextChanged(Editable s) {
             }
-        });
+        };
+
+        search.addTextChangedListener(searchWatcher);
 
         view.findViewById(R.id.btnCreateDeckAi)
                 .setOnClickListener(v -> showDemoMessage(
@@ -90,44 +80,57 @@ public class FlashcardsFragment extends Fragment {
                 ));
 
         view.findViewById(R.id.btnCreateDeckManual)
-                .setOnClickListener(v -> showDemoMessage(
-                        getString(R.string.flashcard_create_manual_demo)
-                ));
+                .setOnClickListener(v -> {
+                    if (openingDeck
+                            || getParentFragmentManager().isStateSaved()) {
+                        return;
+                    }
+
+                    openingDeck = true;
+
+                    getParentFragmentManager()
+                            .beginTransaction()
+                            .setReorderingAllowed(true)
+                            .replace(
+                                    R.id.fragmentContainer,
+                                    new CreateDeckFragment()
+                            )
+                            .addToBackStack("create_deck")
+                            .commit();
+                });
     }
 
     @Override
-    public void onViewStateRestored(
-            @Nullable Bundle savedInstanceState
-    ) {
-        super.onViewStateRestored(savedInstanceState);
+    public void onResume() {
+        super.onResume();
 
-        View view = requireView();
+        openingDeck = false;
 
-        EditText search = view.findViewById(R.id.etSearchDeck);
+        if (search == null) {
+            return;
+        }
 
-        LinearLayout container =
-                view.findViewById(R.id.deckContainer);
+        DemoFlashcardRepository repository =
+                new DemoFlashcardRepository(requireContext());
 
-        TextView countText =
-                view.findViewById(R.id.tvDeckCount);
+        decks = repository.getDecks();
 
-        showDecks(
-                search.getText(),
-                container,
-                countText
-        );
+        showDecks(search.getText());
     }
 
-    private void showDecks(
-            @Nullable CharSequence keyword,
-            LinearLayout container,
-            TextView countText
-    ) {
+    private void showDecks(@Nullable CharSequence keyword) {
+        if (container == null || countText == null) {
+            return;
+        }
+
         container.removeAllViews();
 
         String query = keyword == null
                 ? ""
-                : keyword.toString().trim().toLowerCase(Locale.ROOT);
+                : keyword.toString()
+                .trim()
+                .toLowerCase(Locale.ROOT);
+
         int visibleCount = 0;
 
         for (FlashcardDeck deck : decks) {
@@ -166,15 +169,14 @@ public class FlashcardsFragment extends Fragment {
                     deck.getLevel()
             ));
 
-            int percentage = 0;
+            int percentage = deck.getTotalCards() == 0
+                    ? 0
+                    : Math.round(
+                    deck.getLearnedCards() * 100f
+                    / deck.getTotalCards()
+            );
 
-            if (deck.getTotalCards() > 0) {
-                percentage = Math.round(
-                        deck.getLearnedCards() * 100f
-                                / deck.getTotalCards()
-                );
-            }
-
+            progress.setMax(100);
             progress.setProgress(percentage);
 
             progressText.setText(getString(
@@ -185,8 +187,8 @@ public class FlashcardsFragment extends Fragment {
             ));
 
             item.setOnClickListener(v -> {
-                if (getParentFragmentManager().isStateSaved()
-                        || openingDeck) {
+                if (openingDeck
+                        || getParentFragmentManager().isStateSaved()) {
                     return;
                 }
 
@@ -211,10 +213,7 @@ public class FlashcardsFragment extends Fragment {
         if (visibleCount == 0) {
             countText.setText(R.string.flashcard_decks_empty);
         } else {
-            countText.setText(getString(
-                    R.string.flashcard_deck_count,
-                    visibleCount
-            ));
+            countText.setText(visibleCount + " bộ thẻ");
         }
     }
 
@@ -224,5 +223,19 @@ public class FlashcardsFragment extends Fragment {
                 message,
                 Toast.LENGTH_SHORT
         ).show();
+    }
+
+    @Override
+    public void onDestroyView() {
+        if (search != null && searchWatcher != null) {
+            search.removeTextChangedListener(searchWatcher);
+        }
+
+        searchWatcher = null;
+        search = null;
+        container = null;
+        countText = null;
+
+        super.onDestroyView();
     }
 }
