@@ -255,7 +255,8 @@ public class MainActivity extends AppCompatActivity {
         boolean fullScreen =
                 fragment instanceof ChatFragment
                         || fragment instanceof SpeakingResultFragment
-                        || fragment instanceof StudyFragment;
+                        || fragment instanceof StudyFragment
+                        || fragment instanceof CreateDeckFragment;
 
         navigation.setVisibility(
                 fullScreen ? View.GONE : View.VISIBLE
