@@ -43,10 +43,19 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:text="Học flashcard"
+        android:text="Thẻ ghi nhớ"
         android:textColor="#F5F3FF"
         android:textSize="26sp"
         android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tvStudyMode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:text="Học toàn bộ"
+        android:textColor="#B8B5D6"
+        android:textSize="14sp" />
 
     <ProgressBar
         android:id="@+id/progressStudy"
@@ -105,7 +114,7 @@
             android:background="#24233F"
             android:clickable="true"
             android:focusable="true"
-            android:contentDescription="Thẻ từ vựng. Chạm để xem nghĩa">
+            android:contentDescription="Thẻ từ vựng. Chạm để lật và nghe lại">
 
             <ScrollView
                 android:layout_width="match_parent"
@@ -125,7 +134,6 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:text="Vocabulary"
                         android:textColor="#F5F3FF"
                         android:textSize="30sp"
                         android:textStyle="bold" />
@@ -157,7 +165,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="28dp"
                         android:gravity="center"
-                        android:text="Chạm thẻ để xem nghĩa"
+                        android:text="Chạm để xem nghĩa và nghe lại"
                         android:textColor="#9692B5"
                         android:textSize="14sp" />
 
@@ -255,16 +263,29 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:gravity="center"
-                android:lineSpacingExtra="10dp"
+                android:lineSpacingExtra="8dp"
                 android:textColor="#B8B5D6"
-                android:textSize="20sp" />
+                android:textSize="19sp" />
+
+            <Button
+                android:id="@+id/btnReviewUnknown"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="56dp"
+                android:layout_marginTop="24dp"
+                android:text="Ôn từ chưa thuộc"
+                android:textAllCaps="false"
+                android:textColor="#12112C"
+                android:textSize="16sp"
+                android:backgroundTint="#FFC66D"
+                android:visibility="gone" />
 
             <Button
                 android:id="@+id/btnRestartStudy"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:layout_marginTop="28dp"
-                android:text="Học lại"
+                android:layout_marginTop="8dp"
+                android:text="Học lại toàn bộ"
                 android:textAllCaps="false"
                 android:textColor="#12112C"
                 android:textSize="16sp"
@@ -286,7 +307,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:gravity="center"
-                android:text="Tiến độ từng từ được lưu trên thiết bị."
+                android:text="Bộ đếm tính theo lượt hiện tại. Tiến độ từng từ được lưu trên thiết bị."
                 android:textColor="#9692B5"
                 android:textSize="13sp" />
 

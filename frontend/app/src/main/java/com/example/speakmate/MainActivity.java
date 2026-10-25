@@ -2,6 +2,7 @@ package com.example.speakmate;
 
 import android.os.Bundle;
 import android.view.View;
+import android.view.WindowManager;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
@@ -19,15 +20,25 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 public class MainActivity extends AppCompatActivity {
 
     private BottomNavigationView navigation;
+    private View mainView;
+
     private boolean selectingTab;
+    private boolean keyboardVisible;
+    private boolean fullScreenMode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         EdgeToEdge.enable(this);
+
+        getWindow().setSoftInputMode(
+                WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
+        );
+
         setContentView(R.layout.activity_main);
 
+        mainView = findViewById(R.id.main);
         navigation = findViewById(R.id.bottomNavigation);
 
         WindowCompat.getInsetsController(
@@ -40,43 +51,80 @@ public class MainActivity extends AppCompatActivity {
                 getWindow().getDecorView()
         ).setAppearanceLightNavigationBars(false);
 
-        View main = findViewById(R.id.main);
+        setupWindowInsets();
+        setupFragmentCallbacks();
+        setupNavigation();
+        setupBackNavigation();
 
-        ViewCompat.setOnApplyWindowInsetsListener(main, (view, insets) -> {
-            Insets bars = insets.getInsets(
-                    WindowInsetsCompat.Type.systemBars()
-            );
+        if (savedInstanceState == null) {
+            navigateToTab(R.id.nav_home);
+        } else {
+            Fragment current = getSupportFragmentManager()
+                    .findFragmentById(R.id.fragmentContainer);
 
-            Insets keyboard = insets.getInsets(
-                    WindowInsetsCompat.Type.ime()
-            );
+            updateNavigation(current);
+        }
 
-            int bottomPadding;
+        ViewCompat.requestApplyInsets(mainView);
+    }
 
-            if (navigation.getVisibility() == View.VISIBLE) {
-                // BottomNavigationView xử lý phần thanh hệ thống.
-                bottomPadding = Math.max(
-                        0,
-                        keyboard.bottom - bars.bottom
-                );
-            } else {
-                bottomPadding = Math.max(
-                        bars.bottom,
-                        keyboard.bottom
-                );
-            }
+    private void setupWindowInsets() {
+        /*
+         * MainActivity xử lý khoảng trống hệ thống.
+         * Không để BottomNavigationView cộng thêm padding.
+         */
+        navigation.setPadding(0, 0, 0, 0);
 
-            view.setPadding(
-                    bars.left,
-                    bars.top,
-                    bars.right,
-                    bottomPadding
-            );
+        ViewCompat.setOnApplyWindowInsetsListener(
+                navigation,
+                (view, insets) -> WindowInsetsCompat.CONSUMED
+        );
 
-            return insets;
-        });
+        ViewCompat.setOnApplyWindowInsetsListener(
+                mainView,
+                (view, insets) -> {
+                    Insets bars = insets.getInsets(
+                            WindowInsetsCompat.Type.systemBars()
+                                    | WindowInsetsCompat.Type.displayCutout()
+                    );
 
-        // MainActivity quản lý việc ẩn/hiện thanh điều hướng.
+                    Insets keyboard = insets.getInsets(
+                            WindowInsetsCompat.Type.ime()
+                    );
+
+                    keyboardVisible = insets.isVisible(
+                            WindowInsetsCompat.Type.ime()
+                    );
+
+                    applyNavigationVisibility();
+
+                    int bottomPadding = keyboardVisible
+                            ? Math.max(bars.bottom, keyboard.bottom)
+                            : bars.bottom;
+
+                    if (view.getPaddingLeft() != bars.left
+                            || view.getPaddingTop() != bars.top
+                            || view.getPaddingRight() != bars.right
+                            || view.getPaddingBottom() != bottomPadding) {
+
+                        view.setPadding(
+                                bars.left,
+                                bars.top,
+                                bars.right,
+                                bottomPadding
+                        );
+                    }
+
+                    /*
+                     * Khoảng trống đã được xử lý ở màn hình gốc.
+                     * Không truyền xuống để các view con cộng lần nữa.
+                     */
+                    return WindowInsetsCompat.CONSUMED;
+                }
+        );
+    }
+
+    private void setupFragmentCallbacks() {
         getSupportFragmentManager()
                 .registerFragmentLifecycleCallbacks(
                         new FragmentManager.FragmentLifecycleCallbacks() {
@@ -94,27 +142,47 @@ public class MainActivity extends AppCompatActivity {
                         },
                         false
                 );
+    }
 
+    private void setupNavigation() {
         navigation.setOnItemSelectedListener(item -> {
-            if (!selectingTab) {
-                showTopLevel(item.getItemId());
+            if (selectingTab) {
+                return true;
             }
+
+            if (getSupportFragmentManager().isStateSaved()) {
+                return false;
+            }
+
+            showTopLevel(item.getItemId());
 
             return true;
         });
 
         navigation.setOnItemReselectedListener(item -> {
-            if (!selectingTab) {
+            if (!selectingTab
+                    && !getSupportFragmentManager().isStateSaved()) {
                 showTopLevel(item.getItemId());
             }
         });
+    }
 
+    private void setupBackNavigation() {
         getOnBackPressedDispatcher().addCallback(
                 this,
                 new OnBackPressedCallback(true) {
 
                     @Override
                     public void handleOnBackPressed() {
+                        /*
+                         * Nếu callback nhận Back trong khi bàn phím mở,
+                         * đóng bàn phím trước khi chuyển màn hình.
+                         */
+                        if (keyboardVisible) {
+                            hideKeyboard();
+                            return;
+                        }
+
                         FragmentManager manager =
                                 getSupportFragmentManager();
 
@@ -122,9 +190,10 @@ public class MainActivity extends AppCompatActivity {
                             return;
                         }
 
-                        Fragment current = manager.findFragmentById(
-                                R.id.fragmentContainer
-                        );
+                        Fragment current =
+                                manager.findFragmentById(
+                                        R.id.fragmentContainer
+                                );
 
                         if (current instanceof ChatFragment) {
                             ((ChatFragment) current)
@@ -132,12 +201,17 @@ public class MainActivity extends AppCompatActivity {
 
                         } else if (current
                                 instanceof SpeakingResultFragment) {
+
                             navigateToTab(R.id.nav_speaking);
 
-                        } else if (manager.getBackStackEntryCount() > 0) {
+                        } else if (
+                                manager.getBackStackEntryCount() > 0
+                        ) {
                             manager.popBackStackImmediate();
 
-                        } else if (!(current instanceof HomeFragment)) {
+                        } else if (
+                                !(current instanceof HomeFragment)
+                        ) {
                             navigateToTab(R.id.nav_home);
 
                         } else {
@@ -146,12 +220,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
         );
-
-        if (savedInstanceState == null) {
-            navigateToTab(R.id.nav_home);
-        }
-
-        ViewCompat.requestApplyInsets(main);
     }
 
     public void navigateToTab(int itemId) {
@@ -160,14 +228,19 @@ public class MainActivity extends AppCompatActivity {
         }
 
         selectingTab = true;
-        navigation.setSelectedItemId(itemId);
-        selectingTab = false;
+
+        try {
+            navigation.setSelectedItemId(itemId);
+        } finally {
+            selectingTab = false;
+        }
 
         showTopLevel(itemId);
     }
 
     private void showTopLevel(int itemId) {
-        FragmentManager manager = getSupportFragmentManager();
+        FragmentManager manager =
+                getSupportFragmentManager();
 
         if (manager.isStateSaved()) {
             return;
@@ -210,7 +283,8 @@ public class MainActivity extends AppCompatActivity {
             String topic,
             int count
     ) {
-        FragmentManager manager = getSupportFragmentManager();
+        FragmentManager manager =
+                getSupportFragmentManager();
 
         if (manager.isStateSaved()) {
             return;
@@ -218,7 +292,6 @@ public class MainActivity extends AppCompatActivity {
 
         hideKeyboard();
 
-        // Gỡ phiên chat khỏi lịch sử điều hướng trước khi tổng kết.
         manager.popBackStackImmediate(
                 null,
                 FragmentManager.POP_BACK_STACK_INCLUSIVE
@@ -239,31 +312,56 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void hideKeyboard() {
-        View root = findViewById(R.id.main);
+        if (mainView == null) {
+            return;
+        }
 
-        WindowCompat.getInsetsController(getWindow(), root)
-                .hide(WindowInsetsCompat.Type.ime());
+        WindowCompat.getInsetsController(
+                getWindow(),
+                mainView
+        ).hide(WindowInsetsCompat.Type.ime());
 
         View focused = getCurrentFocus();
 
         if (focused != null) {
             focused.clearFocus();
         }
+
+        /*
+         * Không gán keyboardVisible = false ở đây.
+         * Chờ insets xác nhận bàn phím đã đóng.
+         */
     }
 
     private void updateNavigation(Fragment fragment) {
-        boolean fullScreen =
+        fullScreenMode =
                 fragment instanceof ChatFragment
                         || fragment instanceof SpeakingResultFragment
                         || fragment instanceof StudyFragment
-                        || fragment instanceof CreateDeckFragment;
+                        || fragment instanceof CreateDeckFragment
+                        || fragment instanceof LearnFragment
+                        || fragment instanceof MatchFragment;
 
-        navigation.setVisibility(
-                fullScreen ? View.GONE : View.VISIBLE
-        );
+        applyNavigationVisibility();
 
-        ViewCompat.requestApplyInsets(
-                findViewById(R.id.main)
-        );
+        if (mainView != null) {
+            ViewCompat.requestApplyInsets(mainView);
+        }
+    }
+
+    private void applyNavigationVisibility() {
+        if (navigation == null) {
+            return;
+        }
+
+        boolean shouldHide = keyboardVisible || fullScreenMode;
+
+        int visibility = shouldHide
+                ? View.GONE
+                : View.VISIBLE;
+
+        if (navigation.getVisibility() != visibility) {
+            navigation.setVisibility(visibility);
+        }
     }
 }

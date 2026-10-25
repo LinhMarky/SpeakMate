@@ -26,11 +26,22 @@ public class DeckDetailFragment extends Fragment {
 
     private static final String ARG_DECK_ID = "deckId";
 
+    private static final String STATE_PREVIEW_INDEX =
+            "deck_preview_index";
+
+    private static final String STATE_PREVIEW_FLIPPED =
+            "deck_preview_flipped";
+
     private static final String[] LEVELS = {
             "A1", "A2", "B1", "B2", "C1", "C2"
     };
 
-    private boolean openingStudy;
+    private List<Flashcard> previewCards = new ArrayList<>();
+
+    private int previewIndex;
+    private boolean previewFlipped;
+    private boolean openingMode;
+
     private AlertDialog activeDialog;
 
     public DeckDetailFragment() {
@@ -49,26 +60,71 @@ public class DeckDetailFragment extends Fragment {
     }
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        if (savedInstanceState != null) {
+            previewIndex = savedInstanceState.getInt(
+                    STATE_PREVIEW_INDEX,
+                    0
+            );
+
+            previewFlipped = savedInstanceState.getBoolean(
+                    STATE_PREVIEW_FLIPPED,
+                    false
+            );
+        }
+    }
+
+    @Override
     public void onViewCreated(
             @NonNull View view,
             @Nullable Bundle savedInstanceState
     ) {
         super.onViewCreated(view, savedInstanceState);
 
-        openingStudy = false;
+        openingMode = false;
 
         view.findViewById(R.id.btnBackDeck)
                 .setOnClickListener(v -> closeDetail());
 
+        view.findViewById(R.id.deckPreviewCard)
+                .setOnClickListener(v -> {
+                    if (!canAct() || previewCards.isEmpty()) {
+                        return;
+                    }
+
+                    previewFlipped = !previewFlipped;
+                    updatePreview();
+                });
+
+        view.findViewById(R.id.btnPreviousPreview)
+                .setOnClickListener(v -> changePreview(-1));
+
+        view.findViewById(R.id.btnNextPreview)
+                .setOnClickListener(v -> changePreview(1));
+
+        view.findViewById(R.id.btnExpandDeckPreview)
+                .setOnClickListener(v -> openMode(0));
+
         view.findViewById(R.id.btnStudyDeck)
-                .setOnClickListener(v -> openStudy());
+                .setOnClickListener(v -> openMode(0));
+
+        view.findViewById(R.id.btnLearnDeck)
+                .setOnClickListener(v -> openMode(1));
+
+        view.findViewById(R.id.btnMatchDeck)
+                .setOnClickListener(v -> openMode(2));
+
+        view.findViewById(R.id.btnManageDeck)
+                .setOnClickListener(v -> showManageMenu());
     }
 
     @Override
     public void onResume() {
         super.onResume();
 
-        openingStudy = false;
+        openingMode = false;
         refreshDeck();
     }
 
@@ -80,13 +136,15 @@ public class DeckDetailFragment extends Fragment {
         }
 
         String id = arguments.getString(ARG_DECK_ID);
+
         return id == null ? "" : id;
     }
 
     private boolean canAct() {
         return isAdded()
+                && isResumed()
                 && getView() != null
-                && !openingStudy
+                && !openingMode
                 && !getParentFragmentManager().isStateSaved();
     }
 
@@ -119,8 +177,10 @@ public class DeckDetailFragment extends Fragment {
         try {
             renderDeck(view);
         } catch (IllegalStateException exception) {
-            view.findViewById(R.id.btnStudyDeck)
-                    .setEnabled(false);
+            setModeButtonsEnabled(false);
+
+            view.findViewById(R.id.btnManageDeck)
+                    .setVisibility(View.GONE);
 
             showMessage(exception.getMessage());
         }
@@ -143,61 +203,56 @@ public class DeckDetailFragment extends Fragment {
         LinearLayout container =
                 view.findViewById(R.id.cardListContainer);
 
-        View studyButton =
-                view.findViewById(R.id.btnStudyDeck);
+        View manageButton =
+                view.findViewById(R.id.btnManageDeck);
 
         container.removeAllViews();
+
+        previewCards = new ArrayList<>();
 
         if (deck == null) {
             title.setText("Không tìm thấy bộ thẻ");
             info.setText("Vui lòng quay lại thư viện.");
-            studyButton.setEnabled(false);
+
+            manageButton.setVisibility(View.GONE);
+
+            setModeButtonsEnabled(false);
+            updatePreview();
+
             return;
         }
 
-        List<Flashcard> cards =
-                repository.getCards(deckId);
+        previewCards.addAll(repository.getCards(deckId));
 
         boolean editable = deckId.startsWith("local_");
 
         title.setText(deck.getName());
 
         info.setText(
-                "Trình độ: " + deck.getLevel()
-                        + "\nSố từ: " + cards.size()
+                previewCards.size() + " từ"
+                        + " · " + deck.getLevel()
                         + "\nĐã nhớ: " + deck.getLearnedCards()
-                        + "\nNguồn: "
+                        + "/" + previewCards.size()
+                        + "\n"
                         + (editable
                         ? "Tự tạo trên thiết bị"
-                        : "Dữ liệu demo")
+                        : "Dữ liệu mẫu")
         );
 
-        studyButton.setEnabled(
-                !openingStudy && !cards.isEmpty()
+        manageButton.setVisibility(
+                editable ? View.VISIBLE : View.GONE
         );
 
-        if (editable) {
-            AppCompatButton editDeck =
-                    button("Sửa tên / trình độ");
+        setModeButtonsEnabled(
+                !openingMode && !previewCards.isEmpty()
+        );
 
-            AppCompatButton addCard =
-                    button("+ Thêm từ");
+        updatePreview();
 
-            AppCompatButton deleteDeck =
-                    button("Xóa bộ thẻ");
-
-            container.addView(editDeck, rowParams());
-            container.addView(addCard, rowParams());
-            container.addView(deleteDeck, rowParams());
-
-            editDeck.setOnClickListener(v -> editDeckInfo());
-            addCard.setOnClickListener(v -> editCard(-1));
-            deleteDeck.setOnClickListener(v -> confirmDeleteDeck());
-        }
-
-        for (int i = 0; i < cards.size(); i++) {
+        for (int i = 0; i < previewCards.size(); i++) {
             final int index = i;
-            Flashcard card = cards.get(i);
+
+            Flashcard card = previewCards.get(i);
 
             View item = getLayoutInflater().inflate(
                     R.layout.item_vocabulary,
@@ -228,32 +283,251 @@ public class DeckDetailFragment extends Fragment {
             container.addView(item);
 
             if (editable) {
-                LinearLayout actions =
-                        new LinearLayout(requireContext());
-
-                actions.setOrientation(LinearLayout.HORIZONTAL);
-
-                AppCompatButton edit = button("Sửa từ");
-                AppCompatButton delete = button("Xóa từ");
-
-                actions.addView(edit, new LinearLayout.LayoutParams(
-                        0,
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                        1f
-                ));
-
-                actions.addView(delete, new LinearLayout.LayoutParams(
-                        0,
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                        1f
-                ));
-
-                edit.setOnClickListener(v -> editCard(index));
-                delete.setOnClickListener(v -> confirmDeleteCard(index));
-
-                container.addView(actions, rowParams());
+                addCardActions(container, index);
             }
         }
+    }
+
+    private void setModeButtonsEnabled(boolean enabled) {
+        View view = getView();
+
+        if (view == null) {
+            return;
+        }
+
+        view.findViewById(R.id.btnStudyDeck)
+                .setEnabled(enabled);
+
+        view.findViewById(R.id.btnLearnDeck)
+                .setEnabled(enabled);
+
+        view.findViewById(R.id.btnMatchDeck)
+                .setEnabled(enabled);
+
+        view.findViewById(R.id.btnExpandDeckPreview)
+                .setEnabled(enabled);
+    }
+
+    private void updatePreview() {
+        View view = getView();
+
+        if (view == null) {
+            return;
+        }
+
+        TextView word =
+                view.findViewById(R.id.tvPreviewWord);
+
+        TextView side =
+                view.findViewById(R.id.tvPreviewSide);
+
+        TextView position =
+                view.findViewById(R.id.tvPreviewPosition);
+
+        boolean hasCards = !previewCards.isEmpty();
+
+        view.findViewById(R.id.deckPreviewCard)
+                .setEnabled(hasCards);
+
+        view.findViewById(R.id.btnPreviousPreview)
+                .setEnabled(hasCards && previewCards.size() > 1);
+
+        view.findViewById(R.id.btnNextPreview)
+                .setEnabled(hasCards && previewCards.size() > 1);
+
+        if (!hasCards) {
+            previewIndex = 0;
+            previewFlipped = false;
+
+            word.setText("Chưa có từ vựng");
+            side.setText("XEM TRƯỚC");
+            position.setText("0 / 0");
+
+            return;
+        }
+
+        previewIndex = Math.max(
+                0,
+                Math.min(
+                        previewIndex,
+                        previewCards.size() - 1
+                )
+        );
+
+        Flashcard card = previewCards.get(previewIndex);
+
+        word.setText(
+                previewFlipped
+                        ? card.getMeaning()
+                        : card.getWord()
+        );
+
+        side.setText(
+                previewFlipped
+                        ? "NGHĨA TIẾNG VIỆT"
+                        : "TỪ TIẾNG ANH"
+        );
+
+        position.setText(
+                (previewIndex + 1)
+                        + " / "
+                        + previewCards.size()
+        );
+    }
+
+    private void changePreview(int direction) {
+        if (!canAct() || previewCards.isEmpty()) {
+            return;
+        }
+
+        previewIndex = (
+                previewIndex
+                        + direction
+                        + previewCards.size()
+        ) % previewCards.size();
+
+        previewFlipped = false;
+
+        updatePreview();
+    }
+
+    /*
+     * 0: Thẻ ghi nhớ.
+     * 1: Học tự luận.
+     * 2: Ghép thẻ.
+     */
+    private void openMode(int mode) {
+        if (!canAct() || activeDialog != null) {
+            return;
+        }
+
+        try {
+            DemoFlashcardRepository repository = repository();
+
+            String deckId = getDeckId();
+
+            if (repository.getDeckById(deckId) == null
+                    || repository.getCards(deckId).isEmpty()) {
+                refreshDeck();
+                showMessage("Bộ thẻ chưa có từ vựng để học.");
+                return;
+            }
+
+            Fragment destination;
+            String backStackName;
+
+            if (mode == 1) {
+                destination = LearnFragment.newInstance(deckId);
+                backStackName = "learn";
+            } else if (mode == 2) {
+                destination = MatchFragment.newInstance(deckId);
+                backStackName = "match";
+            } else {
+                destination = StudyFragment.newInstance(deckId);
+                backStackName = "study";
+            }
+
+            openingMode = true;
+            setModeButtonsEnabled(false);
+
+            getParentFragmentManager()
+                    .beginTransaction()
+                    .setReorderingAllowed(true)
+                    .replace(
+                            R.id.fragmentContainer,
+                            destination
+                    )
+                    .addToBackStack(backStackName)
+                    .commit();
+
+        } catch (IllegalStateException exception) {
+            openingMode = false;
+            refreshDeck();
+
+            showMessage(exception.getMessage());
+        }
+    }
+
+    private void addCardActions(
+            LinearLayout container,
+            int index
+    ) {
+        LinearLayout actions =
+                new LinearLayout(requireContext());
+
+        actions.setOrientation(LinearLayout.HORIZONTAL);
+
+        AppCompatButton edit = button("Sửa từ");
+        AppCompatButton delete = button("Xóa từ");
+
+        actions.addView(
+                edit,
+                new LinearLayout.LayoutParams(
+                        0,
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        1f
+                )
+        );
+
+        actions.addView(
+                delete,
+                new LinearLayout.LayoutParams(
+                        0,
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        1f
+                )
+        );
+
+        edit.setOnClickListener(v -> editCard(index));
+
+        delete.setOnClickListener(
+                v -> confirmDeleteCard(index)
+        );
+
+        container.addView(actions, rowParams());
+    }
+
+    private void showManageMenu() {
+        if (!canEdit()) {
+            return;
+        }
+
+        AlertDialog menu =
+                new AlertDialog.Builder(requireContext())
+                        .setTitle("Quản lý bộ thẻ")
+                        .setItems(
+                                new String[]{
+                                        "Sửa tên / trình độ",
+                                        "Thêm từ vựng",
+                                        "Xóa bộ thẻ"
+                                },
+                                (dialog, which) -> {
+                                    /*
+                                     * Đóng menu trước khi mở hộp thoại mới.
+                                     */
+                                    dialog.dismiss();
+                                    activeDialog = null;
+
+                                    if (which == 0) {
+                                        editDeckInfo();
+                                    } else if (which == 1) {
+                                        editCard(-1);
+                                    } else {
+                                        confirmDeleteDeck();
+                                    }
+                                }
+                        )
+                        .create();
+
+        activeDialog = menu;
+
+        menu.setOnDismissListener(ignored -> {
+            if (activeDialog == menu) {
+                activeDialog = null;
+            }
+        });
+
+        menu.show();
     }
 
     private void editDeckInfo() {
@@ -263,7 +537,9 @@ public class DeckDetailFragment extends Fragment {
 
         try {
             DemoFlashcardRepository repository = repository();
-            FlashcardDeck deck = repository.getDeckById(getDeckId());
+
+            FlashcardDeck deck =
+                    repository.getDeckById(getDeckId());
 
             if (deck == null) {
                 refreshDeck();
@@ -311,7 +587,8 @@ public class DeckDetailFragment extends Fragment {
                             .create();
 
             showSaveDialog(dialog, () -> {
-                String value = name.getText().toString().trim();
+                String value =
+                        name.getText().toString().trim();
 
                 if (value.isEmpty()) {
                     name.setError("Vui lòng nhập tên bộ thẻ.");
@@ -327,6 +604,7 @@ public class DeckDetailFragment extends Fragment {
                     dialog.dismiss();
                 }
             });
+
         } catch (IllegalStateException exception) {
             showMessage(exception.getMessage());
         }
@@ -339,7 +617,9 @@ public class DeckDetailFragment extends Fragment {
 
         try {
             DemoFlashcardRepository repository = repository();
-            FlashcardDeck deck = repository.getDeckById(getDeckId());
+
+            FlashcardDeck deck =
+                    repository.getDeckById(getDeckId());
 
             if (deck == null) {
                 refreshDeck();
@@ -359,8 +639,16 @@ public class DeckDetailFragment extends Fragment {
             LinearLayout form = form();
 
             EditText word = input("Từ tiếng Anh", false);
-            EditText meaning = input("Nghĩa tiếng Việt", false);
-            EditText example = input("Câu ví dụ (không bắt buộc)", true);
+
+            EditText meaning = input(
+                    "Nghĩa tiếng Việt",
+                    false
+            );
+
+            EditText example = input(
+                    "Câu ví dụ (không bắt buộc)",
+                    true
+            );
 
             if (editing) {
                 Flashcard card = cards.get(index);
@@ -377,7 +665,9 @@ public class DeckDetailFragment extends Fragment {
             AlertDialog dialog =
                     new AlertDialog.Builder(requireContext())
                             .setTitle(
-                                    editing ? "Sửa từ vựng" : "Thêm từ vựng"
+                                    editing
+                                            ? "Sửa từ vựng"
+                                            : "Thêm từ vựng"
                             )
                             .setView(form)
                             .setNegativeButton("Hủy", null)
@@ -385,7 +675,9 @@ public class DeckDetailFragment extends Fragment {
                             .create();
 
             showSaveDialog(dialog, () -> {
-                String wordValue = word.getText().toString().trim();
+                String wordValue =
+                        word.getText().toString().trim();
+
                 String meaningValue =
                         meaning.getText().toString().trim();
 
@@ -405,13 +697,17 @@ public class DeckDetailFragment extends Fragment {
                     if (i != index
                             && cards.get(i).getWord()
                             .equalsIgnoreCase(wordValue)) {
-                        word.setError("Từ này đã có trong bộ thẻ.");
+                        word.setError(
+                                "Từ này đã có trong bộ thẻ."
+                        );
+
                         word.requestFocus();
                         return;
                     }
                 }
 
-                List<Flashcard> updated = new ArrayList<>(cards);
+                List<Flashcard> updated =
+                        new ArrayList<>(cards);
 
                 Flashcard card = new Flashcard(
                         wordValue,
@@ -433,6 +729,7 @@ public class DeckDetailFragment extends Fragment {
                     dialog.dismiss();
                 }
             });
+
         } catch (IllegalStateException exception) {
             showMessage(exception.getMessage());
         }
@@ -459,6 +756,7 @@ public class DeckDetailFragment extends Fragment {
             showMessage("Đã lưu thay đổi.");
 
             return true;
+
         } catch (IllegalArgumentException | IllegalStateException exception) {
             showMessage(exception.getMessage());
             return false;
@@ -472,7 +770,9 @@ public class DeckDetailFragment extends Fragment {
 
         try {
             DemoFlashcardRepository repository = repository();
-            FlashcardDeck deck = repository.getDeckById(getDeckId());
+
+            FlashcardDeck deck =
+                    repository.getDeckById(getDeckId());
 
             if (deck == null) {
                 refreshDeck();
@@ -500,13 +800,18 @@ public class DeckDetailFragment extends Fragment {
             AlertDialog dialog =
                     new AlertDialog.Builder(requireContext())
                             .setTitle("Xóa từ vựng?")
-                            .setMessage("Xóa \"" + word + "\" khỏi bộ thẻ?")
+                            .setMessage(
+                                    "Xóa \"" + word
+                                            + "\" khỏi bộ thẻ?"
+                            )
                             .setNegativeButton("Hủy", null)
                             .setPositiveButton("Xóa", null)
                             .create();
 
             showSaveDialog(dialog, () -> {
-                List<Flashcard> updated = new ArrayList<>(cards);
+                List<Flashcard> updated =
+                        new ArrayList<>(cards);
+
                 updated.remove(index);
 
                 if (saveChanges(
@@ -517,6 +822,7 @@ public class DeckDetailFragment extends Fragment {
                     dialog.dismiss();
                 }
             });
+
         } catch (IllegalStateException exception) {
             showMessage(exception.getMessage());
         }
@@ -548,9 +854,10 @@ public class DeckDetailFragment extends Fragment {
                         .deleteDeck(getDeckId());
 
                 dialog.dismiss();
-                showMessage("Đã xóa bộ thẻ.");
 
+                showMessage("Đã xóa bộ thẻ.");
                 closeDetail();
+
             } catch (IllegalArgumentException | IllegalStateException exception) {
                 showMessage(exception.getMessage());
             }
@@ -577,49 +884,20 @@ public class DeckDetailFragment extends Fragment {
         dialog.show();
     }
 
-    private void openStudy() {
-        if (!canAct() || activeDialog != null) {
-            return;
-        }
-
-        try {
-            DemoFlashcardRepository repository = repository();
-            String deckId = getDeckId();
-
-            if (repository.getDeckById(deckId) == null
-                    || repository.getCards(deckId).isEmpty()) {
-                refreshDeck();
-                return;
-            }
-
-            openingStudy = true;
-
-            requireView().findViewById(R.id.btnStudyDeck)
-                    .setEnabled(false);
-
-            getParentFragmentManager()
-                    .beginTransaction()
-                    .setReorderingAllowed(true)
-                    .replace(
-                            R.id.fragmentContainer,
-                            StudyFragment.newInstance(deckId)
-                    )
-                    .addToBackStack("study")
-                    .commit();
-        } catch (IllegalStateException exception) {
-            openingStudy = false;
-            refreshDeck();
-            showMessage(exception.getMessage());
-        }
-    }
-
     private LinearLayout form() {
-        LinearLayout form = new LinearLayout(requireContext());
+        LinearLayout layout =
+                new LinearLayout(requireContext());
 
-        form.setOrientation(LinearLayout.VERTICAL);
-        form.setPadding(dp(20), dp(8), dp(20), dp(12));
+        layout.setOrientation(LinearLayout.VERTICAL);
 
-        return form;
+        layout.setPadding(
+                dp(20),
+                dp(8),
+                dp(20),
+                dp(12)
+        );
+
+        return layout;
     }
 
     private EditText input(String hint, boolean multiline) {
@@ -641,13 +919,20 @@ public class DeckDetailFragment extends Fragment {
 
         input.setBackgroundResource(R.drawable.bg_card);
         input.setSupportBackgroundTintList(null);
-        input.setPadding(dp(14), dp(14), dp(14), dp(14));
+
+        input.setPadding(
+                dp(14),
+                dp(14),
+                dp(14),
+                dp(14)
+        );
 
         if (multiline) {
             input.setInputType(
                     InputType.TYPE_CLASS_TEXT
                             | InputType.TYPE_TEXT_FLAG_MULTI_LINE
             );
+
             input.setMinLines(2);
         } else {
             input.setSingleLine(true);
@@ -690,7 +975,8 @@ public class DeckDetailFragment extends Fragment {
 
     private int dp(int value) {
         return Math.round(
-                value * getResources().getDisplayMetrics().density
+                value * getResources()
+                        .getDisplayMetrics().density
         );
     }
 
@@ -704,6 +990,21 @@ public class DeckDetailFragment extends Fragment {
                 message == null ? "Có lỗi xảy ra." : message,
                 Toast.LENGTH_LONG
         ).show();
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putInt(
+                STATE_PREVIEW_INDEX,
+                previewIndex
+        );
+
+        outState.putBoolean(
+                STATE_PREVIEW_FLIPPED,
+                previewFlipped
+        );
     }
 
     @Override
