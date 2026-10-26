@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/sm_background"
+    android:fillViewport="true"
+    android:overScrollMode="never">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cá nhân"
+            android:textColor="@color/sm_text_primary"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="Thiết lập hành trình học của bạn."
+            android:textColor="@color/sm_text_secondary"
+            android:textSize="15sp" />
+
+        <!-- Hồ sơ -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:id="@+id/tvProfileAvatar"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_gravity="center_horizontal"
+                android:background="@drawable/bg_button_primary"
+                android:gravity="center"
+                android:importantForAccessibility="no"
+                android:textColor="@color/sm_background"
+                android:textSize="28sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvProfileName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:gravity="center"
+                android:textColor="@color/sm_text_primary"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:gravity="center"
+                android:text="Hồ sơ trên thiết bị"
+                android:textColor="@color/sm_text_secondary"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+
+        <!-- Thống kê -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Kho từ vựng của bạn"
+            android:textColor="@color/sm_text_primary"
+            android:textSize="19sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvProfileStats"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_card"
+            android:lineSpacingExtra="10dp"
+            android:padding="20dp"
+            android:textColor="@color/sm_text_primary"
+            android:textSize="16sp" />
+
+        <!-- Thiết lập -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Thiết lập học tập"
+                android:textColor="@color/sm_text_primary"
+                android:textSize="19sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:labelFor="@id/etProfileName"
+                android:text="Tên hiển thị"
+                android:textColor="@color/sm_text_secondary"
+                android:textSize="14sp" />
+
+            <androidx.appcompat.widget.AppCompatEditText
+                android:id="@+id/etProfileName"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_card"
+                android:backgroundTint="@null"
+                android:hint="Nhập tên của bạn"
+                android:imeOptions="actionDone"
+                android:inputType="textCapWords"
+                android:maxLength="40"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:singleLine="true"
+                android:textColor="@color/sm_text_primary"
+                android:textColorHint="@color/sm_text_hint"
+                android:textSize="16sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:labelFor="@id/spProfileLevel"
+                android:text="Trình độ muốn luyện"
+                android:textColor="@color/sm_text_secondary"
+                android:textSize="14sp" />
+
+            <androidx.appcompat.widget.AppCompatSpinner
+                android:id="@+id/spProfileLevel"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_card"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:popupBackground="@color/sm_surface"
+                android:spinnerMode="dropdown" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Đây là lựa chọn luyện tập, chưa phải kết quả đánh giá trình độ."
+                android:textColor="@color/sm_text_hint"
+                android:textSize="12sp"
+                android:lineSpacingExtra="4dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:labelFor="@id/spProfileGoal"
+                android:text="Mục tiêu học mỗi ngày"
+                android:textColor="@color/sm_text_secondary"
+                android:textSize="14sp" />
+
+            <androidx.appcompat.widget.AppCompatSpinner
+                android:id="@+id/spProfileGoal"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_card"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:popupBackground="@color/sm_surface"
+                android:spinnerMode="dropdown" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnSaveProfile"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/bg_button_primary"
+                android:backgroundTint="@null"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:minHeight="0dp"
+                android:paddingStart="12dp"
+                android:paddingTop="0dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="0dp"
+                android:text="Lưu thay đổi"
+                android:textAllCaps="false"
+                android:textColor="@color/sm_background"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Về SpeakMate"
+            android:textColor="@color/sm_text_primary"
+            android:textSize="19sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_card"
+            android:lineSpacingExtra="6dp"
+            android:padding="20dp"
+            android:text="Luyện hội thoại tiếng Anh và ôn tập từ vựng.\n\nThiết lập hiện được lưu trên thiết bị. Mục tiêu mỗi ngày chưa có chức năng theo dõi thời gian hoặc nhắc học."
+            android:textColor="@color/sm_text_secondary"
+            android:textSize="14sp" />
+
+    </LinearLayout>
+
+</ScrollView>

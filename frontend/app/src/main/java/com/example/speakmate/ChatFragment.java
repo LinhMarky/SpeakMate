@@ -20,15 +20,32 @@ import java.util.ArrayList;
 
 public class ChatFragment extends Fragment {
 
-    private String level;
-    private String topic;
+    private static final String ARG_LEVEL = "level";
+    private static final String ARG_TOPIC = "topic";
+
+    private static final String ARG_REVIEW_ONLY = "reviewOnly";
+    private static final String ARG_REVIEW_MESSAGES = "reviewMessages";
+    private static final String ARG_REVIEW_ROLES = "reviewRoles";
+
+    private boolean reviewOnly;
+
+    private static final String STATE_MESSAGES = "messages";
+    private static final String STATE_ROLES = "roles";
+    private static final String STATE_DRAFT = "chat_draft";
+
+    private String level = "A2";
+    private String topic = "Ordering Food";
+    private String draftMessage = "";
 
     private final ArrayList<String> messages = new ArrayList<>();
     private final ArrayList<Boolean> userMessages = new ArrayList<>();
 
     private LinearLayout messageContainer;
     private ScrollView chatScroll;
+    private EditText messageInput;
     private AlertDialog endDialog;
+
+    private boolean leavingSession;
 
     public ChatFragment() {
         super(R.layout.fragment_chat);
@@ -41,12 +58,121 @@ public class ChatFragment extends Fragment {
         ChatFragment fragment = new ChatFragment();
 
         Bundle arguments = new Bundle();
-        arguments.putString("level", level);
-        arguments.putString("topic", topic);
+        arguments.putString(ARG_LEVEL, level);
+        arguments.putString(ARG_TOPIC, topic);
+
+        fragment.setArguments(arguments);
+        return fragment;
+    }
+
+    public static ChatFragment newReviewInstance(
+            String level,
+            String topic,
+            ArrayList<String> messages,
+            boolean[] userRoles
+    ) {
+        if (messages == null
+                || userRoles == null
+                || messages.size() != userRoles.length) {
+            throw new IllegalArgumentException(
+                    "Dữ liệu hội thoại không hợp lệ."
+            );
+        }
+
+        ChatFragment fragment = new ChatFragment();
+
+        Bundle arguments = new Bundle();
+
+        arguments.putString(ARG_LEVEL, level);
+        arguments.putString(ARG_TOPIC, topic);
+        arguments.putBoolean(ARG_REVIEW_ONLY, true);
+
+        arguments.putStringArrayList(
+                ARG_REVIEW_MESSAGES,
+                new ArrayList<>(messages)
+        );
+
+        arguments.putBooleanArray(
+                ARG_REVIEW_ROLES,
+                userRoles.clone()
+        );
 
         fragment.setArguments(arguments);
 
         return fragment;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        Bundle arguments = getArguments();
+
+        if (arguments != null) {
+            level = valueOrDefault(
+                    arguments.getString(ARG_LEVEL),
+                    "A2"
+            );
+
+            topic = valueOrDefault(
+                    arguments.getString(ARG_TOPIC),
+                    "Ordering Food"
+            );
+
+            reviewOnly = arguments.getBoolean(
+                    ARG_REVIEW_ONLY,
+                    false
+            );
+        }
+
+        restoreMessages(savedInstanceState);
+
+        if (reviewOnly && messages.isEmpty() && arguments != null) {
+            ArrayList<String> savedMessages =
+                    arguments.getStringArrayList(
+                            ARG_REVIEW_MESSAGES
+                    );
+
+            boolean[] savedRoles =
+                    arguments.getBooleanArray(
+                            ARG_REVIEW_ROLES
+                    );
+
+            if (savedMessages != null
+                    && savedRoles != null
+                    && savedMessages.size() == savedRoles.length) {
+
+                boolean valid = true;
+
+                for (String message : savedMessages) {
+                    if (message == null) {
+                        valid = false;
+                        break;
+                    }
+                }
+
+                if (valid) {
+                    messages.addAll(savedMessages);
+
+                    for (boolean role : savedRoles) {
+                        userMessages.add(role);
+                    }
+                }
+            }
+        }
+
+        if (savedInstanceState != null) {
+            draftMessage = valueOrDefault(
+                    savedInstanceState.getString(STATE_DRAFT),
+                    ""
+            );
+        }
+
+        // Chỉ phiên luyện mới mới có lời chào tự động.
+        if (!reviewOnly && messages.isEmpty()) {
+            messages.add(getOpeningMessage());
+            userMessages.add(false);
+        }
     }
 
     @Override
@@ -56,34 +182,27 @@ public class ChatFragment extends Fragment {
     ) {
         super.onViewCreated(view, savedInstanceState);
 
-        Bundle arguments = requireArguments();
-
-        level = arguments.getString("level", "A2");
-        topic = arguments.getString("topic", "Ordering Food");
+        leavingSession = false;
 
         TextView topicText = view.findViewById(R.id.tvChatTopic);
         TextView levelText = view.findViewById(R.id.tvChatLevel);
-        EditText input = view.findViewById(R.id.etMessage);
 
-        messageContainer =
-                view.findViewById(R.id.messageContainer);
+        messageInput = view.findViewById(R.id.etMessage);
+        messageContainer = view.findViewById(R.id.messageContainer);
         chatScroll = view.findViewById(R.id.chatScroll);
 
         topicText.setText(topic);
-        levelText.setText("Trình độ " + level);
+        levelText.setText("Mức bài luyện: " + level);
 
-        restoreMessages(savedInstanceState);
+        // Tự lưu bản nháp để không xung đột với việc khôi phục của View.
+        messageInput.setSaveEnabled(false);
+        messageInput.setText(draftMessage);
+        messageInput.setSelection(messageInput.length());
 
-        if (messages.isEmpty()) {
-            messages.add(getOpeningMessage());
-            userMessages.add(false);
-        }
+        messageContainer.removeAllViews();
 
         for (int i = 0; i < messages.size(); i++) {
-            displayMessage(
-                    messages.get(i),
-                    userMessages.get(i)
-            );
+            displayMessage(messages.get(i), userMessages.get(i));
         }
 
         view.findViewById(R.id.btnBackChat)
@@ -93,43 +212,99 @@ public class ChatFragment extends Fragment {
                 .setOnClickListener(v -> confirmEndSession());
 
         view.findViewById(R.id.btnSendMessage)
-                .setOnClickListener(v -> {
-                    String content =
-                            input.getText().toString().trim();
+                .setOnClickListener(v -> sendMessage());
 
-                    if (content.isEmpty()) {
-                        input.setError("Bạn hãy nhập câu trả lời.");
-                        return;
+        if (reviewOnly) {
+            levelText.setText("Xem lại hội thoại · " + level);
+
+            messageInput.setVisibility(View.GONE);
+
+            view.findViewById(R.id.btnSendMessage)
+                    .setVisibility(View.GONE);
+
+            view.findViewById(R.id.btnEndChat)
+                    .setVisibility(View.GONE);
+
+            view.findViewById(R.id.btnBackChat)
+                    .setContentDescription("Quay lại tổng kết");
+
+            // Mở từ đầu để đọc lại hội thoại.
+            ScrollView scroll = chatScroll;
+
+            if (scroll != null) {
+                scroll.post(() -> {
+                    if (chatScroll == scroll && isAdded()) {
+                        scroll.fullScroll(View.FOCUS_UP);
                     }
-
-                    addMessage(content, true);
-                    input.setText("");
-
-                    // Phản hồi demo, chưa kết nối backend.
-                    addMessage(getDemoReply(), false);
-
-                    scrollToBottom();
                 });
+            }
+        } else {
+            scrollToBottom();
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        leavingSession = false;
+    }
+
+    private void sendMessage() {
+        if (reviewOnly
+                || !canAct()
+                || messageInput == null
+                || endDialog != null) {
+            return;
+        }
+
+        String content = messageInput.getText()
+                .toString()
+                .trim();
+
+        if (content.isEmpty()) {
+            messageInput.setError("Bạn hãy nhập câu trả lời.");
+            return;
+        }
+
+        messageInput.setError(null);
+
+        addMessage(content, true);
+
+        messageInput.setText("");
+        draftMessage = "";
+
+        // Phản hồi minh họa, chưa gọi backend hoặc AI.
+        addMessage(getDemoReply(), false);
 
         scrollToBottom();
     }
 
     private void restoreMessages(@Nullable Bundle state) {
-        if (state == null || !messages.isEmpty()) {
+        if (state == null) {
             return;
         }
 
         ArrayList<String> savedMessages =
-                state.getStringArrayList("messages");
+                state.getStringArrayList(STATE_MESSAGES);
 
         boolean[] savedRoles =
-                state.getBooleanArray("roles");
+                state.getBooleanArray(STATE_ROLES);
 
         if (savedMessages == null
                 || savedRoles == null
                 || savedMessages.size() != savedRoles.length) {
             return;
         }
+
+        // Kiểm tra trước khi khôi phục để hai danh sách luôn khớp nhau.
+        for (String message : savedMessages) {
+            if (message == null) {
+                return;
+            }
+        }
+
+        messages.clear();
+        userMessages.clear();
 
         messages.addAll(savedMessages);
 
@@ -139,38 +314,106 @@ public class ChatFragment extends Fragment {
     }
 
     public void confirmEndSession() {
-        if (!isResumed() || endDialog != null) {
+        if (!canAct()) {
             return;
         }
 
-        endDialog = new MaterialAlertDialogBuilder(requireContext())
-                .setTitle("Kết thúc phiên luyện?")
-                .setMessage(
-                        "Bạn có thể xem tổng kết hoặc thoát phiên demo."
-                )
-                .setNegativeButton("Tiếp tục luyện", null)
+        // MainActivity cũng gọi hàm này khi bấm Back hệ thống.
+        if (reviewOnly) {
+            leavingSession = true;
 
-                .setNeutralButton("Thoát phiên", (dialog, which) ->
-                        ((MainActivity) requireActivity())
-                                .navigateToTab(R.id.nav_home)
-                )
+            boolean popped = getParentFragmentManager()
+                    .popBackStackImmediate();
 
-                .setPositiveButton("Xem tổng kết", (dialog, which) -> {
-                    int count = 0;
+            if (!popped) {
+                leavingSession = false;
+            }
 
-                    for (boolean fromUser : userMessages) {
-                        if (fromUser) {
-                            count++;
-                        }
-                    }
+            return;
+        }
 
-                    ((MainActivity) requireActivity())
-                            .showSpeakingResult(level, topic, count);
-                })
-                .create();
+        if (endDialog != null) {
+            return;
+        }
 
-        endDialog.setOnDismissListener(dialog -> endDialog = null);
-        endDialog.show();
+        AlertDialog dialog =
+                new MaterialAlertDialogBuilder(requireContext())
+                        .setTitle("Kết thúc phiên luyện?")
+                        .setMessage(
+                                "Xem tổng kết để nhìn lại phiên luyện, "
+                                        + "hoặc thoát về trang chủ."
+                        )
+                        .setNegativeButton("Tiếp tục luyện", null)
+                        .setNeutralButton(
+                                "Thoát phiên",
+                                (dialogInterface, which) -> exitSession()
+                        )
+                        .setPositiveButton(
+                                "Xem tổng kết",
+                                (dialogInterface, which) -> finishSession()
+                        )
+                        .create();
+
+        endDialog = dialog;
+
+        dialog.setOnDismissListener(ignored -> {
+            if (endDialog == dialog) {
+                endDialog = null;
+            }
+        });
+
+        dialog.show();
+    }
+
+    private void exitSession() {
+        if (!canAct()) {
+            return;
+        }
+
+        leavingSession = true;
+
+        ((MainActivity) requireActivity())
+                .navigateToTab(R.id.nav_home);
+    }
+
+    private void finishSession() {
+        if (!canAct()) {
+            return;
+        }
+
+        // Tạo bản sao để dữ liệu tổng kết độc lập với màn hình chat.
+        ArrayList<String> transcript =
+                new ArrayList<>(messages);
+
+        boolean[] roles = createRolesArray();
+
+        leavingSession = true;
+
+        ((MainActivity) requireActivity())
+                .showSpeakingResult(
+                        level,
+                        topic,
+                        transcript,
+                        roles
+                );
+    }
+
+    private boolean[] createRolesArray() {
+        boolean[] roles = new boolean[userMessages.size()];
+
+        for (int i = 0; i < userMessages.size(); i++) {
+            roles[i] = userMessages.get(i);
+        }
+
+        return roles;
+    }
+
+    private boolean canAct() {
+        return isAdded()
+                && isResumed()
+                && getView() != null
+                && !leavingSession
+                && !getParentFragmentManager().isStateSaved();
     }
 
     private String getOpeningMessage() {
@@ -184,8 +427,12 @@ public class ChatFragment extends Fragment {
             case "University Life":
                 return "Hi! What do you study at university?";
 
-            default:
+            case "Ordering Food":
                 return "Welcome! What would you like to order?";
+
+            default:
+                return "Hi! Let's practise English. "
+                        + "What would you like to share about this topic?";
         }
     }
 
@@ -200,8 +447,11 @@ public class ChatFragment extends Fragment {
             case "University Life":
                 return "What do you enjoy most about university?";
 
-            default:
+            case "Ordering Food":
                 return "Would you like something to drink?";
+
+            default:
+                return "Could you tell me more about that?";
         }
     }
 
@@ -216,7 +466,12 @@ public class ChatFragment extends Fragment {
             String content,
             boolean fromUser
     ) {
+        if (messageContainer == null) {
+            return;
+        }
+
         LinearLayout row = new LinearLayout(requireContext());
+        row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(fromUser ? Gravity.END : Gravity.START);
 
         LinearLayout.LayoutParams rowParams =
@@ -232,6 +487,7 @@ public class ChatFragment extends Fragment {
 
         bubble.setText(content);
         bubble.setTextSize(16);
+        bubble.setTextIsSelectable(true);
 
         bubble.setTextColor(ContextCompat.getColor(
                 requireContext(),
@@ -269,12 +525,6 @@ public class ChatFragment extends Fragment {
         messageContainer.addView(row);
     }
 
-    private int dp(int value) {
-        return Math.round(
-                value * getResources().getDisplayMetrics().density
-        );
-    }
-
     private void scrollToBottom() {
         ScrollView scroll = chatScroll;
 
@@ -289,32 +539,55 @@ public class ChatFragment extends Fragment {
         });
     }
 
+    private String valueOrDefault(
+            @Nullable String value,
+            String fallback
+    ) {
+        return value == null || value.trim().isEmpty()
+                ? fallback
+                : value;
+    }
+
+    private int dp(int value) {
+        return Math.round(
+                value * getResources().getDisplayMetrics().density
+        );
+    }
+
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
+        if (messageInput != null) {
+            draftMessage = messageInput.getText().toString();
+        }
 
         outState.putStringArrayList(
-                "messages",
+                STATE_MESSAGES,
                 new ArrayList<>(messages)
         );
 
-        boolean[] roles = new boolean[userMessages.size()];
+        outState.putBooleanArray(
+                STATE_ROLES,
+                createRolesArray()
+        );
 
-        for (int i = 0; i < userMessages.size(); i++) {
-            roles[i] = userMessages.get(i);
-        }
+        outState.putString(STATE_DRAFT, draftMessage);
 
-        outState.putBooleanArray("roles", roles);
+        super.onSaveInstanceState(outState);
     }
 
     @Override
     public void onDestroyView() {
+        if (messageInput != null) {
+            draftMessage = messageInput.getText().toString();
+        }
+
         if (endDialog != null) {
             endDialog.setOnDismissListener(null);
             endDialog.dismiss();
             endDialog = null;
         }
 
+        messageInput = null;
         messageContainer = null;
         chatScroll = null;
 

@@ -258,7 +258,7 @@ public class MainActivity extends AppCompatActivity {
             next = new FlashcardsFragment();
 
         } else if (itemId == R.id.nav_profile) {
-            next = PlaceholderFragment.newInstance("Cá nhân");
+            next = new ProfileFragment();
 
         } else {
             return;
@@ -305,6 +305,89 @@ public class MainActivity extends AppCompatActivity {
                 );
 
         manager.beginTransaction()
+                .replace(R.id.fragmentContainer, result)
+                .commitNow();
+
+        updateNavigation(result);
+    }
+
+    public void showSpeakingResult(
+            String level,
+            String topic,
+            java.util.ArrayList<String> messages,
+            boolean[] userRoles
+    ) {
+        FragmentManager manager = getSupportFragmentManager();
+
+        if (manager.isStateSaved()) {
+            return;
+        }
+
+        // Kiểm tra dữ liệu trước khi thay đổi màn hình.
+        if (messages == null
+                || userRoles == null
+                || messages.size() != userRoles.length) {
+            android.widget.Toast.makeText(
+                    this,
+                    "Dữ liệu hội thoại không hợp lệ.",
+                    android.widget.Toast.LENGTH_SHORT
+            ).show();
+            return;
+        }
+
+        java.util.ArrayList<String> transcript =
+                new java.util.ArrayList<>(messages);
+
+        boolean[] roles = userRoles.clone();
+
+        int userTurnCount = 0;
+
+        for (int i = 0; i < transcript.size(); i++) {
+            String message = transcript.get(i);
+
+            if (message == null) {
+                android.widget.Toast.makeText(
+                        this,
+                        "Dữ liệu hội thoại không hợp lệ.",
+                        android.widget.Toast.LENGTH_SHORT
+                ).show();
+                return;
+            }
+
+            if (roles[i] && !message.trim().isEmpty()) {
+                userTurnCount++;
+            }
+        }
+
+        SpeakingResultFragment result =
+                SpeakingResultFragment.newInstance(
+                        level,
+                        topic,
+                        userTurnCount
+                );
+
+        Bundle arguments = result.requireArguments();
+
+        arguments.putStringArrayList(
+                "transcriptMessages",
+                transcript
+        );
+
+        arguments.putBooleanArray(
+                "transcriptUserRoles",
+                roles
+        );
+
+        hideKeyboard();
+
+        // Gỡ màn hình chat để Back từ tổng kết không mở lại phiên đã kết thúc.
+        manager.popBackStackImmediate(
+                null,
+                FragmentManager.POP_BACK_STACK_INCLUSIVE
+        );
+
+        manager.beginTransaction()
+                .setReorderingAllowed(true)
                 .replace(R.id.fragmentContainer, result)
                 .commitNow();
 

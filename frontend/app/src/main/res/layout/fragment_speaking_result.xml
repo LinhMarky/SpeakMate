@@ -3,7 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/sm_background"
-    android:fillViewport="true">
+    android:fillViewport="true"
+    android:overScrollMode="never">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -14,21 +15,22 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="12dp"
             android:gravity="center"
+            android:importantForAccessibility="no"
             android:text="✓"
             android:textColor="@color/sm_success"
-            android:textSize="64sp"
+            android:textSize="60sp"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="8dp"
             android:gravity="center"
-            android:text="Hoàn thành buổi luyện!"
+            android:text="Nhìn lại buổi luyện"
             android:textColor="@color/sm_text_primary"
-            android:textSize="25sp"
+            android:textSize="26sp"
             android:textStyle="bold" />
 
         <TextView
@@ -41,98 +43,343 @@
             android:textSize="16sp" />
 
         <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="Thông tin buổi luyện"
-            android:textColor="@color/sm_text_primary"
-            android:textSize="19sp"
-            android:textStyle="bold" />
-
-        <TextView
             android:id="@+id/tvResultStats"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/bg_card"
-            android:padding="20dp"
-            android:textColor="@color/sm_text_primary"
-            android:textSize="17sp"
-            android:lineSpacingExtra="8dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="Hoạt động của bạn"
-            android:textColor="@color/sm_text_primary"
-            android:textSize="19sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/tvResultFeedback"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/bg_card"
-            android:padding="20dp"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
             android:textColor="@color/sm_text_secondary"
-            android:textSize="15sp"
-            android:lineSpacingExtra="5dp" />
+            android:textSize="14sp" />
 
+        <!-- 01. Trình độ -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:letterSpacing="0.08"
+                android:text="01   TRÌNH ĐỘ THỂ HIỆN"
+                android:textColor="@color/sm_text_hint"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvResultEstimatedLevel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:textColor="@color/sm_cyan"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvResultLevelDetail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:lineSpacingExtra="5dp"
+                android:textColor="@color/sm_text_secondary"
+                android:textSize="15sp" />
+
+        </LinearLayout>
+
+        <!-- 02. Điểm mạnh -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:letterSpacing="0.06"
+                android:text="02   ĐIỂM MẠNH"
+                android:textColor="@color/sm_success"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvResultStrengths"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:lineSpacingExtra="5dp"
+                android:textColor="@color/sm_text_primary"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+
+        <!-- 03. Điểm cần cải thiện -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:letterSpacing="0.06"
+                android:text="03   ĐIỂM CẦN CẢI THIỆN"
+                android:textColor="@color/sm_warning"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvResultWeaknesses"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:lineSpacingExtra="5dp"
+                android:textColor="@color/sm_text_primary"
+                android:textSize="16sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:text="Sửa lỗi ngữ pháp"
+                android:textColor="@color/sm_text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvResultGrammar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:lineSpacingExtra="5dp"
+                android:textColor="@color/sm_text_secondary"
+                android:textSize="15sp" />
+
+        </LinearLayout>
+
+        <!-- 04. Từ vựng -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="Từ vựng tham khảo"
+            android:layout_marginTop="28dp"
+            android:text="04   TỪ VỰNG THAM KHẢO"
             android:textColor="@color/sm_text_primary"
-            android:textSize="19sp"
+            android:textSize="18sp"
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/tvResultVocabulary"
+            android:id="@+id/tvResultVocabularyNote"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:lineSpacingExtra="4dp"
+            android:textColor="@color/sm_text_secondary"
+            android:textSize="14sp" />
+
+        <LinearLayout
+            android:id="@+id/resultVocabularyContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
+            android:orientation="vertical" />
+
+        <TextView
+            android:id="@+id/tvResultSelectedCount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:accessibilityLiveRegion="polite"
+            android:textColor="@color/sm_cyan"
+            android:textSize="14sp" />
+
+        <!-- Tạo bộ thẻ -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
             android:background="@drawable/bg_card"
-            android:padding="20dp"
-            android:textColor="@color/sm_text_primary"
-            android:textSize="16sp"
-            android:lineSpacingExtra="8dp" />
+            android:orientation="vertical"
+            android:padding="18dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Mang từ mới vào bộ thẻ"
+                android:textColor="@color/sm_text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:lineSpacingExtra="4dp"
+                android:text="Chọn các từ phía trên và đặt tên bộ thẻ để ôn tập sau."
+                android:textColor="@color/sm_text_secondary"
+                android:textSize="14sp" />
+
+            <androidx.appcompat.widget.AppCompatEditText
+                android:id="@+id/etResultDeckName"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="14dp"
+                android:background="@drawable/bg_card"
+                android:backgroundTint="@null"
+                android:gravity="center_vertical"
+                android:hint="Tên bộ thẻ"
+                android:imeOptions="actionDone"
+                android:inputType="textCapSentences"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:saveEnabled="false"
+                android:singleLine="true"
+                android:textColor="@color/sm_text_primary"
+                android:textColorHint="@color/sm_text_hint"
+                android:textSize="16sp" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnCreateResultDeck"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="14dp"
+                android:background="@drawable/bg_button_primary"
+                android:backgroundTint="@null"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:paddingStart="16dp"
+                android:paddingTop="0dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="0dp"
+                android:text="Tạo bộ flashcard"
+                android:textAllCaps="false"
+                android:textColor="@color/sm_background"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvResultDeckStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:accessibilityLiveRegion="polite"
+                android:lineSpacingExtra="4dp"
+                android:textColor="@color/sm_success"
+                android:textSize="14sp"
+                android:visibility="gone" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnOpenResultDeck"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_card"
+                android:backgroundTint="@null"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:paddingStart="16dp"
+                android:paddingTop="0dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="0dp"
+                android:text="Mở bộ thẻ vừa tạo"
+                android:textAllCaps="false"
+                android:textColor="@color/sm_cyan"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
+        </LinearLayout>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="Từ vựng được chuẩn bị sẵn theo chủ đề, chưa phải kết quả phân tích AI. Phiên demo chưa lưu vào lịch sử."
+            android:layout_marginTop="18dp"
+            android:lineSpacingExtra="4dp"
+            android:text="Phiên demo: chưa có đánh giá AI. Từ vựng hiện được chuẩn bị sẵn theo chủ đề."
             android:textColor="@color/sm_text_hint"
             android:textSize="12sp" />
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btnBackToPractice"
+        <!-- Các nút điều hướng -->
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="54dp"
-            android:layout_marginTop="28dp"
-            android:background="@drawable/bg_button_primary"
-            android:backgroundTint="@null"
-            android:text="Chọn bài luyện tiếp"
-            android:textAllCaps="false"
-            android:textColor="@color/sm_background"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:orientation="vertical">
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btnResultHome"
-            android:layout_width="match_parent"
-            android:layout_height="54dp"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/bg_card"
-            android:backgroundTint="@null"
-            android:text="Về trang chủ"
-            android:textAllCaps="false"
-            android:textColor="@color/sm_cyan"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnViewResultConversation"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:background="@drawable/bg_card"
+                android:backgroundTint="@null"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:paddingStart="16dp"
+                android:paddingTop="0dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="0dp"
+                android:text="Xem lại hội thoại"
+                android:textAllCaps="false"
+                android:textColor="@color/sm_cyan"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnBackToPractice"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_button_primary"
+                android:backgroundTint="@null"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:paddingStart="16dp"
+                android:paddingTop="0dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="0dp"
+                android:text="Chọn bài luyện tiếp"
+                android:textAllCaps="false"
+                android:textColor="@color/sm_background"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnResultHome"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_card"
+                android:backgroundTint="@null"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:paddingStart="16dp"
+                android:paddingTop="0dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="0dp"
+                android:text="Về trang chủ"
+                android:textAllCaps="false"
+                android:textColor="@color/sm_cyan"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
 
     </LinearLayout>
 
