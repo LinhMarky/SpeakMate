@@ -24,6 +24,12 @@ public class HomeFragment extends Fragment {
     ) {
         super.onViewCreated(view, savedInstanceState);
 
+        view.findViewById(R.id.btnHomeSpeakingHistory)
+                .setOnClickListener(button ->
+                        ((MainActivity) requireActivity())
+                                .openSpeakingHistory()
+                );
+
         view.findViewById(R.id.btnHomeEditLearningPlan)
                 .setOnClickListener(v ->
                         ((MainActivity) requireActivity())

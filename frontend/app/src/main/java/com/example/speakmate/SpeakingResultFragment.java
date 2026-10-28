@@ -169,10 +169,33 @@ public class SpeakingResultFragment extends Fragment {
         createButton.setOnClickListener(v -> createDeck());
         openButton.setOnClickListener(v -> openCreatedDeck());
 
-        view.findViewById(R.id.btnBackToPractice)
-                .setOnClickListener(v ->
-                        navigateToTab(R.id.nav_speaking)
-                );
+        TextView backButton =
+                view.findViewById(R.id.btnBackToPractice);
+
+        Bundle arguments = getArguments();
+
+        boolean fromHistory = arguments != null
+                && arguments.getBoolean("fromHistory", false);
+
+        backButton.setText(
+                fromHistory
+                        ? "Quay lại lịch sử"
+                        : "Chọn bài luyện tiếp"
+        );
+
+        backButton.setOnClickListener(v -> {
+            if (!canAct()) {
+                return;
+            }
+
+            if (fromHistory
+                    && getParentFragmentManager()
+                    .getBackStackEntryCount() > 0) {
+                getParentFragmentManager().popBackStack();
+            } else {
+                navigateToTab(R.id.nav_speaking);
+            }
+        });
 
         view.findViewById(R.id.btnResultHome)
                 .setOnClickListener(v ->
@@ -275,7 +298,7 @@ public class SpeakingResultFragment extends Fragment {
                             + "\n• Câu bạn đã nói."
                             + "\n• Câu được sửa."
                             + "\n• Giải thích bằng tiếng Việt."
-                            + "\n\nHiện chưa nhận nội dung hội thoại "
+                            + "\n\nChưa có kết quả phân tích AI "
                             + "để đưa ra sửa lỗi cụ thể."
             );
         }

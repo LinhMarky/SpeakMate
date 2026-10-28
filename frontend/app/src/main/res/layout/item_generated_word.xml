@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    android:background="@drawable/bg_card"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <androidx.appcompat.widget.AppCompatCheckBox
+        android:id="@+id/cbGeneratedWordSelected"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:buttonTint="@color/sm_cyan"
+        android:minHeight="48dp"
+        android:saveEnabled="false"
+        android:text="Giữ từ này"
+        android:textColor="@color/sm_text_primary"
+        android:textSize="15sp"
+        android:textStyle="bold" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/etGeneratedWord"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bg_card"
+        android:backgroundTint="@null"
+        android:hint="Từ tiếng Anh"
+        android:imeOptions="actionNext"
+        android:inputType="text"
+        android:maxLength="100"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:saveEnabled="false"
+        android:singleLine="true"
+        android:textColor="@color/sm_text_primary"
+        android:textColorHint="@color/sm_text_hint"
+        android:textSize="15sp" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/etGeneratedMeaning"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/bg_card"
+        android:backgroundTint="@null"
+        android:hint="Nghĩa tiếng Việt"
+        android:imeOptions="actionNext"
+        android:inputType="textCapSentences"
+        android:maxLength="200"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:saveEnabled="false"
+        android:singleLine="true"
+        android:textColor="@color/sm_text_primary"
+        android:textColorHint="@color/sm_text_hint"
+        android:textSize="15sp" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/etGeneratedExample"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/bg_card"
+        android:backgroundTint="@null"
+        android:hint="Câu ví dụ (không bắt buộc)"
+        android:imeOptions="actionDone"
+        android:inputType="textCapSentences"
+        android:maxLength="500"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:saveEnabled="false"
+        android:singleLine="true"
+        android:textColor="@color/sm_text_primary"
+        android:textColorHint="@color/sm_text_hint"
+        android:textSize="15sp" />
+
+</LinearLayout>

@@ -1,17 +1,27 @@
 package com.example.speakmate;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -27,15 +37,22 @@ public class ChatFragment extends Fragment {
     private static final String ARG_REVIEW_MESSAGES = "reviewMessages";
     private static final String ARG_REVIEW_ROLES = "reviewRoles";
 
-    private boolean reviewOnly;
-
     private static final String STATE_MESSAGES = "messages";
     private static final String STATE_ROLES = "roles";
     private static final String STATE_DRAFT = "chat_draft";
 
     private String level = "A2";
     private String topic = "Ordering Food";
+
     private String draftMessage = "";
+    private String voiceBaseDraft = "";
+
+    private boolean reviewOnly;
+    private boolean leavingSession;
+    private boolean voicePending;
+    private boolean fingerHolding;
+    private boolean permissionRequestPending;
+    private boolean ignoreVoiceClick;
 
     private final ArrayList<String> messages = new ArrayList<>();
     private final ArrayList<Boolean> userMessages = new ArrayList<>();
@@ -43,9 +60,41 @@ public class ChatFragment extends Fragment {
     private LinearLayout messageContainer;
     private ScrollView chatScroll;
     private EditText messageInput;
-    private AlertDialog endDialog;
 
-    private boolean leavingSession;
+    private View microphoneButton;
+    private TextView voiceHint;
+
+    private AlertDialog endDialog;
+    private HoldToSpeakController holdToSpeak;
+
+    private static final String STATE_LAST_SPOKEN =
+            "chat_last_spoken_index";
+
+    private DeckSpeech chatSpeech;
+
+    private boolean autoSpeakEnabled = true;
+    private int lastAutoSpokenIndex = -1;
+
+    private final ActivityResultLauncher<String> microphonePermission =
+            registerForActivityResult(
+                    new ActivityResultContracts.RequestPermission(),
+                    granted -> {
+                        permissionRequestPending = false;
+                        updateInputControls();
+
+                        if (reviewOnly) {
+                            return;
+                        }
+
+                        showMessage(
+                                granted
+                                        ? "Đã cấp quyền. Bạn hãy giữ micro để nói."
+                                        : "Chưa được cấp quyền micro. "
+                                          + "Bạn vẫn có thể nhập bằng bàn phím. "
+                                          + "Có thể cấp quyền trong Cài đặt ứng dụng."
+                        );
+                    }
+            );
 
     public ChatFragment() {
         super(R.layout.fragment_chat);
@@ -62,6 +111,7 @@ public class ChatFragment extends Fragment {
         arguments.putString(ARG_TOPIC, topic);
 
         fragment.setArguments(arguments);
+
         return fragment;
     }
 
@@ -77,6 +127,14 @@ public class ChatFragment extends Fragment {
             throw new IllegalArgumentException(
                     "Dữ liệu hội thoại không hợp lệ."
             );
+        }
+
+        for (String message : messages) {
+            if (message == null) {
+                throw new IllegalArgumentException(
+                        "Hội thoại có tin nhắn không hợp lệ."
+                );
+            }
         }
 
         ChatFragment fragment = new ChatFragment();
@@ -106,6 +164,13 @@ public class ChatFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        if (savedInstanceState != null) {
+            lastAutoSpokenIndex = savedInstanceState.getInt(
+                    STATE_LAST_SPOKEN,
+                    -1
+            );
+        }
+
         Bundle arguments = getArguments();
 
         if (arguments != null) {
@@ -125,50 +190,34 @@ public class ChatFragment extends Fragment {
             );
         }
 
-        restoreMessages(savedInstanceState);
-
-        if (reviewOnly && messages.isEmpty() && arguments != null) {
-            ArrayList<String> savedMessages =
-                    arguments.getStringArrayList(
-                            ARG_REVIEW_MESSAGES
-                    );
-
-            boolean[] savedRoles =
-                    arguments.getBooleanArray(
-                            ARG_REVIEW_ROLES
-                    );
-
-            if (savedMessages != null
-                    && savedRoles != null
-                    && savedMessages.size() == savedRoles.length) {
-
-                boolean valid = true;
-
-                for (String message : savedMessages) {
-                    if (message == null) {
-                        valid = false;
-                        break;
-                    }
-                }
-
-                if (valid) {
-                    messages.addAll(savedMessages);
-
-                    for (boolean role : savedRoles) {
-                        userMessages.add(role);
-                    }
-                }
-            }
-        }
-
         if (savedInstanceState != null) {
+            restoreConversation(
+                    savedInstanceState.getStringArrayList(
+                            STATE_MESSAGES
+                    ),
+                    savedInstanceState.getBooleanArray(
+                            STATE_ROLES
+                    )
+            );
+
             draftMessage = valueOrDefault(
                     savedInstanceState.getString(STATE_DRAFT),
                     ""
             );
         }
 
-        // Chỉ phiên luyện mới mới có lời chào tự động.
+        if (reviewOnly && messages.isEmpty() && arguments != null) {
+            restoreConversation(
+                    arguments.getStringArrayList(
+                            ARG_REVIEW_MESSAGES
+                    ),
+                    arguments.getBooleanArray(
+                            ARG_REVIEW_ROLES
+                    )
+            );
+        }
+
+        // Chỉ tạo lời chào cho phiên luyện mới.
         if (!reviewOnly && messages.isEmpty()) {
             messages.add(getOpeningMessage());
             userMessages.add(false);
@@ -183,70 +232,389 @@ public class ChatFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         leavingSession = false;
+        voicePending = false;
+        fingerHolding = false;
 
-        TextView topicText = view.findViewById(R.id.tvChatTopic);
-        TextView levelText = view.findViewById(R.id.tvChatLevel);
+        TextView topicText =
+                view.findViewById(R.id.tvChatTopic);
 
-        messageInput = view.findViewById(R.id.etMessage);
-        messageContainer = view.findViewById(R.id.messageContainer);
-        chatScroll = view.findViewById(R.id.chatScroll);
+        TextView levelText =
+                view.findViewById(R.id.tvChatLevel);
+
+        messageInput =
+                view.findViewById(R.id.etMessage);
+
+        messageContainer =
+                view.findViewById(R.id.messageContainer);
+
+        chatScroll =
+                view.findViewById(R.id.chatScroll);
+
+        microphoneButton =
+                view.findViewById(R.id.btnVoiceInput);
+
+        voiceHint =
+                view.findViewById(R.id.tvVoiceInputHint);
 
         topicText.setText(topic);
-        levelText.setText("Mức bài luyện: " + level);
 
-        // Tự lưu bản nháp để không xung đột với việc khôi phục của View.
+        levelText.setText(
+                reviewOnly
+                        ? "Xem lại hội thoại · " + level
+                        : "Mức bài luyện: " + level
+        );
+
         messageInput.setSaveEnabled(false);
         messageInput.setText(draftMessage);
         messageInput.setSelection(messageInput.length());
 
+        messageInput.setOnEditorActionListener(
+                (input, actionId, event) -> {
+                    if (actionId == EditorInfo.IME_ACTION_DONE) {
+                        hideKeyboard();
+                        input.clearFocus();
+                        return true;
+                    }
+
+                    return false;
+                }
+        );
+
         messageContainer.removeAllViews();
 
         for (int i = 0; i < messages.size(); i++) {
-            displayMessage(messages.get(i), userMessages.get(i));
+            displayMessage(
+                    messages.get(i),
+                    userMessages.get(i)
+            );
         }
 
         view.findViewById(R.id.btnBackChat)
-                .setOnClickListener(v -> confirmEndSession());
+                .setOnClickListener(
+                        button -> confirmEndSession()
+                );
 
         view.findViewById(R.id.btnEndChat)
-                .setOnClickListener(v -> confirmEndSession());
+                .setOnClickListener(
+                        button -> confirmEndSession()
+                );
 
         view.findViewById(R.id.btnSendMessage)
-                .setOnClickListener(v -> sendMessage());
+                .setOnClickListener(
+                        button -> sendMessage()
+                );
+
+        view.findViewById(R.id.chatComposer)
+                .setVisibility(
+                        reviewOnly ? View.GONE : View.VISIBLE
+                );
+
+        view.findViewById(R.id.btnEndChat)
+                .setVisibility(
+                        reviewOnly ? View.GONE : View.VISIBLE
+                );
+
+        android.widget.CheckBox autoSpeakCheckBox =
+                view.findViewById(R.id.cbChatAutoSpeak);
+
+        android.content.SharedPreferences preferences =
+                requireContext().getSharedPreferences(
+                        "speakmate_profile",
+                        android.content.Context.MODE_PRIVATE
+                );
+
+        autoSpeakEnabled = preferences.getBoolean(
+                "chat_auto_speak",
+                true
+        );
+
+        autoSpeakCheckBox.setChecked(autoSpeakEnabled);
+
+        autoSpeakCheckBox.setVisibility(
+                reviewOnly ? View.GONE : View.VISIBLE
+        );
 
         if (reviewOnly) {
-            levelText.setText("Xem lại hội thoại · " + level);
-
-            messageInput.setVisibility(View.GONE);
-
-            view.findViewById(R.id.btnSendMessage)
-                    .setVisibility(View.GONE);
-
-            view.findViewById(R.id.btnEndChat)
-                    .setVisibility(View.GONE);
-
             view.findViewById(R.id.btnBackChat)
-                    .setContentDescription("Quay lại tổng kết");
-
-            // Mở từ đầu để đọc lại hội thoại.
-            ScrollView scroll = chatScroll;
-
-            if (scroll != null) {
-                scroll.post(() -> {
-                    if (chatScroll == scroll && isAdded()) {
-                        scroll.fullScroll(View.FOCUS_UP);
-                    }
-                });
-            }
+                    .setContentDescription(
+                            "Quay lại tổng kết"
+                    );
         } else {
-            scrollToBottom();
+            chatSpeech = new DeckSpeech(requireContext());
+            setupHoldToSpeak(view);
         }
+
+        autoSpeakCheckBox.setOnCheckedChangeListener(
+                (button, checked) -> {
+                    autoSpeakEnabled = checked;
+
+                    preferences.edit()
+                            .putBoolean("chat_auto_speak", checked)
+                            .apply();
+
+                    if (checked) {
+                        speakLatestPartnerMessage(true);
+                    } else {
+                        stopChatSpeech();
+                    }
+                }
+        );
+
+        updateInputControls();
+        scrollConversation(reviewOnly);
     }
 
     @Override
     public void onResume() {
         super.onResume();
+
         leavingSession = false;
+        updateInputControls();
+
+        speakLatestPartnerMessage(false);
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private void setupHoldToSpeak(@NonNull View root) {
+        holdToSpeak = new HoldToSpeakController(
+                requireContext(),
+                new HoldToSpeakController.Listener() {
+
+                    @Override
+                    public void onStateChanged(
+                            boolean busy,
+                            String message
+                    ) {
+                        voicePending = busy;
+
+                        if (busy) {
+                            stopChatSpeech();
+                        }
+
+                        if (getView() != root) {
+                            return;
+                        }
+
+                        if (voiceHint != null) {
+                            voiceHint.setText(message);
+                        }
+
+                        if (microphoneButton != null) {
+                            microphoneButton.setAlpha(
+                                    busy ? 0.65f : 1f
+                            );
+
+                            if (!busy) {
+                                microphoneButton.setPressed(false);
+                            }
+                        }
+
+                        updateInputControls();
+                    }
+
+                    @Override
+                    public void onResult(String text) {
+                        if (getView() == root) {
+                            appendRecognizedText(text);
+                        }
+                    }
+
+                    @Override
+                    public void onError(String message) {
+                        if (getView() == root) {
+                            showMessage(message);
+                        }
+                    }
+                }
+        );
+
+        microphoneButton.setContentDescription(
+                "Nhấn giữ để nói tiếng Anh, thả tay để kết thúc"
+        );
+
+        microphoneButton.setOnClickListener(button -> {
+            if (!ignoreVoiceClick) {
+                showMessage(
+                        "Bạn hãy nhấn giữ micro để nói, "
+                                + "thả tay khi nói xong."
+                );
+            }
+        });
+
+        microphoneButton.setOnTouchListener((button, event) -> {
+            switch (event.getActionMasked()) {
+
+                case MotionEvent.ACTION_DOWN:
+                    if (reviewOnly
+                            || !canAct()
+                            || permissionRequestPending
+                            || endDialog != null
+                            || messageInput == null
+                            || holdToSpeak == null) {
+                        return true;
+                    }
+
+                    boolean granted =
+                            ContextCompat.checkSelfPermission(
+                                    requireContext(),
+                                    Manifest.permission.RECORD_AUDIO
+                            ) == PackageManager.PERMISSION_GRANTED;
+
+                    if (!granted) {
+                        permissionRequestPending = true;
+                        updateInputControls();
+
+                        microphonePermission.launch(
+                                Manifest.permission.RECORD_AUDIO
+                        );
+
+                        return true;
+                    }
+
+                    draftMessage =
+                            messageInput.getText().toString();
+
+                    voiceBaseDraft = draftMessage;
+
+                    hideKeyboard();
+                    messageInput.clearFocus();
+
+                    fingerHolding = true;
+                    button.setPressed(true);
+
+                    holdToSpeak.start();
+                    return true;
+
+                case MotionEvent.ACTION_UP:
+                    button.setPressed(false);
+
+                    if (fingerHolding) {
+                        fingerHolding = false;
+
+                        if (holdToSpeak != null) {
+                            holdToSpeak.stop();
+                        }
+
+                        ignoreVoiceClick = true;
+
+                        try {
+                            button.performClick();
+                        } finally {
+                            ignoreVoiceClick = false;
+                        }
+                    }
+
+                    return true;
+
+                case MotionEvent.ACTION_CANCEL:
+                    cancelVoiceInput();
+                    return true;
+
+                case MotionEvent.ACTION_MOVE:
+                    boolean outside =
+                            event.getX() < 0
+                                    || event.getY() < 0
+                                    || event.getX() > button.getWidth()
+                                    || event.getY() > button.getHeight();
+
+                    if (outside && fingerHolding) {
+                        cancelVoiceInput();
+                    }
+
+                    return true;
+
+                default:
+                    return true;
+            }
+        });
+    }
+
+    private void appendRecognizedText(String text) {
+        if (reviewOnly
+                || leavingSession
+                || text == null
+                || text.trim().isEmpty()) {
+            return;
+        }
+
+        String separator = "";
+
+        if (!voiceBaseDraft.isEmpty()) {
+            char lastCharacter = voiceBaseDraft.charAt(
+                    voiceBaseDraft.length() - 1
+            );
+
+            if (!Character.isWhitespace(lastCharacter)) {
+                separator = " ";
+            }
+        }
+
+        draftMessage =
+                voiceBaseDraft + separator + text.trim();
+
+        voiceBaseDraft = "";
+
+        if (messageInput != null) {
+            messageInput.setText(draftMessage);
+            messageInput.setSelection(messageInput.length());
+            messageInput.setError(null);
+        }
+
+        if (voiceHint != null) {
+            voiceHint.setText(
+                    "Đã nhận câu nói. Bạn kiểm tra nội dung "
+                            + "rồi bấm Gửi."
+            );
+        }
+    }
+
+    private void cancelVoiceInput() {
+        fingerHolding = false;
+
+        if (microphoneButton != null) {
+            microphoneButton.setPressed(false);
+        }
+
+        if (holdToSpeak != null) {
+            holdToSpeak.cancel();
+        }
+
+        voicePending = false;
+        updateInputControls();
+    }
+
+    private void updateInputControls() {
+        View view = getView();
+
+        if (view == null) {
+            return;
+        }
+
+        boolean editable =
+                !reviewOnly
+                        && !voicePending
+                        && !permissionRequestPending
+                        && !leavingSession;
+
+        // Micro vẫn phải nhận được ACTION_UP khi người dùng thả tay.
+        view.findViewById(R.id.btnVoiceInput)
+                .setEnabled(
+                        !reviewOnly
+                                && !permissionRequestPending
+                                && !leavingSession
+                );
+
+        view.findViewById(R.id.btnSendMessage)
+                .setEnabled(editable);
+
+        view.findViewById(R.id.etMessage)
+                .setEnabled(editable);
+
+        view.findViewById(R.id.btnEndChat)
+                .setEnabled(editable);
+
+        view.findViewById(R.id.btnBackChat)
+                .setEnabled(!leavingSession);
     }
 
     private void sendMessage() {
@@ -257,12 +625,15 @@ public class ChatFragment extends Fragment {
             return;
         }
 
-        String content = messageInput.getText()
-                .toString()
-                .trim();
+        String content =
+                messageInput.getText().toString().trim();
 
         if (content.isEmpty()) {
-            messageInput.setError("Bạn hãy nhập câu trả lời.");
+            messageInput.setError(
+                    "Bạn hãy nhập hoặc nói câu trả lời."
+            );
+
+            messageInput.requestFocus();
             return;
         }
 
@@ -272,31 +643,34 @@ public class ChatFragment extends Fragment {
 
         messageInput.setText("");
         draftMessage = "";
+        voiceBaseDraft = "";
 
-        // Phản hồi minh họa, chưa gọi backend hoặc AI.
+        // Phản hồi mẫu, chưa gọi backend AI.
         addMessage(getDemoReply(), false);
 
-        scrollToBottom();
-    }
-
-    private void restoreMessages(@Nullable Bundle state) {
-        if (state == null) {
-            return;
+        if (voiceHint != null) {
+            voiceHint.setText(
+                    "Giữ micro để nói tiếng Anh, "
+                            + "thả tay để kết thúc."
+            );
         }
 
-        ArrayList<String> savedMessages =
-                state.getStringArrayList(STATE_MESSAGES);
+        hideKeyboard();
+        messageInput.clearFocus();
 
-        boolean[] savedRoles =
-                state.getBooleanArray(STATE_ROLES);
+        scrollConversation(false);
+    }
 
+    private void restoreConversation(
+            @Nullable ArrayList<String> savedMessages,
+            @Nullable boolean[] savedRoles
+    ) {
         if (savedMessages == null
                 || savedRoles == null
                 || savedMessages.size() != savedRoles.length) {
             return;
         }
 
-        // Kiểm tra trước khi khôi phục để hai danh sách luôn khớp nhau.
         for (String message : savedMessages) {
             if (message == null) {
                 return;
@@ -314,19 +688,33 @@ public class ChatFragment extends Fragment {
     }
 
     public void confirmEndSession() {
+        // Nếu bấm Back lúc đang nhận giọng nói,
+        // hủy nhận dạng trước khi xử lý điều hướng.
+        stopChatSpeech();
+        if (voicePending || fingerHolding) {
+            cancelVoiceInput();
+        }
+
         if (!canAct()) {
             return;
         }
 
-        // MainActivity cũng gọi hàm này khi bấm Back hệ thống.
+        hideKeyboard();
+
+        if (messageInput != null) {
+            messageInput.clearFocus();
+        }
+
         if (reviewOnly) {
             leavingSession = true;
 
-            boolean popped = getParentFragmentManager()
-                    .popBackStackImmediate();
+            boolean returned =
+                    getParentFragmentManager()
+                            .popBackStackImmediate();
 
-            if (!popped) {
+            if (!returned) {
                 leavingSession = false;
+                updateInputControls();
             }
 
             return;
@@ -342,15 +730,20 @@ public class ChatFragment extends Fragment {
                         .setMessage(
                                 "Xem tổng kết để nhìn lại phiên luyện, "
                                         + "hoặc thoát về trang chủ."
+                                        + "\n\nCâu đang nhập chưa gửi "
+                                        + "sẽ không được đưa vào tổng kết."
                         )
-                        .setNegativeButton("Tiếp tục luyện", null)
+                        .setNegativeButton(
+                                "Tiếp tục luyện",
+                                null
+                        )
                         .setNeutralButton(
                                 "Thoát phiên",
-                                (dialogInterface, which) -> exitSession()
+                                (ignored, which) -> exitSession()
                         )
                         .setPositiveButton(
                                 "Xem tổng kết",
-                                (dialogInterface, which) -> finishSession()
+                                (ignored, which) -> finishSession()
                         )
                         .create();
 
@@ -371,6 +764,7 @@ public class ChatFragment extends Fragment {
         }
 
         leavingSession = true;
+        updateInputControls();
 
         ((MainActivity) requireActivity())
                 .navigateToTab(R.id.nav_home);
@@ -381,13 +775,13 @@ public class ChatFragment extends Fragment {
             return;
         }
 
-        // Tạo bản sao để dữ liệu tổng kết độc lập với màn hình chat.
         ArrayList<String> transcript =
                 new ArrayList<>(messages);
 
         boolean[] roles = createRolesArray();
 
         leavingSession = true;
+        updateInputControls();
 
         ((MainActivity) requireActivity())
                 .showSpeakingResult(
@@ -413,6 +807,8 @@ public class ChatFragment extends Fragment {
                 && isResumed()
                 && getView() != null
                 && !leavingSession
+                && !voicePending
+                && !permissionRequestPending
                 && !getParentFragmentManager().isStateSaved();
     }
 
@@ -460,6 +856,10 @@ public class ChatFragment extends Fragment {
         userMessages.add(fromUser);
 
         displayMessage(content, fromUser);
+
+        if (!fromUser) {
+            speakLatestPartnerMessage(false);
+        }
     }
 
     private void displayMessage(
@@ -470,9 +870,14 @@ public class ChatFragment extends Fragment {
             return;
         }
 
-        LinearLayout row = new LinearLayout(requireContext());
+        LinearLayout row =
+                new LinearLayout(requireContext());
+
         row.setOrientation(LinearLayout.HORIZONTAL);
-        row.setGravity(fromUser ? Gravity.END : Gravity.START);
+
+        row.setGravity(
+                fromUser ? Gravity.END : Gravity.START
+        );
 
         LinearLayout.LayoutParams rowParams =
                 new LinearLayout.LayoutParams(
@@ -481,20 +886,22 @@ public class ChatFragment extends Fragment {
                 );
 
         rowParams.bottomMargin = dp(14);
-        row.setLayoutParams(rowParams);
 
-        TextView bubble = new TextView(requireContext());
+        TextView bubble =
+                new TextView(requireContext());
 
         bubble.setText(content);
         bubble.setTextSize(16);
         bubble.setTextIsSelectable(true);
 
-        bubble.setTextColor(ContextCompat.getColor(
-                requireContext(),
-                fromUser
-                        ? R.color.sm_background
-                        : R.color.sm_text_primary
-        ));
+        bubble.setTextColor(
+                ContextCompat.getColor(
+                        requireContext(),
+                        fromUser
+                                ? R.color.sm_background
+                                : R.color.sm_text_primary
+                )
+        );
 
         bubble.setBackgroundResource(
                 fromUser
@@ -512,7 +919,9 @@ public class ChatFragment extends Fragment {
         int screenWidth =
                 getResources().getDisplayMetrics().widthPixels;
 
-        bubble.setMaxWidth((int) (screenWidth * 0.76f));
+        bubble.setMaxWidth(
+                (int) (screenWidth * 0.76f)
+        );
 
         row.addView(
                 bubble,
@@ -522,10 +931,10 @@ public class ChatFragment extends Fragment {
                 )
         );
 
-        messageContainer.addView(row);
+        messageContainer.addView(row, rowParams);
     }
 
-    private void scrollToBottom() {
+    private void scrollConversation(boolean toTop) {
         ScrollView scroll = chatScroll;
 
         if (scroll == null) {
@@ -534,9 +943,76 @@ public class ChatFragment extends Fragment {
 
         scroll.post(() -> {
             if (chatScroll == scroll && isAdded()) {
-                scroll.fullScroll(View.FOCUS_DOWN);
+                scroll.fullScroll(
+                        toTop
+                                ? View.FOCUS_UP
+                                : View.FOCUS_DOWN
+                );
             }
         });
+    }
+
+    private void speakLatestPartnerMessage(boolean force) {
+        if (reviewOnly
+                || !autoSpeakEnabled
+                || chatSpeech == null
+                || !isAdded()
+                || !isResumed()
+                || leavingSession
+                || voicePending
+                || permissionRequestPending
+                || messages.isEmpty()) {
+            return;
+        }
+
+        int index = messages.size() - 1;
+
+        // Chỉ đọc câu của bạn luyện.
+        if (userMessages.get(index)) {
+            return;
+        }
+
+        if (!force && lastAutoSpokenIndex == index) {
+            return;
+        }
+
+        String content = messages.get(index);
+
+        if (content == null || content.trim().isEmpty()) {
+            return;
+        }
+
+        lastAutoSpokenIndex = index;
+        chatSpeech.speak(content);
+    }
+
+    private void stopChatSpeech() {
+        if (chatSpeech != null) {
+            chatSpeech.stop();
+        }
+    }
+
+    private void hideKeyboard() {
+        View view = getView();
+
+        if (view == null || !isAdded()) {
+            return;
+        }
+
+        WindowCompat.getInsetsController(
+                requireActivity().getWindow(),
+                view
+        ).hide(WindowInsetsCompat.Type.ime());
+    }
+
+    private void showMessage(String message) {
+        if (getContext() != null) {
+            Toast.makeText(
+                    requireContext(),
+                    message,
+                    Toast.LENGTH_LONG
+            ).show();
+        }
     }
 
     private String valueOrDefault(
@@ -555,9 +1031,18 @@ public class ChatFragment extends Fragment {
     }
 
     @Override
+    public void onPause() {
+        stopChatSpeech();
+        cancelVoiceInput();
+
+        super.onPause();
+    }
+
+    @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         if (messageInput != null) {
-            draftMessage = messageInput.getText().toString();
+            draftMessage =
+                    messageInput.getText().toString();
         }
 
         outState.putStringArrayList(
@@ -570,15 +1055,40 @@ public class ChatFragment extends Fragment {
                 createRolesArray()
         );
 
-        outState.putString(STATE_DRAFT, draftMessage);
+        outState.putString(
+                STATE_DRAFT,
+                draftMessage
+        );
+
+        outState.putInt(
+                STATE_LAST_SPOKEN,
+                lastAutoSpokenIndex
+        );
 
         super.onSaveInstanceState(outState);
     }
 
     @Override
     public void onDestroyView() {
+        if (chatSpeech != null) {
+            chatSpeech.close();
+            chatSpeech = null;
+        }
         if (messageInput != null) {
-            draftMessage = messageInput.getText().toString();
+            draftMessage =
+                    messageInput.getText().toString();
+
+            messageInput.setOnEditorActionListener(null);
+        }
+
+        if (holdToSpeak != null) {
+            holdToSpeak.close();
+            holdToSpeak = null;
+        }
+
+        if (microphoneButton != null) {
+            microphoneButton.setOnTouchListener(null);
+            microphoneButton.setOnClickListener(null);
         }
 
         if (endDialog != null) {
@@ -587,9 +1097,14 @@ public class ChatFragment extends Fragment {
             endDialog = null;
         }
 
+        voicePending = false;
+        fingerHolding = false;
+
         messageInput = null;
         messageContainer = null;
         chatScroll = null;
+        microphoneButton = null;
+        voiceHint = null;
 
         super.onDestroyView();
     }

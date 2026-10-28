@@ -8,10 +8,11 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 
 import java.util.ArrayList;
@@ -74,30 +75,41 @@ public class FlashcardsFragment extends Fragment {
 
         search.addTextChangedListener(searchWatcher);
 
-        view.findViewById(R.id.btnCreateDeckAi)
-                .setOnClickListener(v -> showDemoMessage(
-                        getString(R.string.flashcard_create_ai_demo)
-                ));
+        // Phím Done đóng bàn phím sau khi tìm kiếm.
+        search.setOnEditorActionListener(
+                (input, actionId, event) -> {
+                    if (actionId
+                            == android.view.inputmethod.EditorInfo
+                            .IME_ACTION_DONE
+                            || actionId
+                            == android.view.inputmethod.EditorInfo
+                            .IME_ACTION_SEARCH) {
 
-        view.findViewById(R.id.btnCreateDeckManual)
-                .setOnClickListener(v -> {
-                    if (openingDeck
-                            || getParentFragmentManager().isStateSaved()) {
-                        return;
+                        hideKeyboard();
+                        input.clearFocus();
+                        return true;
                     }
 
-                    openingDeck = true;
+                    return false;
+                }
+        );
 
-                    getParentFragmentManager()
-                            .beginTransaction()
-                            .setReorderingAllowed(true)
-                            .replace(
-                                    R.id.fragmentContainer,
-                                    new CreateDeckFragment()
-                            )
-                            .addToBackStack("create_deck")
-                            .commit();
-                });
+        // Mỗi nút chỉ được gắn một sự kiện.
+        view.findViewById(R.id.btnCreateDeckAi)
+                .setOnClickListener(button ->
+                        openScreen(
+                                new GenerateDeckFragment(),
+                                "generate_deck"
+                        )
+                );
+
+        view.findViewById(R.id.btnCreateDeckManual)
+                .setOnClickListener(button ->
+                        openScreen(
+                                new CreateDeckFragment(),
+                                "create_deck"
+                        )
+                );
     }
 
     @Override
@@ -106,20 +118,55 @@ public class FlashcardsFragment extends Fragment {
 
         openingDeck = false;
 
-        if (search == null) {
+        View view = getView();
+
+        if (view == null
+                || search == null
+                || container == null
+                || countText == null) {
             return;
         }
 
-        DemoFlashcardRepository repository =
-                new DemoFlashcardRepository(requireContext());
+        view.findViewById(R.id.btnCreateDeckAi)
+                .setEnabled(true);
 
-        decks = repository.getDecks();
+        view.findViewById(R.id.btnCreateDeckManual)
+                .setEnabled(true);
 
-        showDecks(search.getText());
+        refreshDecks();
+    }
+
+    private void refreshDecks() {
+        if (!isAdded()
+                || search == null
+                || container == null
+                || countText == null) {
+            return;
+        }
+
+        try {
+            DemoFlashcardRepository repository =
+                    new DemoFlashcardRepository(requireContext());
+
+            decks = repository.getDecks();
+
+            showDecks(search.getText());
+
+        } catch (IllegalStateException exception) {
+            decks = new ArrayList<>();
+
+            container.removeAllViews();
+
+            countText.setText(
+                    "Chưa đọc được danh sách bộ thẻ trên thiết bị."
+            );
+        }
     }
 
     private void showDecks(@Nullable CharSequence keyword) {
-        if (container == null || countText == null) {
+        if (!isAdded()
+                || container == null
+                || countText == null) {
             return;
         }
 
@@ -134,10 +181,11 @@ public class FlashcardsFragment extends Fragment {
         int visibleCount = 0;
 
         for (FlashcardDeck deck : decks) {
-            String deckName =
-                    deck.getName().toLowerCase(Locale.ROOT);
+            String deckName = deck.getName() == null
+                    ? ""
+                    : deck.getName();
 
-            if (!deckName.contains(query)) {
+            if (!deckName.toLowerCase(Locale.ROOT).contains(query)) {
                 continue;
             }
 
@@ -161,80 +209,126 @@ public class FlashcardsFragment extends Fragment {
             ProgressBar progress =
                     item.findViewById(R.id.progressDeck);
 
-            name.setText(deck.getName());
+            int totalCards = Math.max(
+                    0,
+                    deck.getTotalCards()
+            );
 
-            info.setText(getString(
-                    R.string.flashcard_deck_info,
-                    deck.getTotalCards(),
-                    deck.getLevel()
-            ));
+            int learnedCards = Math.max(
+                    0,
+                    Math.min(
+                            totalCards,
+                            deck.getLearnedCards()
+                    )
+            );
 
-            int percentage = deck.getTotalCards() == 0
+            int percentage = totalCards == 0
                     ? 0
                     : Math.round(
-                    deck.getLearnedCards() * 100f
-                    / deck.getTotalCards()
+                    learnedCards * 100f / totalCards
+            );
+
+            name.setText(deckName);
+
+            info.setText(
+                    totalCards + " từ · " + deck.getLevel()
             );
 
             progress.setMax(100);
             progress.setProgress(percentage);
 
-            progressText.setText(getString(
-                    R.string.flashcard_deck_progress,
-                    deck.getLearnedCards(),
-                    deck.getTotalCards(),
-                    percentage
-            ));
+            progressText.setText(
+                    learnedCards + "/" + totalCards
+                            + " từ đã nhớ · " + percentage + "%"
+            );
 
-            item.setOnClickListener(v -> {
-                if (openingDeck
-                        || getParentFragmentManager().isStateSaved()) {
-                    return;
-                }
-
-                openingDeck = true;
-
-                getParentFragmentManager()
-                        .beginTransaction()
-                        .setReorderingAllowed(true)
-                        .replace(
-                                R.id.fragmentContainer,
-                                DeckDetailFragment.newInstance(
-                                        deck.getId()
-                                )
-                        )
-                        .addToBackStack("deck_detail")
-                        .commit();
-            });
+            item.setOnClickListener(button ->
+                    openScreen(
+                            DeckDetailFragment.newInstance(
+                                    deck.getId()
+                            ),
+                            "deck_detail"
+                    )
+            );
 
             container.addView(item);
         }
 
-        if (visibleCount == 0) {
-            countText.setText(R.string.flashcard_decks_empty);
-        } else {
+        if (visibleCount > 0) {
             countText.setText(visibleCount + " bộ thẻ");
+
+        } else if (query.isEmpty()) {
+            countText.setText(
+                    "Chưa có bộ thẻ. Hãy tạo bộ thẻ đầu tiên."
+            );
+
+        } else {
+            countText.setText(
+                    "Không tìm thấy bộ thẻ phù hợp."
+            );
         }
     }
 
-    private void showDemoMessage(String message) {
-        Toast.makeText(
-                requireContext(),
-                message,
-                Toast.LENGTH_SHORT
-        ).show();
+    private void openScreen(
+            @NonNull Fragment destination,
+            @NonNull String backStackName
+    ) {
+        if (!isAdded()
+                || !isResumed()
+                || getView() == null
+                || openingDeck
+                || getParentFragmentManager().isStateSaved()) {
+            return;
+        }
+
+        openingDeck = true;
+
+        hideKeyboard();
+
+        if (search != null) {
+            search.clearFocus();
+        }
+
+        getParentFragmentManager()
+                .beginTransaction()
+                .setReorderingAllowed(true)
+                .replace(
+                        R.id.fragmentContainer,
+                        destination
+                )
+                .addToBackStack(backStackName)
+                .commit();
+    }
+
+    private void hideKeyboard() {
+        View view = getView();
+
+        if (view == null || !isAdded()) {
+            return;
+        }
+
+        WindowCompat.getInsetsController(
+                requireActivity().getWindow(),
+                view
+        ).hide(WindowInsetsCompat.Type.ime());
     }
 
     @Override
     public void onDestroyView() {
-        if (search != null && searchWatcher != null) {
-            search.removeTextChangedListener(searchWatcher);
+        if (search != null) {
+            if (searchWatcher != null) {
+                search.removeTextChangedListener(searchWatcher);
+            }
+
+            search.setOnEditorActionListener(null);
         }
 
         searchWatcher = null;
         search = null;
         container = null;
         countText = null;
+
+        openingDeck = false;
 
         super.onDestroyView();
     }

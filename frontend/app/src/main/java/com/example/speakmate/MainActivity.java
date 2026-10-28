@@ -202,7 +202,17 @@ public class MainActivity extends AppCompatActivity {
                         } else if (current
                                 instanceof SpeakingResultFragment) {
 
-                            navigateToTab(R.id.nav_speaking);
+                            Bundle arguments = current.getArguments();
+
+                            boolean fromHistory = arguments != null
+                                    && arguments.getBoolean("fromHistory", false);
+
+                            if (fromHistory
+                                    && manager.getBackStackEntryCount() > 0) {
+                                manager.popBackStackImmediate();
+                            } else {
+                                navigateToTab(R.id.nav_speaking);
+                            }
 
                         } else if (
                                 manager.getBackStackEntryCount() > 0
@@ -323,7 +333,14 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        // Kiểm tra dữ liệu trước khi thay đổi màn hình.
+        Fragment current =
+                manager.findFragmentById(R.id.fragmentContainer);
+
+        // Tránh xử lý kết thúc hai lần liên tiếp.
+        if (current instanceof SpeakingResultFragment) {
+            return;
+        }
+
         if (messages == null
                 || userRoles == null
                 || messages.size() != userRoles.length) {
@@ -335,16 +352,22 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        String sessionLevel =
+                level == null || level.trim().isEmpty()
+                        ? "A2"
+                        : level.trim();
+
+        String sessionTopic =
+                topic == null || topic.trim().isEmpty()
+                        ? "Chủ đề luyện nói"
+                        : topic.trim();
+
         java.util.ArrayList<String> transcript =
                 new java.util.ArrayList<>(messages);
 
         boolean[] roles = userRoles.clone();
 
-        int userTurnCount = 0;
-
-        for (int i = 0; i < transcript.size(); i++) {
-            String message = transcript.get(i);
-
+        for (String message : transcript) {
             if (message == null) {
                 android.widget.Toast.makeText(
                         this,
@@ -353,34 +376,64 @@ public class MainActivity extends AppCompatActivity {
                 ).show();
                 return;
             }
+        }
 
-            if (roles[i] && !message.trim().isEmpty()) {
-                userTurnCount++;
-            }
+        String sessionId =
+                java.util.UUID.randomUUID().toString();
+
+        long finishedAt = System.currentTimeMillis();
+
+        SpeakingSession session = new SpeakingSession(
+                sessionId,
+                sessionLevel,
+                sessionTopic,
+                finishedAt,
+                transcript,
+                roles
+        );
+
+        boolean historySaved = false;
+
+        try {
+            new SpeakingHistoryStore(this).saveSession(session);
+            historySaved = true;
+
+        } catch (IllegalStateException exception) {
+            // Vẫn cho xem tổng kết nếu lưu lịch sử thất bại.
+            android.widget.Toast.makeText(
+                    this,
+                    "Chưa lưu được lịch sử. Bạn vẫn có thể "
+                            + "xem tổng kết của phiên này.",
+                    android.widget.Toast.LENGTH_LONG
+            ).show();
         }
 
         SpeakingResultFragment result =
                 SpeakingResultFragment.newInstance(
-                        level,
-                        topic,
-                        userTurnCount
+                        session.getLevel(),
+                        session.getTopic(),
+                        session.getUserTurnCount()
                 );
 
         Bundle arguments = result.requireArguments();
 
         arguments.putStringArrayList(
                 "transcriptMessages",
-                transcript
+                session.getMessages()
         );
 
         arguments.putBooleanArray(
                 "transcriptUserRoles",
-                roles
+                session.getUserRoles()
         );
+
+        arguments.putString("historySessionId", sessionId);
+        arguments.putLong("sessionFinishedAt", finishedAt);
+        arguments.putBoolean("historySaved", historySaved);
+        arguments.putBoolean("fromHistory", false);
 
         hideKeyboard();
 
-        // Gỡ màn hình chat để Back từ tổng kết không mở lại phiên đã kết thúc.
         manager.popBackStackImmediate(
                 null,
                 FragmentManager.POP_BACK_STACK_INCLUSIVE
@@ -392,6 +445,112 @@ public class MainActivity extends AppCompatActivity {
                 .commitNow();
 
         updateNavigation(result);
+    }
+
+    public void openSavedSpeakingSession(String sessionId) {
+        FragmentManager manager = getSupportFragmentManager();
+
+        if (manager.isStateSaved()) {
+            return;
+        }
+
+        Fragment current =
+                manager.findFragmentById(R.id.fragmentContainer);
+
+        if (current instanceof SpeakingResultFragment) {
+            return;
+        }
+
+        SpeakingSession session;
+
+        try {
+            session = new SpeakingHistoryStore(this)
+                    .getSessionById(sessionId);
+
+        } catch (IllegalStateException exception) {
+            android.widget.Toast.makeText(
+                    this,
+                    "Chưa đọc được lịch sử luyện tập.",
+                    android.widget.Toast.LENGTH_LONG
+            ).show();
+            return;
+        }
+
+        if (session == null) {
+            android.widget.Toast.makeText(
+                    this,
+                    "Phiên luyện không còn trong lịch sử.",
+                    android.widget.Toast.LENGTH_SHORT
+            ).show();
+            return;
+        }
+
+        SpeakingResultFragment result =
+                SpeakingResultFragment.newInstance(
+                        session.getLevel(),
+                        session.getTopic(),
+                        session.getUserTurnCount()
+                );
+
+        Bundle arguments = result.requireArguments();
+
+        arguments.putStringArrayList(
+                "transcriptMessages",
+                session.getMessages()
+        );
+
+        arguments.putBooleanArray(
+                "transcriptUserRoles",
+                session.getUserRoles()
+        );
+
+        arguments.putString(
+                "historySessionId",
+                session.getId()
+        );
+
+        arguments.putLong(
+                "sessionFinishedAt",
+                session.getFinishedAt()
+        );
+
+        arguments.putBoolean("historySaved", true);
+        arguments.putBoolean("fromHistory", true);
+
+        hideKeyboard();
+
+        // Không gọi saveSession khi chỉ xem lại.
+        manager.beginTransaction()
+                .setReorderingAllowed(true)
+                .replace(R.id.fragmentContainer, result)
+                .addToBackStack("history_result")
+                .commit();
+    }
+
+    public void openSpeakingHistory() {
+        FragmentManager manager = getSupportFragmentManager();
+
+        if (manager.isStateSaved()) {
+            return;
+        }
+
+        Fragment current =
+                manager.findFragmentById(R.id.fragmentContainer);
+
+        if (current instanceof SpeakingHistoryFragment) {
+            return;
+        }
+
+        hideKeyboard();
+
+        manager.beginTransaction()
+                .setReorderingAllowed(true)
+                .replace(
+                        R.id.fragmentContainer,
+                        new SpeakingHistoryFragment()
+                )
+                .addToBackStack("speaking_history")
+                .commit();
     }
 
     public void openLogin() {
@@ -453,7 +612,10 @@ public class MainActivity extends AppCompatActivity {
                         || fragment instanceof LearnFragment
                         || fragment instanceof MatchFragment
                         || fragment instanceof LoginFragment
-                        || fragment instanceof RegisterFragment;
+                        || fragment instanceof RegisterFragment
+                        || fragment instanceof GenerateDeckFragment
+                        || fragment instanceof GeneratedDeckReviewFragment
+                        || fragment instanceof SpeakingHistoryFragment;
 
         applyNavigationVisibility();
 
