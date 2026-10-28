@@ -394,6 +394,34 @@ public class MainActivity extends AppCompatActivity {
         updateNavigation(result);
     }
 
+    public void openLogin() {
+        FragmentManager manager = getSupportFragmentManager();
+
+        if (manager.isStateSaved()) {
+            return;
+        }
+
+        Fragment current =
+                manager.findFragmentById(R.id.fragmentContainer);
+
+        // Tránh mở chồng nhiều màn hình đăng nhập.
+        if (current instanceof LoginFragment
+                || current instanceof RegisterFragment) {
+            return;
+        }
+
+        hideKeyboard();
+
+        manager.beginTransaction()
+                .setReorderingAllowed(true)
+                .replace(
+                        R.id.fragmentContainer,
+                        new LoginFragment()
+                )
+                .addToBackStack("login")
+                .commit();
+    }
+
     private void hideKeyboard() {
         if (mainView == null) {
             return;
@@ -423,7 +451,9 @@ public class MainActivity extends AppCompatActivity {
                         || fragment instanceof StudyFragment
                         || fragment instanceof CreateDeckFragment
                         || fragment instanceof LearnFragment
-                        || fragment instanceof MatchFragment;
+                        || fragment instanceof MatchFragment
+                        || fragment instanceof LoginFragment
+                        || fragment instanceof RegisterFragment;
 
         applyNavigationVisibility();
 

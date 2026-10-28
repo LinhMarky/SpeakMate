@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/sm_background"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingTop="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="12dp">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnBackAdminDeckForm"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_card"
+            android:backgroundTint="@null"
+            android:contentDescription="Quay lại danh sách bộ thẻ"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:padding="0dp"
+            android:text="‹"
+            android:textAllCaps="false"
+            android:textColor="@color/sm_cyan"
+            android:textSize="28sp" />
+
+        <TextView
+            android:id="@+id/tvAdminDeckFormTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:layout_weight="1"
+            android:text="Thêm bộ thẻ hệ thống"
+            android:textColor="@color/sm_text_primary"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:overScrollMode="never">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="24dp"
+            android:paddingTop="12dp"
+            android:paddingEnd="24dp"
+            android:paddingBottom="24dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:lineSpacingExtra="4dp"
+                android:text="Tạo bộ từ vựng dùng chung cho người học."
+                android:textColor="@color/sm_text_secondary"
+                android:textSize="15sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:labelFor="@id/etAdminDeckName"
+                android:text="Tên bộ thẻ"
+                android:textColor="@color/sm_text_primary"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <androidx.appcompat.widget.AppCompatEditText
+                android:id="@+id/etAdminDeckName"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_card"
+                android:backgroundTint="@null"
+                android:hint="Ví dụ: Travel"
+                android:imeOptions="actionNext"
+                android:inputType="textCapSentences"
+                android:maxLength="100"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:singleLine="true"
+                android:textColor="@color/sm_text_primary"
+                android:textColorHint="@color/sm_text_hint"
+                android:textSize="15sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:labelFor="@id/spAdminDeckLevel"
+                android:text="Trình độ gợi ý"
+                android:textColor="@color/sm_text_primary"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <androidx.appcompat.widget.AppCompatSpinner
+                android:id="@+id/spAdminDeckLevel"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_card"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:popupBackground="@color/sm_surface"
+                android:spinnerMode="dropdown" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:text="Danh sách từ vựng"
+                android:textColor="@color/sm_text_primary"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:lineSpacingExtra="4dp"
+                android:text="Nhập một từ cùng nghĩa và ví dụ, sau đó bấm Thêm từ."
+                android:textColor="@color/sm_text_secondary"
+                android:textSize="14sp" />
+
+            <androidx.appcompat.widget.AppCompatEditText
+                android:id="@+id/etAdminCardWord"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_card"
+                android:backgroundTint="@null"
+                android:hint="Từ hoặc cụm từ tiếng Anh"
+                android:imeOptions="actionNext"
+                android:inputType="text"
+                android:maxLength="100"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:singleLine="true"
+                android:textColor="@color/sm_text_primary"
+                android:textColorHint="@color/sm_text_hint"
+                android:textSize="15sp" />
+
+            <androidx.appcompat.widget.AppCompatEditText
+                android:id="@+id/etAdminCardMeaning"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_card"
+                android:backgroundTint="@null"
+                android:hint="Nghĩa tiếng Việt"
+                android:imeOptions="actionDone"
+                android:inputType="textCapSentences"
+                android:maxLength="200"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:singleLine="true"
+                android:textColor="@color/sm_text_primary"
+                android:textColorHint="@color/sm_text_hint"
+                android:textSize="15sp" />
+
+            <androidx.appcompat.widget.AppCompatEditText
+                android:id="@+id/etAdminCardExample"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_card"
+                android:backgroundTint="@null"
+                android:gravity="top|start"
+                android:hint="Câu ví dụ (không bắt buộc)"
+                android:inputType="textCapSentences|textMultiLine"
+                android:maxLength="500"
+                android:minHeight="80dp"
+                android:padding="14dp"
+                android:textColor="@color/sm_text_primary"
+                android:textColorHint="@color/sm_text_hint"
+                android:textSize="15sp" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnAddAdminCard"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_card"
+                android:backgroundTint="@null"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:minHeight="0dp"
+                android:paddingStart="16dp"
+                android:paddingTop="0dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="0dp"
+                android:text="+ Thêm từ"
+                android:textAllCaps="false"
+                android:textColor="@color/sm_cyan"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnCancelAdminCardEdit"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_card"
+                android:backgroundTint="@null"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:minHeight="0dp"
+                android:paddingStart="12dp"
+                android:paddingTop="0dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="0dp"
+                android:text="Hủy chỉnh sửa"
+                android:textAllCaps="false"
+                android:textColor="@color/sm_text_secondary"
+                android:textSize="14sp"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/tvAdminCardCount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:accessibilityLiveRegion="polite"
+                android:textColor="@color/sm_text_primary"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:id="@+id/adminCardListContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="vertical" />
+
+            <TextView
+                android:id="@+id/tvAdminDeckFormStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:accessibilityLiveRegion="polite"
+                android:lineSpacingExtra="4dp"
+                android:textColor="@color/sm_warning"
+                android:textSize="14sp"
+                android:visibility="gone" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnSaveAdminDeck"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/bg_button_primary"
+                android:backgroundTint="@null"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:minHeight="0dp"
+                android:paddingStart="16dp"
+                android:paddingTop="0dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="0dp"
+                android:text="Lưu bộ thẻ"
+                android:textAllCaps="false"
+                android:textColor="@color/sm_background"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

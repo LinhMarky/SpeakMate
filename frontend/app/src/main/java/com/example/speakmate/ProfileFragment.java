@@ -48,6 +48,11 @@ public class ProfileFragment extends Fragment {
     ) {
         super.onViewCreated(view, savedInstanceState);
 
+        view.findViewById(R.id.btnProfileOpenLogin)
+                .setOnClickListener(button ->
+                        ((MainActivity) requireActivity()).openLogin()
+                );
+
         SharedPreferences preferences = getPreferences();
 
         EditText nameInput =

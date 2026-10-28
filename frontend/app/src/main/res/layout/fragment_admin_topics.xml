@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/sm_background"
+    android:orientation="vertical">
+
+    <!-- Tiêu đề -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingTop="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="12dp">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnBackAdminTopics"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_card"
+            android:backgroundTint="@null"
+            android:contentDescription="Quay lại tổng quan admin"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:padding="0dp"
+            android:text="‹"
+            android:textAllCaps="false"
+            android:textColor="@color/sm_cyan"
+            android:textSize="28sp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:layout_weight="1"
+            android:text="Chủ đề luyện nói"
+            android:textColor="@color/sm_text_primary"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:overScrollMode="never">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="24dp"
+            android:paddingTop="12dp"
+            android:paddingEnd="24dp"
+            android:paddingBottom="24dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:lineSpacingExtra="4dp"
+                android:text="Quản lý các tình huống hội thoại dành cho người học."
+                android:textColor="@color/sm_text_secondary"
+                android:textSize="15sp" />
+
+            <androidx.appcompat.widget.AppCompatEditText
+                android:id="@+id/etAdminTopicSearch"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/bg_card"
+                android:backgroundTint="@null"
+                android:hint="Tìm tên chủ đề..."
+                android:imeOptions="actionSearch"
+                android:inputType="text"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:singleLine="true"
+                android:textColor="@color/sm_text_primary"
+                android:textColorHint="@color/sm_text_hint"
+                android:textSize="15sp" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnAdminAddTopic"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/bg_button_primary"
+                android:backgroundTint="@null"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:minHeight="0dp"
+                android:paddingStart="16dp"
+                android:paddingTop="0dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="0dp"
+                android:text="+ Thêm chủ đề"
+                android:textAllCaps="false"
+                android:textColor="@color/sm_background"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvAdminTopicListCount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Danh sách chủ đề"
+                android:textColor="@color/sm_text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <!-- Danh sách chủ đề sẽ được thêm vào đây -->
+            <LinearLayout
+                android:id="@+id/adminTopicListContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="vertical" />
+
+            <TextView
+                android:id="@+id/tvAdminTopicsStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_card"
+                android:lineSpacingExtra="5dp"
+                android:padding="20dp"
+                android:text="Chưa kết nối máy chủ. Danh sách và chức năng quản lý chủ đề sẽ được kết nối sau."
+                android:textColor="@color/sm_text_secondary"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

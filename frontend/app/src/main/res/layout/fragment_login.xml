@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/sm_background"
+    android:fillViewport="true"
+    android:overScrollMode="never">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="SpeakMate"
+            android:textColor="@color/sm_cyan"
+            android:textSize="36sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:lineSpacingExtra="4dp"
+            android:text="Luyện nói tự tin · Ghi nhớ từ vựng"
+            android:textColor="@color/sm_text_secondary"
+            android:textSize="14sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Chào mừng trở lại!"
+                android:textColor="@color/sm_text_primary"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:lineSpacingExtra="4dp"
+                android:text="Đăng nhập để tiếp tục hành trình học của bạn."
+                android:textColor="@color/sm_text_secondary"
+                android:textSize="14sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:labelFor="@id/etLoginUsername"
+                android:text="Tên đăng nhập"
+                android:textColor="@color/sm_text_primary"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <androidx.appcompat.widget.AppCompatEditText
+                android:id="@+id/etLoginUsername"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:autofillHints="username"
+                android:background="@drawable/bg_card"
+                android:backgroundTint="@null"
+                android:gravity="center_vertical"
+                android:hint="Nhập tên đăng nhập"
+                android:imeOptions="actionNext"
+                android:inputType="textVisiblePassword"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:singleLine="true"
+                android:textColor="@color/sm_text_primary"
+                android:textColorHint="@color/sm_text_hint"
+                android:textSize="16sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:labelFor="@id/etLoginPassword"
+                android:text="Mật khẩu"
+                android:textColor="@color/sm_text_primary"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <androidx.appcompat.widget.AppCompatEditText
+                android:id="@+id/etLoginPassword"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="8dp"
+                android:autofillHints="password"
+                android:background="@drawable/bg_card"
+                android:backgroundTint="@null"
+                android:gravity="center_vertical"
+                android:hint="Nhập mật khẩu"
+                android:imeOptions="actionDone"
+                android:inputType="textPassword"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:saveEnabled="false"
+                android:singleLine="true"
+                android:textColor="@color/sm_text_primary"
+                android:textColorHint="@color/sm_text_hint"
+                android:textSize="16sp" />
+
+            <androidx.appcompat.widget.AppCompatCheckBox
+                android:id="@+id/cbLoginShowPassword"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:buttonTint="@color/sm_cyan"
+                android:minHeight="48dp"
+                android:text="Hiện mật khẩu"
+                android:textColor="@color/sm_text_secondary"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/tvLoginError"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:accessibilityLiveRegion="polite"
+                android:lineSpacingExtra="4dp"
+                android:textColor="@color/sm_error"
+                android:textSize="14sp"
+                android:visibility="gone" />
+
+            <ProgressBar
+                android:id="@+id/progressLogin"
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="16dp"
+                android:contentDescription="Đang đăng nhập"
+                android:indeterminateTint="@color/sm_cyan"
+                android:visibility="gone" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnLogin"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="18dp"
+                android:background="@drawable/bg_button_primary"
+                android:backgroundTint="@null"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:minHeight="0dp"
+                android:paddingStart="16dp"
+                android:paddingTop="0dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="0dp"
+                android:text="Đăng nhập"
+                android:textAllCaps="false"
+                android:textColor="@color/sm_background"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:gravity="center"
+            android:text="Bạn chưa có tài khoản?"
+            android:textColor="@color/sm_text_secondary"
+            android:textSize="14sp" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnOpenRegister"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_card"
+            android:backgroundTint="@null"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:minHeight="0dp"
+            android:paddingStart="16dp"
+            android:paddingTop="0dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="0dp"
+            android:text="Tạo tài khoản"
+            android:textAllCaps="false"
+            android:textColor="@color/sm_cyan"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnContinueAsGuest"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_card"
+            android:backgroundTint="@null"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:minHeight="0dp"
+            android:paddingStart="16dp"
+            android:paddingTop="0dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="0dp"
+            android:text="Tiếp tục với tư cách khách"
+            android:textAllCaps="false"
+            android:textColor="@color/sm_text_secondary"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+</ScrollView>

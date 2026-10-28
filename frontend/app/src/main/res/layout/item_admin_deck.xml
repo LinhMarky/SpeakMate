@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    android:background="@drawable/bg_card"
+    android:orientation="vertical"
+    android:padding="18dp">
+
+    <TextView
+        android:id="@+id/tvAdminDeckName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/sm_text_primary"
+        android:textSize="17sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tvAdminDeckInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:textColor="@color/sm_text_secondary"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/tvAdminDeckVisibility"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnAdminDeckDetail"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="14dp"
+        android:background="@drawable/bg_card"
+        android:backgroundTint="@null"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:minHeight="0dp"
+        android:paddingStart="12dp"
+        android:paddingTop="0dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="0dp"
+        android:text="Xem từ vựng"
+        android:textAllCaps="false"
+        android:textColor="@color/sm_cyan"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnAdminDeckEdit"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bg_card"
+        android:backgroundTint="@null"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:minHeight="0dp"
+        android:paddingStart="12dp"
+        android:paddingTop="0dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="0dp"
+        android:text="Sửa bộ thẻ"
+        android:textAllCaps="false"
+        android:textColor="@color/sm_cyan"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnAdminDeckToggleVisibility"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bg_card"
+        android:backgroundTint="@null"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:minHeight="0dp"
+        android:paddingStart="12dp"
+        android:paddingTop="0dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="0dp"
+        android:textAllCaps="false"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+</LinearLayout>

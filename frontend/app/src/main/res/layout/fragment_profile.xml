@@ -206,6 +206,26 @@
 
         </LinearLayout>
 
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnProfileOpenLogin"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/bg_card"
+            android:backgroundTint="@null"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:minHeight="0dp"
+            android:paddingStart="16dp"
+            android:paddingTop="0dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="0dp"
+            android:text="Đăng nhập"
+            android:textAllCaps="false"
+            android:textColor="@color/sm_cyan"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
