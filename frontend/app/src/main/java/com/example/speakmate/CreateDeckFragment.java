@@ -91,79 +91,290 @@ public class CreateDeckFragment extends Fragment {
             @Nullable Bundle savedInstanceState
     ) {
         ScrollView scroll = new ScrollView(requireContext());
+
         scroll.setFillViewport(true);
+        scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);
         scroll.setBackgroundColor(color(R.color.sm_background));
 
         LinearLayout content = new LinearLayout(requireContext());
+
         content.setOrientation(LinearLayout.VERTICAL);
-        content.setPadding(dp(24), dp(20), dp(24), dp(24));
+        content.setFocusableInTouchMode(true);
 
-        scroll.addView(content, new ScrollView.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        ));
+        content.setPadding(
+                dp(24),
+                dp(20),
+                dp(24),
+                dp(24)
+        );
 
-        AppCompatButton back = button("‹ Quay lại", false);
-        content.addView(back, rowParams());
+        scroll.addView(
+                content,
+                new ScrollView.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+        );
+
+        // Thanh tiêu đề.
+        LinearLayout header = new LinearLayout(requireContext());
+
+        header.setOrientation(LinearLayout.HORIZONTAL);
+        header.setGravity(android.view.Gravity.CENTER_VERTICAL);
+
+        AppCompatButton back = button("‹", false);
+
+        back.setTextSize(28);
+        back.setContentDescription("Quay lại thư viện bộ thẻ");
+        back.setMinHeight(0);
+        back.setMinimumHeight(0);
+        back.setPadding(0, 0, 0, 0);
+
+        header.addView(
+                back,
+                new LinearLayout.LayoutParams(
+                        dp(48),
+                        dp(48)
+                )
+        );
+
+        TextView heading = text("Tạo bộ thẻ", 22);
+
+        heading.setTypeface(
+                Typeface.create("sans-serif", Typeface.BOLD)
+        );
+
+        LinearLayout.LayoutParams headingParams =
+                new LinearLayout.LayoutParams(
+                        0,
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        1f
+                );
+
+        headingParams.setMarginStart(dp(14));
+
+        header.addView(heading, headingParams);
+
+        content.addView(
+                header,
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+        );
 
         back.setOnClickListener(v -> {
-            if (!getParentFragmentManager().isStateSaved()) {
-                getParentFragmentManager().popBackStackImmediate();
+            if (!isAdded()
+                    || getParentFragmentManager().isStateSaved()) {
+                return;
             }
+
+            androidx.core.view.WindowCompat.getInsetsController(
+                    requireActivity().getWindow(),
+                    scroll
+            ).hide(
+                    androidx.core.view.WindowInsetsCompat.Type.ime()
+            );
+
+            View focused = requireActivity().getCurrentFocus();
+
+            if (focused != null) {
+                focused.clearFocus();
+            }
+
+            getParentFragmentManager().popBackStackImmediate();
         });
 
-        TextView heading = text("Tạo bộ thẻ", 26);
-        heading.setTypeface(null, Typeface.BOLD);
-        content.addView(heading, rowParams());
-
         TextView description = text(
-                "Thêm từ vựng của bạn và học bằng flashcard.",
+                "Tạo bộ từ vựng của riêng bạn để học và ôn tập.",
                 14
         );
-        description.setTextColor(color(R.color.sm_text_secondary));
-        content.addView(description, rowParams());
 
-        nameInput = input("Tên bộ thẻ", false);
+        description.setTextColor(
+                color(R.color.sm_text_secondary)
+        );
+
+        LinearLayout.LayoutParams descriptionParams = rowParams();
+        descriptionParams.topMargin = dp(16);
+
+        content.addView(description, descriptionParams);
+
+        // Tên bộ thẻ.
+        TextView nameLabel = text("Tên bộ thẻ", 15);
+
+        nameLabel.setTypeface(
+                Typeface.create("sans-serif-medium", Typeface.NORMAL)
+        );
+
+        LinearLayout.LayoutParams nameLabelParams = rowParams();
+        nameLabelParams.topMargin = dp(24);
+
+        content.addView(nameLabel, nameLabelParams);
+
+        nameInput = input("Ví dụ: Từ vựng du lịch", false);
         nameInput.setText(draftName);
+
         content.addView(nameInput, rowParams());
 
+        // Trình độ.
         TextView levelLabel = text("Trình độ", 15);
-        content.addView(levelLabel, rowParams());
 
-        levelInput = new Spinner(requireContext());
+        levelLabel.setTypeface(
+                Typeface.create("sans-serif-medium", Typeface.NORMAL)
+        );
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+        LinearLayout.LayoutParams levelLabelParams = rowParams();
+        levelLabelParams.topMargin = dp(20);
+
+        content.addView(levelLabel, levelLabelParams);
+
+        levelInput = new Spinner(
+                requireContext(),
+                Spinner.MODE_DROPDOWN
+        );
+
+        levelInput.setBackgroundResource(R.drawable.bg_card);
+
+        levelInput.setPopupBackgroundDrawable(
+                new android.graphics.drawable.ColorDrawable(
+                        color(R.color.sm_surface)
+                )
+        );
+
+        levelInput.setPadding(
+                dp(4),
+                0,
+                dp(4),
+                0
+        );
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(
                 requireContext(),
                 android.R.layout.simple_spinner_item,
                 LEVELS
-        );
+        ) {
+            @NonNull
+            @Override
+            public View getView(
+                    int position,
+                    @Nullable View convertView,
+                    @NonNull ViewGroup parent
+            ) {
+                View item = super.getView(
+                        position,
+                        convertView,
+                        parent
+                );
+
+                styleItem(item, false);
+                return item;
+            }
+
+            @Override
+            public View getDropDownView(
+                    int position,
+                    @Nullable View convertView,
+                    @NonNull ViewGroup parent
+            ) {
+                View item = super.getDropDownView(
+                        position,
+                        convertView,
+                        parent
+                );
+
+                styleItem(item, true);
+                return item;
+            }
+
+            private void styleItem(View item, boolean dropdown) {
+                if (!(item instanceof TextView)) {
+                    return;
+                }
+
+                TextView label = (TextView) item;
+
+                label.setTextColor(color(R.color.sm_text_primary));
+                label.setTextSize(16);
+
+                label.setTypeface(
+                        Typeface.create(
+                                "sans-serif-medium",
+                                Typeface.NORMAL
+                        )
+                );
+
+                label.setGravity(
+                        android.view.Gravity.CENTER_VERTICAL
+                );
+
+                label.setMinHeight(dp(48));
+
+                label.setPadding(
+                        dp(14),
+                        dp(10),
+                        dp(14),
+                        dp(10)
+                );
+
+                if (dropdown) {
+                    label.setBackgroundColor(
+                            color(R.color.sm_surface)
+                    );
+                }
+            }
+        };
 
         adapter.setDropDownViewResource(
                 android.R.layout.simple_spinner_dropdown_item
         );
 
         levelInput.setAdapter(adapter);
-        levelInput.setSelection(Math.max(
-                0,
-                Math.min(draftLevel, LEVELS.length - 1)
-        ));
 
-        content.addView(levelInput, rowParams());
+        levelInput.setSelection(
+                Math.max(
+                        0,
+                        Math.min(draftLevel, LEVELS.length - 1)
+                )
+        );
 
+        LinearLayout.LayoutParams levelParams =
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        dp(56)
+                );
+
+        levelParams.topMargin = dp(10);
+
+        content.addView(levelInput, levelParams);
+
+        // Danh sách từ.
         countText = text("", 16);
-        content.addView(countText, rowParams());
+
+        LinearLayout.LayoutParams countParams = rowParams();
+        countParams.topMargin = dp(24);
+
+        content.addView(countText, countParams);
 
         AppCompatButton addButton = button("+ Thêm từ", false);
+
         content.addView(addButton, rowParams());
 
-        addButton.setOnClickListener(v -> showCardEditor(-1));
+        addButton.setOnClickListener(
+                v -> showCardEditor(-1)
+        );
 
         cardContainer = new LinearLayout(requireContext());
         cardContainer.setOrientation(LinearLayout.VERTICAL);
+
         content.addView(cardContainer, rowParams());
 
+        // Giữ nguyên xử lý lưu bộ thẻ.
         saveButton = button("Lưu bộ thẻ", true);
-        content.addView(saveButton, rowParams());
+
+        LinearLayout.LayoutParams saveParams = rowParams();
+        saveParams.topMargin = dp(20);
+
+        content.addView(saveButton, saveParams);
 
         saveButton.setOnClickListener(v -> saveDeck());
 
@@ -272,11 +483,20 @@ public class CreateDeckFragment extends Fragment {
     }
 
     private void renderCards() {
-        if (cardContainer == null) {
+        if (cardContainer == null || countText == null) {
             return;
         }
 
-        countText.setText(draftCards.size() + " từ trong bộ thẻ");
+        countText.setText(
+                draftCards.size() + " từ trong bộ thẻ"
+        );
+
+        countText.setTextColor(color(R.color.sm_cyan));
+
+        countText.setTypeface(
+                Typeface.create("sans-serif-medium", Typeface.NORMAL)
+        );
+
         cardContainer.removeAllViews();
 
         for (int i = 0; i < draftCards.size(); i++) {
@@ -284,27 +504,96 @@ public class CreateDeckFragment extends Fragment {
             Flashcard card = draftCards.get(i);
 
             LinearLayout item = new LinearLayout(requireContext());
+
             item.setOrientation(LinearLayout.VERTICAL);
-            item.setPadding(dp(16), dp(12), dp(16), dp(12));
+
+            item.setPadding(
+                    dp(16),
+                    dp(16),
+                    dp(16),
+                    dp(16)
+            );
+
             item.setBackgroundResource(R.drawable.bg_card);
+
+            LinearLayout heading =
+                    new LinearLayout(requireContext());
+
+            heading.setOrientation(LinearLayout.HORIZONTAL);
+            heading.setGravity(android.view.Gravity.CENTER_VERTICAL);
+
+            android.widget.ImageView icon =
+                    new android.widget.ImageView(requireContext());
+
+            icon.setImageResource(R.drawable.ic_sm_stat_words);
+
+            icon.setScaleType(
+                    android.widget.ImageView.ScaleType.FIT_CENTER
+            );
+
+            icon.setImportantForAccessibility(
+                    View.IMPORTANT_FOR_ACCESSIBILITY_NO
+            );
+
+            LinearLayout.LayoutParams iconParams =
+                    new LinearLayout.LayoutParams(
+                            dp(36),
+                            dp(36)
+                    );
+
+            iconParams.setMarginEnd(dp(12));
+
+            heading.addView(icon, iconParams);
 
             TextView word = text(
                     (i + 1) + ". " + card.getWord(),
                     18
             );
-            word.setTypeface(null, Typeface.BOLD);
-            item.addView(word, rowParams());
+
+            word.setTypeface(
+                    Typeface.create("sans-serif", Typeface.BOLD)
+            );
+
+            heading.addView(
+                    word,
+                    new LinearLayout.LayoutParams(
+                            0,
+                            ViewGroup.LayoutParams.WRAP_CONTENT,
+                            1f
+                    )
+            );
+
+            item.addView(
+                    heading,
+                    new LinearLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT
+                    )
+            );
 
             TextView meaning = text(card.getMeaning(), 16);
             meaning.setTextColor(color(R.color.sm_cyan));
+
             item.addView(meaning, rowParams());
 
             if (card.getExample() != null
                     && !card.getExample().trim().isEmpty()) {
-                TextView example = text(card.getExample(), 14);
+                TextView example = text(
+                        card.getExample(),
+                        14
+                );
+
                 example.setTextColor(
                         color(R.color.sm_text_secondary)
                 );
+
+                example.setTypeface(
+                        Typeface.create(
+                                "sans-serif",
+                                Typeface.ITALIC
+                        )
+                );
+
                 item.addView(example, rowParams());
             }
 
@@ -313,33 +602,62 @@ public class CreateDeckFragment extends Fragment {
 
             actions.setOrientation(LinearLayout.HORIZONTAL);
 
-            AppCompatButton edit = button("Sửa", false);
-            AppCompatButton delete = button("Xóa", false);
+            AppCompatButton edit = button("Sửa từ", false);
+            AppCompatButton delete = button("Xóa từ", false);
 
-            actions.addView(edit, new LinearLayout.LayoutParams(
-                    0,
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                    1f
-            ));
+            delete.setTextColor(color(R.color.sm_error));
 
-            actions.addView(delete, new LinearLayout.LayoutParams(
-                    0,
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                    1f
-            ));
+            LinearLayout.LayoutParams editParams =
+                    new LinearLayout.LayoutParams(
+                            0,
+                            ViewGroup.LayoutParams.WRAP_CONTENT,
+                            1f
+                    );
 
-            edit.setOnClickListener(v -> showCardEditor(index));
+            editParams.setMarginEnd(dp(4));
+
+            LinearLayout.LayoutParams deleteParams =
+                    new LinearLayout.LayoutParams(
+                            0,
+                            ViewGroup.LayoutParams.WRAP_CONTENT,
+                            1f
+                    );
+
+            deleteParams.setMarginStart(dp(4));
+
+            actions.addView(edit, editParams);
+            actions.addView(delete, deleteParams);
+
+            edit.setOnClickListener(
+                    v -> showCardEditor(index)
+            );
 
             delete.setOnClickListener(v -> {
                 draftCards.remove(index);
                 renderCards();
             });
 
-            item.addView(actions, rowParams());
-            cardContainer.addView(item, rowParams());
+            LinearLayout.LayoutParams actionParams =
+                    new LinearLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT
+                    );
+
+            actionParams.topMargin = dp(14);
+
+            item.addView(actions, actionParams);
+
+            LinearLayout.LayoutParams itemParams =
+                    new LinearLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT
+                    );
+
+            itemParams.topMargin = dp(12);
+
+            cardContainer.addView(item, itemParams);
         }
     }
-
     private void saveDeck() {
         if (saving
                 || getParentFragmentManager().isStateSaved()) {
@@ -405,24 +723,79 @@ public class CreateDeckFragment extends Fragment {
                 new AppCompatEditText(requireContext());
 
         input.setHint(hint);
-        input.setTextSize(16);
+        input.setTextSize(15);
+
+        input.setTypeface(
+                Typeface.create("sans-serif", Typeface.NORMAL)
+        );
+
         input.setTextColor(color(R.color.sm_text_primary));
         input.setHintTextColor(color(R.color.sm_text_hint));
-        input.setBackgroundResource(R.drawable.bg_card);
-        input.setSupportBackgroundTintList(null);
-        input.setPadding(dp(14), dp(14), dp(14), dp(14));
+
+        input.setBackgroundResource(
+                R.drawable.bg_home_button_secondary
+        );
+
+        input.setBackgroundTintList(null);
+        input.setMinHeight(dp(56));
+
+        input.setPadding(
+                dp(14),
+                dp(14),
+                dp(14),
+                dp(14)
+        );
 
         if (multiline) {
             input.setInputType(
                     android.text.InputType.TYPE_CLASS_TEXT
+                            | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
                             | android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE
             );
+
             input.setMinLines(2);
+            input.setMaxLines(4);
+            input.setGravity(
+                    android.view.Gravity.TOP
+                            | android.view.Gravity.START
+            );
         } else {
             input.setSingleLine(true);
+
+            input.setInputType(
+                    android.text.InputType.TYPE_CLASS_TEXT
+                            | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
+            );
         }
 
-        // Không tự lưu theo ID vì các ô được tạo động.
+        input.setImeOptions(
+                android.view.inputmethod.EditorInfo.IME_ACTION_DONE
+        );
+
+        input.setOnEditorActionListener((field, actionId, event) -> {
+            if (actionId
+                    != android.view.inputmethod.EditorInfo.IME_ACTION_DONE) {
+                return false;
+            }
+
+            android.view.inputmethod.InputMethodManager keyboard =
+                    (android.view.inputmethod.InputMethodManager)
+                            requireContext().getSystemService(
+                                    android.content.Context.INPUT_METHOD_SERVICE
+                            );
+
+            if (keyboard != null) {
+                keyboard.hideSoftInputFromWindow(
+                        field.getWindowToken(),
+                        0
+                );
+            }
+
+            field.clearFocus();
+            return true;
+        });
+
+        // Dữ liệu nháp vẫn do Fragment quản lý.
         input.setSaveEnabled(false);
 
         return input;
@@ -433,30 +806,72 @@ public class CreateDeckFragment extends Fragment {
                 new AppCompatButton(requireContext());
 
         button.setText(label);
-        button.setTextSize(16);
+        button.setTextSize(15);
         button.setAllCaps(false);
+
+        button.setTypeface(
+                Typeface.create("sans-serif-medium", Typeface.NORMAL)
+        );
+
+        button.setGravity(android.view.Gravity.CENTER);
+        button.setIncludeFontPadding(false);
+
+        button.setMinWidth(0);
+        button.setMinimumWidth(0);
         button.setMinHeight(dp(52));
+
+        button.setPadding(
+                dp(12),
+                dp(10),
+                dp(12),
+                dp(10)
+        );
+
+        button.setElevation(0f);
+        button.setStateListAnimator(null);
 
         button.setBackgroundResource(
                 primary
-                        ? R.drawable.bg_button_primary
-                        : R.drawable.bg_card
+                        ? R.drawable.bg_card
+                        : R.drawable.bg_home_button_secondary
         );
 
-        button.setSupportBackgroundTintList(null);
+        button.setBackgroundTintList(
+                primary
+                        ? android.content.res.ColorStateList.valueOf(
+                        color(R.color.sm_cyan)
+                )
+                        : null
+        );
 
-        button.setTextColor(color(
-                primary ? R.color.sm_background : R.color.sm_cyan
-        ));
+        button.setTextColor(
+                color(
+                        primary
+                                ? R.color.sm_background
+                                : R.color.sm_cyan
+                )
+        );
 
         return button;
     }
 
     private TextView text(String value, int size) {
         TextView text = new TextView(requireContext());
+
         text.setText(value);
         text.setTextSize(size);
+
+        text.setTypeface(
+                Typeface.create("sans-serif", Typeface.NORMAL)
+        );
+
         text.setTextColor(color(R.color.sm_text_primary));
+
+        text.setLineSpacing(
+                dp(3),
+                1f
+        );
+
         return text;
     }
 

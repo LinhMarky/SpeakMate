@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
         mainView = findViewById(R.id.main);
         navigation = findViewById(R.id.bottomNavigation);
+        navigation.setItemActiveIndicatorEnabled(false);
 
         WindowCompat.getInsetsController(
                 getWindow(),

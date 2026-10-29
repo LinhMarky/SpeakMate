@@ -3,7 +3,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/sm_background"
+    android:clipToPadding="false"
     android:fillViewport="true"
+    android:focusableInTouchMode="true"
     android:overScrollMode="never">
 
     <LinearLayout
@@ -15,6 +17,8 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:fontFamily="sans-serif"
+            android:letterSpacing="-0.02"
             android:text="Cá nhân"
             android:textColor="@color/sm_text_primary"
             android:textSize="28sp"
@@ -24,6 +28,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
+            android:lineSpacingExtra="3dp"
             android:text="Thiết lập hành trình học của bạn."
             android:textColor="@color/sm_text_secondary"
             android:textSize="15sp" />
@@ -34,51 +39,91 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:background="@drawable/bg_card"
-            android:orientation="vertical"
-            android:padding="20dp">
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="18dp">
 
             <TextView
                 android:id="@+id/tvProfileAvatar"
-                android:layout_width="64dp"
-                android:layout_height="64dp"
-                android:layout_gravity="center_horizontal"
-                android:background="@drawable/bg_button_primary"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:background="@drawable/bg_sm_profile_avatar"
+                android:fontFamily="sans-serif"
                 android:gravity="center"
                 android:importantForAccessibility="no"
-                android:textColor="@color/sm_background"
-                android:textSize="28sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tvProfileName"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
-                android:gravity="center"
+                android:includeFontPadding="false"
                 android:textColor="@color/sm_text_primary"
-                android:textSize="22sp"
+                android:textSize="26sp"
                 android:textStyle="bold" />
 
-            <TextView
-                android:layout_width="match_parent"
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:gravity="center"
-                android:text="Hồ sơ trên thiết bị"
-                android:textColor="@color/sm_text_secondary"
-                android:textSize="14sp" />
+                android:layout_marginStart="16dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvProfileName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif"
+                    android:lineSpacingExtra="3dp"
+                    android:textColor="@color/sm_text_primary"
+                    android:textSize="21sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:lineSpacingExtra="3dp"
+                    android:text="Hồ sơ trên thiết bị"
+                    android:textColor="@color/sm_text_secondary"
+                    android:textSize="13sp" />
+
+            </LinearLayout>
 
         </LinearLayout>
+
+        <!-- Lịch sử luyện tập -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnProfileSpeakingHistory"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_home_button_secondary"
+            android:backgroundTint="@null"
+            android:drawableStart="@drawable/ic_sm_stat_remaining"
+            android:drawablePadding="12dp"
+            android:elevation="0dp"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="start|center_vertical"
+            android:includeFontPadding="false"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:paddingStart="14dp"
+            android:paddingTop="0dp"
+            android:paddingEnd="14dp"
+            android:paddingBottom="0dp"
+            android:text="Lịch sử luyện tập"
+            android:textAllCaps="false"
+            android:textColor="@color/sm_text_primary"
+            android:textSize="15sp" />
 
         <!-- Thống kê -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
+            android:drawableStart="@drawable/ic_sm_stat_words"
+            android:drawablePadding="12dp"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="center_vertical"
+            android:minHeight="36dp"
             android:text="Kho từ vựng của bạn"
             android:textColor="@color/sm_text_primary"
-            android:textSize="19sp"
-            android:textStyle="bold" />
+            android:textSize="18sp" />
 
         <TextView
             android:id="@+id/tvProfileStats"
@@ -89,9 +134,9 @@
             android:lineSpacingExtra="10dp"
             android:padding="20dp"
             android:textColor="@color/sm_text_primary"
-            android:textSize="16sp" />
+            android:textSize="15sp" />
 
-        <!-- Thiết lập -->
+        <!-- Thiết lập học tập -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -103,10 +148,14 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:drawableStart="@drawable/ic_sm_learning_goal"
+                android:drawablePadding="12dp"
+                android:fontFamily="sans-serif-medium"
+                android:gravity="center_vertical"
+                android:minHeight="36dp"
                 android:text="Thiết lập học tập"
                 android:textColor="@color/sm_text_primary"
-                android:textSize="19sp"
-                android:textStyle="bold" />
+                android:textSize="18sp" />
 
             <TextView
                 android:layout_width="match_parent"
@@ -122,14 +171,17 @@
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="8dp"
-                android:background="@drawable/bg_card"
+                android:background="@drawable/bg_home_button_secondary"
                 android:backgroundTint="@null"
+                android:gravity="center_vertical"
                 android:hint="Nhập tên của bạn"
                 android:imeOptions="actionDone"
                 android:inputType="textCapWords"
                 android:maxLength="40"
                 android:paddingStart="14dp"
+                android:paddingTop="0dp"
                 android:paddingEnd="14dp"
+                android:paddingBottom="0dp"
                 android:singleLine="true"
                 android:textColor="@color/sm_text_primary"
                 android:textColorHint="@color/sm_text_hint"
@@ -159,10 +211,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
+                android:lineSpacingExtra="4dp"
                 android:text="Đây là lựa chọn luyện tập, chưa phải kết quả đánh giá trình độ."
                 android:textColor="@color/sm_text_hint"
-                android:textSize="12sp"
-                android:lineSpacingExtra="4dp" />
+                android:textSize="12sp" />
 
             <TextView
                 android:layout_width="match_parent"
@@ -189,10 +241,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="20dp"
-                android:background="@drawable/bg_button_primary"
-                android:backgroundTint="@null"
+                android:background="@drawable/bg_card"
+                android:backgroundTint="@color/sm_cyan"
+                android:elevation="0dp"
+                android:fontFamily="sans-serif-medium"
                 android:gravity="center"
                 android:includeFontPadding="false"
+                android:minWidth="0dp"
                 android:minHeight="0dp"
                 android:paddingStart="12dp"
                 android:paddingTop="0dp"
@@ -201,20 +256,23 @@
                 android:text="Lưu thay đổi"
                 android:textAllCaps="false"
                 android:textColor="@color/sm_background"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textSize="16sp" />
 
         </LinearLayout>
 
+        <!-- Đăng nhập -->
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btnProfileOpenLogin"
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:layout_marginTop="20dp"
-            android:background="@drawable/bg_card"
+            android:background="@drawable/bg_home_button_secondary"
             android:backgroundTint="@null"
+            android:elevation="0dp"
+            android:fontFamily="sans-serif-medium"
             android:gravity="center"
             android:includeFontPadding="false"
+            android:minWidth="0dp"
             android:minHeight="0dp"
             android:paddingStart="16dp"
             android:paddingTop="0dp"
@@ -223,13 +281,14 @@
             android:text="Đăng nhập"
             android:textAllCaps="false"
             android:textColor="@color/sm_cyan"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:textSize="16sp" />
 
+        <!-- Giới thiệu -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
+            android:fontFamily="sans-serif"
             android:text="Về SpeakMate"
             android:textColor="@color/sm_text_primary"
             android:textSize="19sp"

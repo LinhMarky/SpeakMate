@@ -3,7 +3,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/sm_background"
+    android:clipToPadding="false"
     android:fillViewport="true"
+    android:focusableInTouchMode="true"
     android:overScrollMode="never">
 
     <LinearLayout
@@ -13,14 +15,33 @@
         android:orientation="vertical"
         android:padding="24dp">
 
-        <TextView
+        <!-- Thương hiệu và mascot -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="SpeakMate"
-            android:textColor="@color/sm_cyan"
-            android:textSize="36sp"
-            android:textStyle="bold" />
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_marginEnd="12dp"
+                android:contentDescription="@null"
+                android:importantForAccessibility="no"
+                android:scaleType="fitCenter"
+                android:src="@drawable/sm_mascot_wave" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif"
+                android:letterSpacing="-0.03"
+                android:text="SpeakMate"
+                android:textColor="@color/sm_cyan"
+                android:textSize="30sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
 
         <TextView
             android:layout_width="match_parent"
@@ -30,12 +51,13 @@
             android:lineSpacingExtra="4dp"
             android:text="Luyện nói tự tin · Ghi nhớ từ vựng"
             android:textColor="@color/sm_text_secondary"
-            android:textSize="14sp" />
+            android:textSize="13sp" />
 
+        <!-- Form đăng nhập -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="28dp"
             android:background="@drawable/bg_card"
             android:orientation="vertical"
             android:padding="20dp">
@@ -43,6 +65,8 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:fontFamily="sans-serif"
+                android:letterSpacing="-0.02"
                 android:text="Chào mừng trở lại!"
                 android:textColor="@color/sm_text_primary"
                 android:textSize="24sp"
@@ -61,11 +85,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
+                android:fontFamily="sans-serif-medium"
                 android:labelFor="@id/etLoginUsername"
                 android:text="Tên đăng nhập"
                 android:textColor="@color/sm_text_primary"
-                android:textSize="14sp"
-                android:textStyle="bold" />
+                android:textSize="14sp" />
 
             <androidx.appcompat.widget.AppCompatEditText
                 android:id="@+id/etLoginUsername"
@@ -73,28 +97,34 @@
                 android:layout_height="56dp"
                 android:layout_marginTop="8dp"
                 android:autofillHints="username"
-                android:background="@drawable/bg_card"
+                android:background="@drawable/bg_home_button_secondary"
                 android:backgroundTint="@null"
+                android:drawableStart="@drawable/ic_sm_nav_profile"
+                android:drawablePadding="12dp"
+                android:fontFamily="sans-serif"
                 android:gravity="center_vertical"
                 android:hint="Nhập tên đăng nhập"
                 android:imeOptions="actionNext"
                 android:inputType="textVisiblePassword"
+                android:nextFocusForward="@id/etLoginPassword"
                 android:paddingStart="14dp"
+                android:paddingTop="0dp"
                 android:paddingEnd="14dp"
+                android:paddingBottom="0dp"
                 android:singleLine="true"
                 android:textColor="@color/sm_text_primary"
                 android:textColorHint="@color/sm_text_hint"
-                android:textSize="16sp" />
+                android:textSize="15sp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="18dp"
+                android:fontFamily="sans-serif-medium"
                 android:labelFor="@id/etLoginPassword"
                 android:text="Mật khẩu"
                 android:textColor="@color/sm_text_primary"
-                android:textSize="14sp"
-                android:textStyle="bold" />
+                android:textSize="14sp" />
 
             <androidx.appcompat.widget.AppCompatEditText
                 android:id="@+id/etLoginPassword"
@@ -102,19 +132,24 @@
                 android:layout_height="56dp"
                 android:layout_marginTop="8dp"
                 android:autofillHints="password"
-                android:background="@drawable/bg_card"
+                android:background="@drawable/bg_home_button_secondary"
                 android:backgroundTint="@null"
+                android:drawableStart="@drawable/ic_sm_lock"
+                android:drawablePadding="12dp"
+                android:fontFamily="sans-serif"
                 android:gravity="center_vertical"
                 android:hint="Nhập mật khẩu"
                 android:imeOptions="actionDone"
                 android:inputType="textPassword"
                 android:paddingStart="14dp"
+                android:paddingTop="0dp"
                 android:paddingEnd="14dp"
+                android:paddingBottom="0dp"
                 android:saveEnabled="false"
                 android:singleLine="true"
                 android:textColor="@color/sm_text_primary"
                 android:textColorHint="@color/sm_text_hint"
-                android:textSize="16sp" />
+                android:textSize="15sp" />
 
             <androidx.appcompat.widget.AppCompatCheckBox
                 android:id="@+id/cbLoginShowPassword"
@@ -125,6 +160,21 @@
                 android:minHeight="48dp"
                 android:text="Hiện mật khẩu"
                 android:textColor="@color/sm_text_secondary"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/btnForgotPassword"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:fontFamily="sans-serif-medium"
+                android:gravity="end|center_vertical"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:text="Quên mật khẩu?"
+                android:textColor="@color/sm_cyan"
                 android:textSize="14sp" />
 
             <TextView
@@ -154,8 +204,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="18dp"
-                android:background="@drawable/bg_button_primary"
-                android:backgroundTint="@null"
+                android:background="@drawable/bg_card"
+                android:backgroundTint="@color/sm_cyan"
+                android:elevation="0dp"
+                android:fontFamily="sans-serif-medium"
                 android:gravity="center"
                 android:includeFontPadding="false"
                 android:minHeight="0dp"
@@ -166,8 +218,7 @@
                 android:text="Đăng nhập"
                 android:textAllCaps="false"
                 android:textColor="@color/sm_background"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textSize="16sp" />
 
         </LinearLayout>
 
@@ -185,8 +236,10 @@
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:layout_marginTop="10dp"
-            android:background="@drawable/bg_card"
+            android:background="@drawable/bg_home_button_secondary"
             android:backgroundTint="@null"
+            android:elevation="0dp"
+            android:fontFamily="sans-serif-medium"
             android:gravity="center"
             android:includeFontPadding="false"
             android:minHeight="0dp"
@@ -197,28 +250,28 @@
             android:text="Tạo tài khoản"
             android:textAllCaps="false"
             android:textColor="@color/sm_cyan"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:textSize="16sp" />
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btnContinueAsGuest"
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:layout_marginTop="12dp"
-            android:background="@drawable/bg_card"
+            android:background="@drawable/bg_home_button_secondary"
             android:backgroundTint="@null"
+            android:elevation="0dp"
+            android:fontFamily="sans-serif-medium"
             android:gravity="center"
             android:includeFontPadding="false"
             android:minHeight="0dp"
-            android:paddingStart="16dp"
+            android:paddingStart="12dp"
             android:paddingTop="0dp"
-            android:paddingEnd="16dp"
+            android:paddingEnd="12dp"
             android:paddingBottom="0dp"
             android:text="Tiếp tục với tư cách khách"
             android:textAllCaps="false"
             android:textColor="@color/sm_text_secondary"
-            android:textSize="15sp"
-            android:textStyle="bold" />
+            android:textSize="14sp" />
 
     </LinearLayout>
 

@@ -870,13 +870,13 @@ public class ChatFragment extends Fragment {
             return;
         }
 
-        LinearLayout row =
-                new LinearLayout(requireContext());
+        LinearLayout row = new LinearLayout(requireContext());
 
         row.setOrientation(LinearLayout.HORIZONTAL);
 
         row.setGravity(
-                fromUser ? Gravity.END : Gravity.START
+                (fromUser ? Gravity.END : Gravity.START)
+                        | Gravity.TOP
         );
 
         LinearLayout.LayoutParams rowParams =
@@ -885,51 +885,142 @@ public class ChatFragment extends Fragment {
                         LinearLayout.LayoutParams.WRAP_CONTENT
                 );
 
-        rowParams.bottomMargin = dp(14);
+        rowParams.bottomMargin = dp(18);
 
-        TextView bubble =
-                new TextView(requireContext());
+        // Avatar chỉ để trang trí, không can thiệp thao tác hội thoại.
+        android.widget.ImageView avatar =
+                new android.widget.ImageView(requireContext());
+
+        avatar.setImportantForAccessibility(
+                View.IMPORTANT_FOR_ACCESSIBILITY_NO
+        );
+
+        avatar.setClickable(false);
+        avatar.setFocusable(false);
+
+        avatar.setScaleType(
+                android.widget.ImageView.ScaleType.FIT_CENTER
+        );
+
+        avatar.setBackgroundResource(
+                R.drawable.bg_sm_chat_avatar
+        );
+
+        if (fromUser) {
+            avatar.setImageResource(
+                    R.drawable.ic_sm_nav_profile
+            );
+
+            avatar.setPadding(
+                    dp(6),
+                    dp(6),
+                    dp(6),
+                    dp(6)
+            );
+        } else {
+            avatar.setImageResource(
+                    R.drawable.sm_mascot_wave
+            );
+
+            avatar.setPadding(
+                    dp(1),
+                    dp(1),
+                    dp(1),
+                    dp(1)
+            );
+        }
+
+        LinearLayout.LayoutParams avatarParams =
+                new LinearLayout.LayoutParams(
+                        dp(32),
+                        dp(32)
+                );
+
+        avatarParams.topMargin = dp(2);
+
+        if (fromUser) {
+            avatarParams.setMarginStart(dp(8));
+        } else {
+            avatarParams.setMarginEnd(dp(8));
+        }
+
+        TextView bubble = new TextView(requireContext());
 
         bubble.setText(content);
-        bubble.setTextSize(16);
-        bubble.setTextIsSelectable(true);
+        bubble.setTextSize(15);
+
+        bubble.setTypeface(
+                android.graphics.Typeface.create(
+                        "sans-serif",
+                        android.graphics.Typeface.NORMAL
+                )
+        );
 
         bubble.setTextColor(
                 ContextCompat.getColor(
                         requireContext(),
-                        fromUser
-                                ? R.color.sm_background
-                                : R.color.sm_text_primary
+                        R.color.sm_text_primary
                 )
+        );
+
+        bubble.setTextIsSelectable(true);
+
+        bubble.setLineSpacing(
+                dp(3),
+                1f
         );
 
         bubble.setBackgroundResource(
                 fromUser
-                        ? R.drawable.bg_button_primary
-                        : R.drawable.bg_card
+                        ? R.drawable.bg_sm_chat_user
+                        : R.drawable.bg_sm_chat_ai
         );
 
         bubble.setPadding(
-                dp(16),
                 dp(14),
-                dp(16),
-                dp(14)
+                dp(12),
+                dp(14),
+                dp(12)
         );
 
-        int screenWidth =
-                getResources().getDisplayMetrics().widthPixels;
+        /*
+         * Tính chiều rộng theo vùng hội thoại.
+         * Khi view chưa được đo, dùng chiều rộng màn hình dự phòng.
+         */
+        int availableWidth =
+                messageContainer.getWidth()
+                        - messageContainer.getPaddingLeft()
+                        - messageContainer.getPaddingRight();
 
-        bubble.setMaxWidth(
-                (int) (screenWidth * 0.76f)
+        if (availableWidth <= 0) {
+            availableWidth =
+                    getResources().getDisplayMetrics().widthPixels
+                            - dp(32);
+        }
+
+        int bubbleMaxWidth = Math.max(
+                1,
+                Math.min(
+                        Math.round(availableWidth * 0.78f),
+                        availableWidth - dp(40)
+                )
         );
 
-        row.addView(
-                bubble,
+        bubble.setMaxWidth(bubbleMaxWidth);
+
+        LinearLayout.LayoutParams bubbleParams =
                 new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.WRAP_CONTENT,
                         LinearLayout.LayoutParams.WRAP_CONTENT
-                )
-        );
+                );
+
+        if (fromUser) {
+            row.addView(bubble, bubbleParams);
+            row.addView(avatar, avatarParams);
+        } else {
+            row.addView(avatar, avatarParams);
+            row.addView(bubble, bubbleParams);
+        }
 
         messageContainer.addView(row, rowParams);
     }

@@ -1,41 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/sm_background"
+    android:focusableInTouchMode="true"
     android:orientation="vertical"
-    android:background="#12112C"
     android:padding="20dp">
 
     <!-- Thanh tiêu đề -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
         <TextView
             android:id="@+id/btnCloseLearn"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:gravity="center"
-            android:text="✕"
-            android:textSize="25sp"
-            android:textColor="#F5F3FF"
-            android:contentDescription="Thoát phần học"
             android:background="?android:attr/selectableItemBackgroundBorderless"
             android:clickable="true"
-            android:focusable="true" />
+            android:contentDescription="Thoát phần học"
+            android:focusable="true"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:text="✕"
+            android:textColor="@color/sm_cyan"
+            android:textSize="25sp" />
 
         <TextView
             android:id="@+id/tvLearnHeader"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:fontFamily="sans-serif"
             android:text="Luyện từ vựng"
-            android:textColor="#F5F3FF"
+            android:textColor="@color/sm_text_primary"
             android:textSize="20sp"
             android:textStyle="bold" />
 
@@ -43,10 +45,11 @@
             android:id="@+id/tvLearnCounter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:fontFamily="sans-serif-medium"
             android:text="1 / 3"
-            android:textColor="#20D9F4"
-            android:textSize="15sp"
-            android:textStyle="bold" />
+            android:textColor="@color/sm_cyan"
+            android:textSize="15sp" />
 
     </LinearLayout>
 
@@ -56,17 +59,19 @@
         android:layout_width="match_parent"
         android:layout_height="6dp"
         android:layout_marginTop="12dp"
+        android:indeterminate="false"
         android:max="100"
         android:progress="0"
-        android:progressTint="#20D9F4"
-        android:progressBackgroundTint="#302E50" />
+        android:progressBackgroundTint="@color/sm_surface_light"
+        android:progressTint="@color/sm_cyan" />
 
     <ScrollView
         android:id="@+id/scrollLearn"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
         android:layout_marginTop="16dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
         android:fillViewport="true"
         android:overScrollMode="never">
 
@@ -87,15 +92,18 @@
                     android:id="@+id/tvLearnDeckName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="#B8B5D6"
+                    android:fontFamily="sans-serif-medium"
+                    android:textColor="@color/sm_text_secondary"
                     android:textSize="15sp" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
+                    android:fontFamily="sans-serif"
+                    android:letterSpacing="-0.02"
                     android:text="Bạn nhớ từ này chứ?"
-                    android:textColor="#F5F3FF"
+                    android:textColor="@color/sm_text_primary"
                     android:textSize="26sp"
                     android:textStyle="bold" />
 
@@ -103,29 +111,33 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:minHeight="210dp"
                     android:layout_marginTop="24dp"
-                    android:orientation="vertical"
+                    android:background="@drawable/bg_home_feature"
                     android:gravity="center"
-                    android:padding="24dp"
-                    android:background="@drawable/bg_card">
+                    android:minHeight="210dp"
+                    android:orientation="vertical"
+                    android:padding="24dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif-medium"
+                        android:gravity="center"
+                        android:letterSpacing="0.12"
                         android:text="NGHĨA TIẾNG VIỆT"
-                        android:textColor="#9692B5"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:letterSpacing="0.12" />
+                        android:textColor="@color/sm_text_secondary"
+                        android:textSize="12sp" />
 
                     <TextView
                         android:id="@+id/tvLearnMeaning"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="20dp"
+                        android:fontFamily="sans-serif"
                         android:gravity="center"
-                        android:textColor="#F5F3FF"
+                        android:letterSpacing="-0.02"
+                        android:lineSpacingExtra="4dp"
+                        android:textColor="@color/sm_text_primary"
                         android:textSize="30sp"
                         android:textStyle="bold" />
 
@@ -135,8 +147,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="26dp"
+                    android:fontFamily="sans-serif-medium"
                     android:text="Nhập từ tiếng Anh tương ứng"
-                    android:textColor="#B8B5D6"
+                    android:textColor="@color/sm_text_secondary"
                     android:textSize="15sp" />
 
                 <androidx.appcompat.widget.AppCompatEditText
@@ -144,44 +157,51 @@
                     android:layout_width="match_parent"
                     android:layout_height="58dp"
                     android:layout_marginTop="10dp"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp"
-                    android:background="@drawable/bg_card"
+                    android:background="@drawable/bg_home_button_secondary"
                     android:backgroundTint="@null"
+                    android:fontFamily="sans-serif"
+                    android:gravity="center_vertical"
                     android:hint="Câu trả lời của bạn..."
-                    android:textColor="#F5F3FF"
-                    android:textColorHint="#9692B5"
-                    android:textSize="18sp"
-                    android:inputType="text|textNoSuggestions"
                     android:imeOptions="actionDone"
+                    android:inputType="text|textNoSuggestions"
+                    android:paddingStart="16dp"
+                    android:paddingTop="0dp"
+                    android:paddingEnd="16dp"
+                    android:paddingBottom="0dp"
+                    android:saveEnabled="false"
                     android:singleLine="true"
-                    android:saveEnabled="false" />
+                    android:textColor="@color/sm_text_primary"
+                    android:textColorHint="@color/sm_text_hint"
+                    android:textSize="18sp" />
 
-                <!-- Phản hồi sau khi nộp -->
+                <!-- Java điều khiển nội dung và màu đúng/sai -->
                 <LinearLayout
                     android:id="@+id/panelLearnFeedback"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
+                    android:background="@drawable/bg_home_panel"
                     android:orientation="vertical"
                     android:padding="18dp"
-                    android:background="@drawable/bg_card"
                     android:visibility="gone">
 
                     <TextView
                         android:id="@+id/tvLearnFeedback"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:accessibilityLiveRegion="polite"
+                        android:fontFamily="sans-serif"
+                        android:textColor="@color/sm_text_primary"
                         android:textSize="19sp"
-                        android:textStyle="bold"
-                        android:accessibilityLiveRegion="polite" />
+                        android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/tvLearnCorrectAnswer"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:textColor="#F5F3FF"
+                        android:lineSpacingExtra="3dp"
+                        android:textColor="@color/sm_text_primary"
                         android:textSize="17sp" />
 
                     <TextView
@@ -189,9 +209,10 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:textColor="#B8B5D6"
+                        android:lineSpacingExtra="4dp"
+                        android:textColor="@color/sm_text_secondary"
                         android:textSize="15sp"
-                        android:lineSpacingExtra="3dp" />
+                        android:textStyle="italic" />
 
                 </LinearLayout>
 
@@ -202,11 +223,19 @@
                     android:layout_marginTop="24dp"
                     android:background="@drawable/bg_button_primary"
                     android:backgroundTint="@null"
+                    android:elevation="0dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:minHeight="0dp"
+                    android:paddingStart="12dp"
+                    android:paddingTop="0dp"
+                    android:paddingEnd="12dp"
+                    android:paddingBottom="0dp"
                     android:text="Kiểm tra"
                     android:textAllCaps="false"
-                    android:textColor="#12112C"
-                    android:textSize="17sp"
-                    android:textStyle="bold" />
+                    android:textColor="@color/sm_background"
+                    android:textSize="17sp" />
 
                 <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/btnNextLearn"
@@ -215,11 +244,19 @@
                     android:layout_marginTop="12dp"
                     android:background="@drawable/bg_button_primary"
                     android:backgroundTint="@null"
+                    android:elevation="0dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:minHeight="0dp"
+                    android:paddingStart="12dp"
+                    android:paddingTop="0dp"
+                    android:paddingEnd="12dp"
+                    android:paddingBottom="0dp"
                     android:text="Tiếp tục"
                     android:textAllCaps="false"
-                    android:textColor="#12112C"
+                    android:textColor="@color/sm_background"
                     android:textSize="17sp"
-                    android:textStyle="bold"
                     android:visibility="gone" />
 
                 <TextView
@@ -227,8 +264,9 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:gravity="center"
+                    android:lineSpacingExtra="3dp"
                     android:text="Không phân biệt chữ hoa, chữ thường."
-                    android:textColor="#9692B5"
+                    android:textColor="@color/sm_text_hint"
                     android:textSize="13sp" />
 
             </LinearLayout>
@@ -238,8 +276,8 @@
                 android:id="@+id/panelLearnResult"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
                 android:gravity="center_horizontal"
+                android:orientation="vertical"
                 android:paddingTop="20dp"
                 android:visibility="gone">
 
@@ -255,24 +293,27 @@
                         android:indeterminate="false"
                         android:max="100"
                         android:progress="0"
-                        app:indicatorSize="200dp"
+                        app:indicatorColor="@color/sm_cyan"
                         app:indicatorInset="0dp"
-                        app:trackThickness="10dp"
-                        app:indicatorColor="#A49AFF"
-                        app:trackColor="#302E50" />
+                        app:indicatorSize="200dp"
+                        app:trackColor="@color/sm_surface_light"
+                        app:trackCornerRadius="5dp"
+                        app:trackThickness="10dp" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:orientation="vertical"
-                        android:gravity="center">
+                        android:gravity="center"
+                        android:orientation="vertical">
 
                         <TextView
                             android:id="@+id/tvLearnPercent"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:fontFamily="sans-serif"
+                            android:letterSpacing="-0.03"
                             android:text="0%"
-                            android:textColor="#F5F3FF"
+                            android:textColor="@color/sm_text_primary"
                             android:textSize="44sp"
                             android:textStyle="bold" />
 
@@ -281,7 +322,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
                             android:text="Chính xác"
-                            android:textColor="#B8B5D6"
+                            android:textColor="@color/sm_text_secondary"
                             android:textSize="16sp" />
 
                     </LinearLayout>
@@ -293,9 +334,11 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="14dp"
+                    android:fontFamily="sans-serif"
                     android:gravity="center"
+                    android:letterSpacing="-0.02"
                     android:text="Tốt lắm!"
-                    android:textColor="#F5F3FF"
+                    android:textColor="@color/sm_text_primary"
                     android:textSize="32sp"
                     android:textStyle="bold" />
 
@@ -305,9 +348,9 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:gravity="center"
-                    android:textColor="#B8B5D6"
-                    android:textSize="16sp"
-                    android:lineSpacingExtra="4dp" />
+                    android:lineSpacingExtra="4dp"
+                    android:textColor="@color/sm_text_secondary"
+                    android:textSize="16sp" />
 
                 <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/btnRestartLearn"
@@ -316,30 +359,48 @@
                     android:layout_marginTop="26dp"
                     android:background="@drawable/bg_button_primary"
                     android:backgroundTint="@null"
+                    android:elevation="0dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:minHeight="0dp"
+                    android:paddingStart="12dp"
+                    android:paddingTop="0dp"
+                    android:paddingEnd="12dp"
+                    android:paddingBottom="0dp"
                     android:text="Bắt đầu lại"
                     android:textAllCaps="false"
-                    android:textColor="#12112C"
-                    android:textSize="17sp"
-                    android:textStyle="bold" />
+                    android:textColor="@color/sm_background"
+                    android:textSize="17sp" />
 
                 <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/btnBackLearnDeck"
                     android:layout_width="match_parent"
                     android:layout_height="54dp"
                     android:layout_marginTop="10dp"
-                    android:background="@drawable/bg_card"
+                    android:background="@drawable/bg_home_button_secondary"
                     android:backgroundTint="@null"
+                    android:elevation="0dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:minHeight="0dp"
+                    android:paddingStart="12dp"
+                    android:paddingTop="0dp"
+                    android:paddingEnd="12dp"
+                    android:paddingBottom="0dp"
                     android:text="Về bộ thẻ"
                     android:textAllCaps="false"
-                    android:textColor="#20D9F4"
+                    android:textColor="@color/sm_cyan"
                     android:textSize="16sp" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="28dp"
+                    android:fontFamily="sans-serif"
                     android:text="Xem lại câu trả lời"
-                    android:textColor="#F5F3FF"
+                    android:textColor="@color/sm_text_primary"
                     android:textSize="20sp"
                     android:textStyle="bold" />
 

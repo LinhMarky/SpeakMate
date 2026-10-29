@@ -3,7 +3,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/sm_background"
+    android:clipToPadding="false"
     android:fillViewport="true"
+    android:focusableInTouchMode="true"
     android:overScrollMode="never">
 
     <LinearLayout
@@ -12,43 +14,75 @@
         android:orientation="vertical"
         android:padding="24dp">
 
-        <!-- Quay lại màn hình đăng nhập -->
+        <!-- Quay lại đăng nhập -->
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btnBackToLogin"
             android:layout_width="wrap_content"
             android:layout_height="48dp"
-            android:background="@drawable/bg_card"
+            android:background="@drawable/bg_home_button_secondary"
             android:backgroundTint="@null"
+            android:elevation="0dp"
+            android:fontFamily="sans-serif-medium"
             android:gravity="center"
             android:includeFontPadding="false"
             android:minWidth="0dp"
             android:minHeight="0dp"
             android:paddingStart="16dp"
+            android:paddingTop="0dp"
             android:paddingEnd="16dp"
+            android:paddingBottom="0dp"
             android:text="‹  Đăng nhập"
             android:textAllCaps="false"
             android:textColor="@color/sm_cyan"
-            android:textSize="15sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="28dp"
-            android:text="Tạo tài khoản"
-            android:textColor="@color/sm_text_primary"
-            android:textSize="28sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:lineSpacingExtra="4dp"
-            android:text="Bắt đầu hành trình luyện tiếng Anh cùng SpeakMate."
-            android:textColor="@color/sm_text_secondary"
             android:textSize="15sp" />
 
+        <!-- Giới thiệu -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif"
+                    android:letterSpacing="-0.02"
+                    android:text="Tạo tài khoản"
+                    android:textColor="@color/sm_text_primary"
+                    android:textSize="26sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:lineSpacingExtra="4dp"
+                    android:text="Bắt đầu hành trình luyện tiếng Anh cùng SpeakMate."
+                    android:textColor="@color/sm_text_secondary"
+                    android:textSize="14sp" />
+
+            </LinearLayout>
+
+            <ImageView
+                android:layout_width="72dp"
+                android:layout_height="80dp"
+                android:layout_marginStart="12dp"
+                android:contentDescription="@null"
+                android:importantForAccessibility="no"
+                android:scaleType="fitCenter"
+                android:src="@drawable/sm_mascot_wave" />
+
+        </LinearLayout>
+
+        <!-- Form đăng ký -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -61,11 +95,11 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
                 android:labelFor="@id/etRegisterName"
                 android:text="Tên hiển thị"
                 android:textColor="@color/sm_text_primary"
-                android:textSize="14sp"
-                android:textStyle="bold" />
+                android:textSize="14sp" />
 
             <androidx.appcompat.widget.AppCompatEditText
                 android:id="@+id/etRegisterName"
@@ -73,30 +107,36 @@
                 android:layout_height="56dp"
                 android:layout_marginTop="8dp"
                 android:autofillHints="name"
-                android:background="@drawable/bg_card"
+                android:background="@drawable/bg_home_button_secondary"
                 android:backgroundTint="@null"
+                android:drawableStart="@drawable/ic_sm_nav_profile"
+                android:drawablePadding="12dp"
+                android:fontFamily="sans-serif"
                 android:gravity="center_vertical"
                 android:hint="Nhập tên của bạn"
                 android:imeOptions="actionNext"
                 android:inputType="textCapWords|textPersonName"
                 android:maxLength="40"
+                android:nextFocusForward="@id/etRegisterUsername"
                 android:paddingStart="14dp"
+                android:paddingTop="0dp"
                 android:paddingEnd="14dp"
+                android:paddingBottom="0dp"
                 android:singleLine="true"
                 android:textColor="@color/sm_text_primary"
                 android:textColorHint="@color/sm_text_hint"
-                android:textSize="16sp" />
+                android:textSize="15sp" />
 
             <!-- Tên đăng nhập -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="18dp"
+                android:fontFamily="sans-serif-medium"
                 android:labelFor="@id/etRegisterUsername"
                 android:text="Tên đăng nhập"
                 android:textColor="@color/sm_text_primary"
-                android:textSize="14sp"
-                android:textStyle="bold" />
+                android:textSize="14sp" />
 
             <androidx.appcompat.widget.AppCompatEditText
                 android:id="@+id/etRegisterUsername"
@@ -104,29 +144,35 @@
                 android:layout_height="56dp"
                 android:layout_marginTop="8dp"
                 android:autofillHints="username"
-                android:background="@drawable/bg_card"
+                android:background="@drawable/bg_home_button_secondary"
                 android:backgroundTint="@null"
+                android:drawableStart="@drawable/ic_sm_nav_profile"
+                android:drawablePadding="12dp"
+                android:fontFamily="sans-serif"
                 android:gravity="center_vertical"
                 android:hint="Chọn tên đăng nhập"
                 android:imeOptions="actionNext"
                 android:inputType="textVisiblePassword"
+                android:nextFocusForward="@id/etRegisterEmail"
                 android:paddingStart="14dp"
+                android:paddingTop="0dp"
                 android:paddingEnd="14dp"
+                android:paddingBottom="0dp"
                 android:singleLine="true"
                 android:textColor="@color/sm_text_primary"
                 android:textColorHint="@color/sm_text_hint"
-                android:textSize="16sp" />
+                android:textSize="15sp" />
 
             <!-- Email -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="18dp"
+                android:fontFamily="sans-serif-medium"
                 android:labelFor="@id/etRegisterEmail"
                 android:text="Email"
                 android:textColor="@color/sm_text_primary"
-                android:textSize="14sp"
-                android:textStyle="bold" />
+                android:textSize="14sp" />
 
             <androidx.appcompat.widget.AppCompatEditText
                 android:id="@+id/etRegisterEmail"
@@ -134,29 +180,35 @@
                 android:layout_height="56dp"
                 android:layout_marginTop="8dp"
                 android:autofillHints="emailAddress"
-                android:background="@drawable/bg_card"
+                android:background="@drawable/bg_home_button_secondary"
                 android:backgroundTint="@null"
+                android:drawableStart="@drawable/ic_sm_email"
+                android:drawablePadding="12dp"
+                android:fontFamily="sans-serif"
                 android:gravity="center_vertical"
                 android:hint="Nhập email"
                 android:imeOptions="actionNext"
                 android:inputType="textEmailAddress"
+                android:nextFocusForward="@id/etRegisterPassword"
                 android:paddingStart="14dp"
+                android:paddingTop="0dp"
                 android:paddingEnd="14dp"
+                android:paddingBottom="0dp"
                 android:singleLine="true"
                 android:textColor="@color/sm_text_primary"
                 android:textColorHint="@color/sm_text_hint"
-                android:textSize="16sp" />
+                android:textSize="15sp" />
 
             <!-- Mật khẩu -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="18dp"
+                android:fontFamily="sans-serif-medium"
                 android:labelFor="@id/etRegisterPassword"
                 android:text="Mật khẩu"
                 android:textColor="@color/sm_text_primary"
-                android:textSize="14sp"
-                android:textStyle="bold" />
+                android:textSize="14sp" />
 
             <androidx.appcompat.widget.AppCompatEditText
                 android:id="@+id/etRegisterPassword"
@@ -164,49 +216,60 @@
                 android:layout_height="56dp"
                 android:layout_marginTop="8dp"
                 android:autofillHints="newPassword"
-                android:background="@drawable/bg_card"
+                android:background="@drawable/bg_home_button_secondary"
                 android:backgroundTint="@null"
+                android:drawableStart="@drawable/ic_sm_lock"
+                android:drawablePadding="12dp"
+                android:fontFamily="sans-serif"
                 android:gravity="center_vertical"
                 android:hint="Tạo mật khẩu"
                 android:imeOptions="actionNext"
                 android:inputType="textPassword"
+                android:nextFocusForward="@id/etRegisterConfirmPassword"
                 android:paddingStart="14dp"
+                android:paddingTop="0dp"
                 android:paddingEnd="14dp"
+                android:paddingBottom="0dp"
                 android:saveEnabled="false"
                 android:singleLine="true"
                 android:textColor="@color/sm_text_primary"
                 android:textColorHint="@color/sm_text_hint"
-                android:textSize="16sp" />
+                android:textSize="15sp" />
 
             <!-- Xác nhận mật khẩu -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="18dp"
+                android:fontFamily="sans-serif-medium"
                 android:labelFor="@id/etRegisterConfirmPassword"
                 android:text="Xác nhận mật khẩu"
                 android:textColor="@color/sm_text_primary"
-                android:textSize="14sp"
-                android:textStyle="bold" />
+                android:textSize="14sp" />
 
             <androidx.appcompat.widget.AppCompatEditText
                 android:id="@+id/etRegisterConfirmPassword"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="8dp"
-                android:background="@drawable/bg_card"
+                android:background="@drawable/bg_home_button_secondary"
                 android:backgroundTint="@null"
+                android:drawableStart="@drawable/ic_sm_lock"
+                android:drawablePadding="12dp"
+                android:fontFamily="sans-serif"
                 android:gravity="center_vertical"
                 android:hint="Nhập lại mật khẩu"
                 android:imeOptions="actionDone"
                 android:inputType="textPassword"
                 android:paddingStart="14dp"
+                android:paddingTop="0dp"
                 android:paddingEnd="14dp"
+                android:paddingBottom="0dp"
                 android:saveEnabled="false"
                 android:singleLine="true"
                 android:textColor="@color/sm_text_primary"
                 android:textColorHint="@color/sm_text_hint"
-                android:textSize="16sp" />
+                android:textSize="15sp" />
 
             <androidx.appcompat.widget.AppCompatCheckBox
                 android:id="@+id/cbRegisterShowPassword"
@@ -217,9 +280,8 @@
                 android:minHeight="48dp"
                 android:text="Hiện mật khẩu"
                 android:textColor="@color/sm_text_secondary"
-                android:textSize="14sp" />
+                android:textSize="13sp" />
 
-            <!-- Thông báo lỗi sẽ được Java hiển thị -->
             <TextView
                 android:id="@+id/tvRegisterError"
                 android:layout_width="match_parent"
@@ -247,8 +309,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="18dp"
-                android:background="@drawable/bg_button_primary"
-                android:backgroundTint="@null"
+                android:background="@drawable/bg_card"
+                android:backgroundTint="@color/sm_cyan"
+                android:elevation="0dp"
+                android:fontFamily="sans-serif-medium"
                 android:gravity="center"
                 android:includeFontPadding="false"
                 android:minHeight="0dp"
@@ -259,8 +323,7 @@
                 android:text="Tạo tài khoản"
                 android:textAllCaps="false"
                 android:textColor="@color/sm_background"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textSize="16sp" />
 
         </LinearLayout>
 

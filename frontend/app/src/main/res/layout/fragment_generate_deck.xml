@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/sm_background"
+    android:focusableInTouchMode="true"
     android:orientation="vertical">
 
     <!-- Thanh tiêu đề -->
@@ -20,9 +21,10 @@
             android:id="@+id/btnBackGenerateDeck"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:background="@drawable/bg_card"
+            android:background="@drawable/bg_home_button_secondary"
             android:backgroundTint="@null"
             android:contentDescription="Quay lại thư viện bộ thẻ"
+            android:elevation="0dp"
             android:gravity="center"
             android:includeFontPadding="false"
             android:minWidth="0dp"
@@ -38,6 +40,8 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="14dp"
             android:layout_weight="1"
+            android:fontFamily="sans-serif"
+            android:letterSpacing="-0.02"
             android:text="Tạo bộ thẻ bằng AI"
             android:textColor="@color/sm_text_primary"
             android:textSize="20sp"
@@ -49,6 +53,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
+        android:clipToPadding="false"
         android:fillViewport="true"
         android:overScrollMode="never">
 
@@ -61,51 +66,105 @@
             android:paddingEnd="24dp"
             android:paddingBottom="24dp">
 
-            <TextView
+            <!-- Mascot trang trí -->
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:lineSpacingExtra="5dp"
-                android:text="Chọn chủ đề bạn quan tâm. AI sẽ gợi ý từ vựng, nghĩa tiếng Việt và câu ví dụ để bạn xem lại trước khi lưu."
-                android:textColor="@color/sm_text_secondary"
-                android:textSize="15sp" />
+                android:layout_height="132dp"
+                android:importantForAccessibility="noHideDescendants">
+
+                <ImageView
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:layout_gravity="center"
+                    android:contentDescription="@null"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/sm_mascot_wave" />
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_gravity="top|center_horizontal"
+                    android:contentDescription="@null"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_sm_sparkles"
+                    android:translationX="60dp" />
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:layout_gravity="bottom|center_horizontal"
+                    android:layout_marginBottom="12dp"
+                    android:contentDescription="@null"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_sm_sparkles"
+                    android:translationX="-60dp" />
+
+            </FrameLayout>
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="8dp"
+                android:fontFamily="sans-serif"
+                android:gravity="center"
+                android:letterSpacing="-0.02"
+                android:text="Tạo bộ từ phù hợp với bạn"
+                android:textColor="@color/sm_text_primary"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:lineSpacingExtra="4dp"
+                android:text="Chọn chủ đề và trình độ. Bạn có thể xem lại từ vựng, nghĩa và ví dụ trước khi lưu."
+                android:textColor="@color/sm_text_secondary"
+                android:textSize="14sp" />
+
+            <!-- Chủ đề -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="26dp"
+                android:fontFamily="sans-serif-medium"
                 android:labelFor="@id/etGenerateDeckTopic"
                 android:text="Bạn muốn học chủ đề gì?"
                 android:textColor="@color/sm_text_primary"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textSize="16sp" />
 
             <androidx.appcompat.widget.AppCompatEditText
                 android:id="@+id/etGenerateDeckTopic"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="10dp"
-                android:background="@drawable/bg_card"
+                android:background="@drawable/bg_home_button_secondary"
                 android:backgroundTint="@null"
+                android:gravity="center_vertical"
                 android:hint="Ví dụ: Du lịch, công nghệ, thể thao..."
                 android:imeOptions="actionDone"
                 android:inputType="textCapSentences"
                 android:maxLength="150"
                 android:paddingStart="14dp"
+                android:paddingTop="0dp"
                 android:paddingEnd="14dp"
+                android:paddingBottom="0dp"
                 android:singleLine="true"
                 android:textColor="@color/sm_text_primary"
                 android:textColorHint="@color/sm_text_hint"
                 android:textSize="15sp" />
 
+            <!-- Trình độ -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="22dp"
+                android:fontFamily="sans-serif-medium"
                 android:labelFor="@id/spGenerateDeckLevel"
                 android:text="Trình độ"
                 android:textColor="@color/sm_text_primary"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textSize="16sp" />
 
             <androidx.appcompat.widget.AppCompatSpinner
                 android:id="@+id/spGenerateDeckLevel"
@@ -118,15 +177,16 @@
                 android:popupBackground="@color/sm_surface"
                 android:spinnerMode="dropdown" />
 
+            <!-- Số lượng từ -->
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="22dp"
+                android:fontFamily="sans-serif-medium"
                 android:labelFor="@id/spGenerateDeckCount"
                 android:text="Số từ muốn tạo"
                 android:textColor="@color/sm_text_primary"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textSize="16sp" />
 
             <androidx.appcompat.widget.AppCompatSpinner
                 android:id="@+id/spGenerateDeckCount"
@@ -139,6 +199,7 @@
                 android:popupBackground="@color/sm_surface"
                 android:spinnerMode="dropdown" />
 
+            <!-- Nội dung trạng thái do Java cập nhật -->
             <TextView
                 android:id="@+id/tvGenerateDeckStatus"
                 android:layout_width="match_parent"
@@ -157,8 +218,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="24dp"
-                android:background="@drawable/bg_button_primary"
-                android:backgroundTint="@null"
+                android:background="@drawable/bg_card"
+                android:backgroundTint="@color/sm_cyan"
+                android:elevation="0dp"
+                android:fontFamily="sans-serif-medium"
                 android:gravity="center"
                 android:includeFontPadding="false"
                 android:minHeight="0dp"
@@ -169,19 +232,24 @@
                 android:text="Tạo từ vựng"
                 android:textAllCaps="false"
                 android:textColor="@color/sm_background"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textSize="16sp" />
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnPreviewGeneratedDeck"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
                 android:layout_marginTop="12dp"
-                android:background="@drawable/bg_card"
+                android:background="@drawable/bg_home_button_secondary"
                 android:backgroundTint="@null"
+                android:elevation="0dp"
+                android:fontFamily="sans-serif-medium"
                 android:gravity="center"
                 android:includeFontPadding="false"
                 android:minHeight="0dp"
+                android:paddingStart="12dp"
+                android:paddingTop="0dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="0dp"
                 android:text="Xem thử kết quả mẫu"
                 android:textAllCaps="false"
                 android:textColor="@color/sm_cyan"

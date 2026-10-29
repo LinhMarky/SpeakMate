@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/sm_background"
     android:orientation="vertical"
-    android:padding="20dp"
-    android:background="#12112C">
+    android:padding="20dp">
 
+    <!-- Thanh trên cùng -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -17,23 +17,25 @@
             android:id="@+id/btnCloseStudy"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:gravity="center"
-            android:text="✕"
-            android:textColor="#F5F3FF"
-            android:textSize="26sp"
-            android:contentDescription="Thoát phần học"
             android:background="?android:attr/selectableItemBackgroundBorderless"
             android:clickable="true"
-            android:focusable="true" />
+            android:contentDescription="Thoát phần học"
+            android:focusable="true"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:text="✕"
+            android:textColor="@color/sm_cyan"
+            android:textSize="26sp" />
 
         <TextView
             android:id="@+id/tvStudyProgress"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:fontFamily="sans-serif-medium"
             android:gravity="end"
             android:text="0/0 thẻ"
-            android:textColor="#B8B5D6"
+            android:textColor="@color/sm_text_secondary"
             android:textSize="15sp" />
 
     </LinearLayout>
@@ -43,8 +45,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
+        android:fontFamily="sans-serif"
+        android:letterSpacing="-0.02"
         android:text="Thẻ ghi nhớ"
-        android:textColor="#F5F3FF"
+        android:textColor="@color/sm_text_primary"
         android:textSize="26sp"
         android:textStyle="bold" />
 
@@ -54,7 +58,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
         android:text="Học toàn bộ"
-        android:textColor="#B8B5D6"
+        android:textColor="@color/sm_text_secondary"
         android:textSize="14sp" />
 
     <ProgressBar
@@ -63,47 +67,66 @@
         android:layout_width="match_parent"
         android:layout_height="8dp"
         android:layout_marginTop="16dp"
+        android:indeterminate="false"
         android:max="100"
         android:progress="0"
-        android:progressTint="#20D9F4"
-        android:progressBackgroundTint="#302E50" />
+        android:progressBackgroundTint="@color/sm_surface_light"
+        android:progressTint="@color/sm_cyan" />
 
+    <!-- Bộ đếm của lượt hiện tại -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="18dp"
+        android:baselineAligned="false"
         android:orientation="horizontal">
 
         <TextView
             android:id="@+id/tvNotRememberedCount"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="6dp"
             android:layout_weight="1"
+            android:background="@drawable/bg_home_panel"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="center"
+            android:minHeight="44dp"
+            android:paddingStart="8dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="8dp"
             android:text="Chưa thuộc: 0"
-            android:textColor="#FFC66D"
-            android:textSize="15sp"
-            android:textStyle="bold" />
+            android:textColor="@color/sm_warning"
+            android:textSize="14sp" />
 
         <TextView
             android:id="@+id/tvRememberedCount"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
             android:layout_weight="1"
-            android:gravity="end"
+            android:background="@drawable/bg_home_panel"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="center"
+            android:minHeight="44dp"
+            android:paddingStart="8dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="8dp"
             android:text="Đã nhớ: 0"
-            android:textColor="#35D6A0"
-            android:textSize="15sp"
-            android:textStyle="bold" />
+            android:textColor="@color/sm_success"
+            android:textSize="14sp" />
 
     </LinearLayout>
 
+    <!-- Vùng thẻ: giữ cấu trúc để Java thay thế thẻ quẹt -->
     <FrameLayout
         android:id="@+id/studyStage"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
         android:layout_marginTop="24dp"
         android:layout_marginBottom="20dp"
+        android:layout_weight="1"
         android:clipChildren="false"
         android:clipToPadding="false">
 
@@ -111,10 +134,10 @@
             android:id="@+id/studyCard"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="#24233F"
+            android:background="@drawable/bg_card"
             android:clickable="true"
-            android:focusable="true"
-            android:contentDescription="Thẻ từ vựng. Chạm để lật và nghe lại">
+            android:contentDescription="Thẻ từ vựng. Chạm để lật và nghe lại"
+            android:focusable="true">
 
             <ScrollView
                 android:layout_width="match_parent"
@@ -125,16 +148,19 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
                     android:gravity="center"
+                    android:orientation="vertical"
                     android:padding="24dp">
 
                     <TextView
                         android:id="@+id/tvStudyWord"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif"
                         android:gravity="center"
-                        android:textColor="#F5F3FF"
+                        android:letterSpacing="-0.02"
+                        android:lineSpacingExtra="4dp"
+                        android:textColor="@color/sm_text_primary"
                         android:textSize="30sp"
                         android:textStyle="bold" />
 
@@ -143,8 +169,10 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="24dp"
+                        android:fontFamily="sans-serif-medium"
                         android:gravity="center"
-                        android:textColor="#20D9F4"
+                        android:lineSpacingExtra="4dp"
+                        android:textColor="@color/sm_cyan"
                         android:textSize="23sp"
                         android:visibility="gone" />
 
@@ -154,9 +182,10 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="18dp"
                         android:gravity="center"
-                        android:textColor="#B8B5D6"
-                        android:textSize="17sp"
                         android:lineSpacingExtra="4dp"
+                        android:textColor="@color/sm_text_secondary"
+                        android:textSize="17sp"
+                        android:textStyle="italic"
                         android:visibility="gone" />
 
                     <TextView
@@ -165,25 +194,28 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="28dp"
                         android:gravity="center"
+                        android:lineSpacingExtra="3dp"
                         android:text="Chạm để xem nghĩa và nghe lại"
-                        android:textColor="#9692B5"
-                        android:textSize="14sp" />
+                        android:textColor="@color/sm_text_hint"
+                        android:textSize="13sp" />
 
                 </LinearLayout>
 
             </ScrollView>
 
+            <!-- Java điều khiển lớp phản hồi khi quẹt -->
             <TextView
                 android:id="@+id/tvSwipeLabel"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:background="@color/sm_surface"
+                android:fontFamily="sans-serif"
                 android:gravity="center"
+                android:importantForAccessibility="no"
                 android:padding="20dp"
-                android:background="#24233F"
                 android:textSize="32sp"
                 android:textStyle="bold"
-                android:visibility="gone"
-                android:importantForAccessibility="no" />
+                android:visibility="gone" />
 
         </FrameLayout>
 
@@ -196,9 +228,10 @@
         android:layout_marginBottom="16dp"
         android:gravity="center"
         android:text="← Chưa thuộc  •  Đã nhớ →"
-        android:textColor="#B8B5D6"
+        android:textColor="@color/sm_text_secondary"
         android:textSize="14sp" />
 
+    <!-- Giữ nguyên loại Button và vị trí hai nút -->
     <LinearLayout
         android:id="@+id/studyActions"
         android:layout_width="match_parent"
@@ -209,41 +242,65 @@
             android:id="@+id/btnNotRemembered"
             android:layout_width="0dp"
             android:layout_height="56dp"
-            android:layout_weight="1"
             android:layout_marginEnd="6dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_card"
+            android:backgroundTint="@color/sm_warning"
+            android:elevation="0dp"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:paddingStart="8dp"
+            android:paddingTop="0dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="0dp"
             android:text="Chưa thuộc"
             android:textAllCaps="false"
-            android:textColor="#12112C"
-            android:textSize="15sp"
-            android:backgroundTint="#FFC66D" />
+            android:textColor="@color/sm_background"
+            android:textSize="15sp" />
 
         <Button
             android:id="@+id/btnRemembered"
             android:layout_width="0dp"
             android:layout_height="56dp"
-            android:layout_weight="1"
             android:layout_marginStart="6dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_card"
+            android:backgroundTint="@color/sm_success"
+            android:elevation="0dp"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:paddingStart="8dp"
+            android:paddingTop="0dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="0dp"
             android:text="Đã nhớ"
             android:textAllCaps="false"
-            android:textColor="#12112C"
-            android:textSize="15sp"
-            android:backgroundTint="#35D6A0" />
+            android:textColor="@color/sm_background"
+            android:textSize="15sp" />
 
     </LinearLayout>
 
+    <!-- Tổng kết lượt học -->
     <ScrollView
         android:id="@+id/studyResult"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:fillViewport="true"
+        android:overScrollMode="never"
         android:visibility="gone">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
             android:gravity="center"
+            android:orientation="vertical"
             android:paddingTop="24dp"
             android:paddingBottom="24dp">
 
@@ -251,9 +308,11 @@
                 android:id="@+id/tvStudyResultTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:fontFamily="sans-serif"
                 android:gravity="center"
+                android:letterSpacing="-0.02"
                 android:text="Hoàn thành lượt học!"
-                android:textColor="#F5F3FF"
+                android:textColor="@color/sm_text_primary"
                 android:textSize="25sp"
                 android:textStyle="bold" />
 
@@ -262,22 +321,30 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
+                android:background="@drawable/bg_home_panel"
                 android:gravity="center"
                 android:lineSpacingExtra="8dp"
-                android:textColor="#B8B5D6"
-                android:textSize="19sp" />
+                android:padding="20dp"
+                android:textColor="@color/sm_text_secondary"
+                android:textSize="17sp" />
 
             <Button
                 android:id="@+id/btnReviewUnknown"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:minHeight="56dp"
                 android:layout_marginTop="24dp"
+                android:background="@drawable/bg_card"
+                android:backgroundTint="@color/sm_warning"
+                android:elevation="0dp"
+                android:fontFamily="sans-serif-medium"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:minHeight="56dp"
+                android:padding="12dp"
                 android:text="Ôn từ chưa thuộc"
                 android:textAllCaps="false"
-                android:textColor="#12112C"
+                android:textColor="@color/sm_background"
                 android:textSize="16sp"
-                android:backgroundTint="#FFC66D"
                 android:visibility="gone" />
 
             <Button
@@ -285,31 +352,52 @@
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="8dp"
+                android:background="@drawable/bg_button_primary"
+                android:backgroundTint="@null"
+                android:elevation="0dp"
+                android:fontFamily="sans-serif-medium"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:minHeight="0dp"
+                android:paddingStart="12dp"
+                android:paddingTop="0dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="0dp"
                 android:text="Học lại toàn bộ"
                 android:textAllCaps="false"
-                android:textColor="#12112C"
-                android:textSize="16sp"
-                android:backgroundTint="#20D9F4" />
+                android:textColor="@color/sm_background"
+                android:textSize="16sp" />
 
             <Button
                 android:id="@+id/btnBackToDeck"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="8dp"
+                android:background="@drawable/bg_home_button_secondary"
+                android:backgroundTint="@null"
+                android:elevation="0dp"
+                android:fontFamily="sans-serif-medium"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:minHeight="0dp"
+                android:paddingStart="12dp"
+                android:paddingTop="0dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="0dp"
                 android:text="Về bộ thẻ"
                 android:textAllCaps="false"
-                android:textColor="#F5F3FF"
-                android:textSize="16sp"
-                android:backgroundTint="#302E50" />
+                android:textColor="@color/sm_cyan"
+                android:textSize="16sp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:gravity="center"
+                android:lineSpacingExtra="3dp"
                 android:text="Bộ đếm tính theo lượt hiện tại. Tiến độ từng từ được lưu trên thiết bị."
-                android:textColor="#9692B5"
-                android:textSize="13sp" />
+                android:textColor="@color/sm_text_hint"
+                android:textSize="12sp" />
 
         </LinearLayout>
 

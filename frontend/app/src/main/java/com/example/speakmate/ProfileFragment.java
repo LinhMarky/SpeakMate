@@ -48,6 +48,29 @@ public class ProfileFragment extends Fragment {
     ) {
         super.onViewCreated(view, savedInstanceState);
 
+        view.findViewById(R.id.btnProfileSpeakingHistory)
+                .setOnClickListener(button -> {
+                    if (!isAdded()
+                            || !isResumed()
+                            || getParentFragmentManager().isStateSaved()) {
+                        return;
+                    }
+
+                    WindowCompat.getInsetsController(
+                            requireActivity().getWindow(),
+                            view
+                    ).hide(WindowInsetsCompat.Type.ime());
+
+                    View focused = requireActivity().getCurrentFocus();
+
+                    if (focused != null) {
+                        focused.clearFocus();
+                    }
+
+                    ((MainActivity) requireActivity())
+                            .openSpeakingHistory();
+                });
+
         view.findViewById(R.id.btnProfileOpenLogin)
                 .setOnClickListener(button ->
                         ((MainActivity) requireActivity()).openLogin()

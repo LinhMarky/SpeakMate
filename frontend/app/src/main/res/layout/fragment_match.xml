@@ -1,39 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/sm_background"
     android:orientation="vertical"
-    android:background="#12112C"
     android:padding="20dp">
 
     <!-- Thanh tiêu đề -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
         <TextView
             android:id="@+id/btnCloseMatch"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:gravity="center"
             android:background="?android:attr/selectableItemBackgroundBorderless"
-            android:text="✕"
-            android:textColor="#F5F3FF"
-            android:textSize="25sp"
-            android:contentDescription="Thoát ghép thẻ"
             android:clickable="true"
-            android:focusable="true" />
+            android:contentDescription="Thoát ghép thẻ"
+            android:focusable="true"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:text="✕"
+            android:textColor="@color/sm_cyan"
+            android:textSize="25sp" />
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:fontFamily="sans-serif"
             android:text="Ghép thẻ"
-            android:textColor="#F5F3FF"
+            android:textColor="@color/sm_text_primary"
             android:textSize="21sp"
             android:textStyle="bold" />
 
@@ -41,14 +42,15 @@
             android:id="@+id/btnRestartMatchTop"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:gravity="center"
             android:background="?android:attr/selectableItemBackgroundBorderless"
-            android:text="↻"
-            android:textColor="#20D9F4"
-            android:textSize="30sp"
-            android:contentDescription="Chơi lại"
             android:clickable="true"
+            android:contentDescription="Chơi lại"
             android:focusable="true"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:text="↻"
+            android:textColor="@color/sm_cyan"
+            android:textSize="30sp"
             android:visibility="gone" />
 
     </LinearLayout>
@@ -59,16 +61,17 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="12dp"
-        android:textColor="#B8B5D6"
+        android:fontFamily="sans-serif-medium"
+        android:textColor="@color/sm_text_secondary"
         android:textSize="14sp" />
 
-    <!-- Chỉ một trong ba trạng thái được hiển thị -->
+    <!-- Java hiển thị một trong ba trạng thái -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
 
-        <!-- 1. Giới thiệu -->
+        <!-- Giới thiệu -->
         <ScrollView
             android:id="@+id/panelMatchIntro"
             android:layout_width="match_parent"
@@ -79,28 +82,31 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
                 android:gravity="center"
+                android:orientation="vertical"
                 android:paddingTop="24dp"
                 android:paddingBottom="24dp">
 
                 <TextView
                     android:layout_width="100dp"
                     android:layout_height="100dp"
+                    android:background="@drawable/bg_home_feature"
                     android:gravity="center"
-                    android:background="@drawable/bg_card"
+                    android:importantForAccessibility="no"
+                    android:includeFontPadding="false"
                     android:text="▦"
-                    android:textColor="#20D9F4"
-                    android:textSize="60sp"
-                    android:importantForAccessibility="no" />
+                    android:textColor="@color/sm_cyan"
+                    android:textSize="60sp" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="28dp"
+                    android:fontFamily="sans-serif"
                     android:gravity="center"
+                    android:letterSpacing="-0.02"
                     android:text="Bạn đã sẵn sàng?"
-                    android:textColor="#F5F3FF"
+                    android:textColor="@color/sm_text_primary"
                     android:textSize="29sp"
                     android:textStyle="bold" />
 
@@ -110,45 +116,45 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:gravity="center"
+                    android:lineSpacingExtra="6dp"
                     android:text="Ghép từ tiếng Anh với nghĩa tương ứng."
-                    android:textColor="#B8B5D6"
-                    android:textSize="17sp"
-                    android:lineSpacingExtra="6dp" />
+                    android:textColor="@color/sm_text_secondary"
+                    android:textSize="17sp" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="24dp"
+                    android:background="@drawable/bg_home_panel"
                     android:orientation="vertical"
-                    android:padding="18dp"
-                    android:background="@drawable/bg_card">
+                    android:padding="18dp">
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif-medium"
+                        android:letterSpacing="0.1"
                         android:text="CÁCH CHƠI"
-                        android:textColor="#9692B5"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:letterSpacing="0.1" />
+                        android:textColor="@color/sm_text_secondary"
+                        android:textSize="12sp" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="10dp"
+                        android:lineSpacingExtra="4dp"
                         android:text="Chọn một từ tiếng Anh, rồi chọn nghĩa tiếng Việt tương ứng."
-                        android:textColor="#F5F3FF"
-                        android:textSize="16sp"
-                        android:lineSpacingExtra="4dp" />
+                        android:textColor="@color/sm_text_primary"
+                        android:textSize="16sp" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
+                        android:lineSpacingExtra="3dp"
                         android:text="Ghép sai: −1 giây. Đồng hồ không thấp hơn 0,1 giây."
-                        android:textColor="#FFC66D"
-                        android:textSize="14sp"
-                        android:lineSpacingExtra="3dp" />
+                        android:textColor="@color/sm_warning"
+                        android:textSize="14sp" />
 
                 </LinearLayout>
 
@@ -159,17 +165,25 @@
                     android:layout_marginTop="28dp"
                     android:background="@drawable/bg_button_primary"
                     android:backgroundTint="@null"
+                    android:elevation="0dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:minHeight="0dp"
+                    android:paddingStart="12dp"
+                    android:paddingTop="0dp"
+                    android:paddingEnd="12dp"
+                    android:paddingBottom="0dp"
                     android:text="Bắt đầu chơi"
                     android:textAllCaps="false"
-                    android:textColor="#12112C"
-                    android:textSize="17sp"
-                    android:textStyle="bold" />
+                    android:textColor="@color/sm_background"
+                    android:textSize="17sp" />
 
             </LinearLayout>
 
         </ScrollView>
 
-        <!-- 2. Bàn chơi -->
+        <!-- Bàn chơi -->
         <LinearLayout
             android:id="@+id/panelMatchGame"
             android:layout_width="match_parent"
@@ -182,9 +196,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
+                android:fontFamily="sans-serif"
                 android:gravity="center"
+                android:letterSpacing="-0.02"
                 android:text="0,1 giây"
-                android:textColor="#F5F3FF"
+                android:textColor="@color/sm_cyan"
                 android:textSize="32sp"
                 android:textStyle="bold" />
 
@@ -193,27 +209,31 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
+                android:fontFamily="sans-serif-medium"
                 android:gravity="center"
                 android:text="0 / 6 cặp đã ghép"
-                android:textColor="#9692B5"
+                android:textColor="@color/sm_text_secondary"
                 android:textSize="14sp" />
 
             <TextView
                 android:id="@+id/tvMatchFeedback"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:minHeight="44dp"
                 android:layout_marginTop="8dp"
+                android:accessibilityLiveRegion="polite"
                 android:gravity="center"
+                android:minHeight="44dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
                 android:text="Chọn hai thẻ tương ứng"
-                android:textColor="#B8B5D6"
-                android:textSize="15sp"
-                android:accessibilityLiveRegion="polite" />
+                android:textColor="@color/sm_text_secondary"
+                android:textSize="15sp" />
 
             <ScrollView
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
+                android:clipToPadding="false"
                 android:fillViewport="true"
                 android:overScrollMode="never">
 
@@ -230,7 +250,7 @@
 
         </LinearLayout>
 
-        <!-- 3. Kết quả -->
+        <!-- Kết quả -->
         <ScrollView
             android:id="@+id/panelMatchResult"
             android:layout_width="match_parent"
@@ -242,29 +262,33 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
                 android:gravity="center"
+                android:orientation="vertical"
                 android:paddingTop="28dp"
                 android:paddingBottom="24dp">
 
                 <TextView
                     android:layout_width="96dp"
                     android:layout_height="96dp"
+                    android:background="@drawable/bg_home_feature"
                     android:gravity="center"
-                    android:background="@drawable/bg_card"
+                    android:importantForAccessibility="no"
+                    android:includeFontPadding="false"
                     android:text="✓"
-                    android:textColor="#35D6A0"
-                    android:textSize="52sp"
-                    android:importantForAccessibility="no" />
+                    android:textColor="@color/sm_success"
+                    android:textSize="52sp" />
 
                 <TextView
                     android:id="@+id/tvMatchResultTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="26dp"
+                    android:fontFamily="sans-serif"
                     android:gravity="center"
+                    android:letterSpacing="-0.02"
+                    android:lineSpacingExtra="4dp"
                     android:text="Hoàn thành!"
-                    android:textColor="#F5F3FF"
+                    android:textColor="@color/sm_text_primary"
                     android:textSize="28sp"
                     android:textStyle="bold" />
 
@@ -273,35 +297,38 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="14dp"
+                    android:fontFamily="sans-serif-medium"
                     android:gravity="center"
-                    android:textColor="#20D9F4"
-                    android:textSize="24sp"
-                    android:textStyle="bold" />
+                    android:lineSpacingExtra="4dp"
+                    android:textColor="@color/sm_cyan"
+                    android:textSize="24sp" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="26dp"
+                    android:background="@drawable/bg_home_panel"
                     android:orientation="vertical"
-                    android:padding="20dp"
-                    android:background="@drawable/bg_card">
+                    android:padding="20dp">
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif-medium"
+                        android:letterSpacing="0.08"
                         android:text="KỶ LỤC CỦA BỘ THẺ"
-                        android:textColor="#9692B5"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:letterSpacing="0.08" />
+                        android:textColor="@color/sm_text_secondary"
+                        android:textSize="12sp" />
 
                     <TextView
                         android:id="@+id/tvMatchBest"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="10dp"
-                        android:textColor="#FFC66D"
-                        android:textSize="26sp"
+                        android:fontFamily="sans-serif"
+                        android:letterSpacing="-0.02"
+                        android:textColor="@color/sm_warning"
+                        android:textSize="30sp"
                         android:textStyle="bold" />
 
                     <TextView
@@ -309,9 +336,9 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
-                        android:textColor="#B8B5D6"
-                        android:textSize="15sp"
-                        android:lineSpacingExtra="4dp" />
+                        android:lineSpacingExtra="4dp"
+                        android:textColor="@color/sm_text_secondary"
+                        android:textSize="15sp" />
 
                 </LinearLayout>
 
@@ -322,22 +349,39 @@
                     android:layout_marginTop="28dp"
                     android:background="@drawable/bg_button_primary"
                     android:backgroundTint="@null"
+                    android:elevation="0dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:minHeight="0dp"
+                    android:paddingStart="12dp"
+                    android:paddingTop="0dp"
+                    android:paddingEnd="12dp"
+                    android:paddingBottom="0dp"
                     android:text="Chơi lại"
                     android:textAllCaps="false"
-                    android:textColor="#12112C"
-                    android:textSize="17sp"
-                    android:textStyle="bold" />
+                    android:textColor="@color/sm_background"
+                    android:textSize="17sp" />
 
                 <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/btnBackMatchDeck"
                     android:layout_width="match_parent"
                     android:layout_height="54dp"
                     android:layout_marginTop="10dp"
-                    android:background="@drawable/bg_card"
+                    android:background="@drawable/bg_home_button_secondary"
                     android:backgroundTint="@null"
+                    android:elevation="0dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:minHeight="0dp"
+                    android:paddingStart="12dp"
+                    android:paddingTop="0dp"
+                    android:paddingEnd="12dp"
+                    android:paddingBottom="0dp"
                     android:text="Về bộ thẻ"
                     android:textAllCaps="false"
-                    android:textColor="#20D9F4"
+                    android:textColor="@color/sm_cyan"
                     android:textSize="16sp" />
 
             </LinearLayout>

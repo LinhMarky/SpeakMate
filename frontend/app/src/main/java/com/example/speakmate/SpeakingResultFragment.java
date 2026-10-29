@@ -425,18 +425,71 @@ public class SpeakingResultFragment extends Fragment {
 
         for (int i = 0; i < vocabulary.size(); i++) {
             final int index = i;
+
             Flashcard card = vocabulary.get(i);
+
+            String heading =
+                    card.getWord() + " · " + card.getMeaning();
+
+            String example = card.getExample();
+
+            boolean hasExample =
+                    example != null
+                            && !example.trim().isEmpty();
+
+            String content = hasExample
+                    ? heading + "\n" + example.trim()
+                    : heading;
+
+            android.text.SpannableString styledText =
+                    new android.text.SpannableString(content);
+
+            // Nhấn mạnh từ tiếng Anh.
+            styledText.setSpan(
+                    new android.text.style.StyleSpan(
+                            android.graphics.Typeface.BOLD
+                    ),
+                    0,
+                    card.getWord().length(),
+                    android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            );
+
+            // Câu ví dụ nhỏ hơn và dịu màu.
+            if (hasExample) {
+                int exampleStart = heading.length() + 1;
+
+                styledText.setSpan(
+                        new android.text.style.ForegroundColorSpan(
+                                androidx.core.content.ContextCompat.getColor(
+                                        requireContext(),
+                                        R.color.sm_text_secondary
+                                )
+                        ),
+                        exampleStart,
+                        content.length(),
+                        android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                );
+
+                styledText.setSpan(
+                        new android.text.style.RelativeSizeSpan(0.88f),
+                        exampleStart,
+                        content.length(),
+                        android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                );
+            }
 
             AppCompatCheckBox checkBox =
                     new AppCompatCheckBox(requireContext());
 
-            checkBox.setText(
-                    card.getWord()
-                            + " · " + card.getMeaning()
-                            + "\n" + card.getExample()
-            );
-
+            checkBox.setText(styledText);
             checkBox.setTextSize(15);
+
+            checkBox.setTypeface(
+                    android.graphics.Typeface.create(
+                            "sans-serif",
+                            android.graphics.Typeface.NORMAL
+                    )
+            );
 
             checkBox.setTextColor(
                     androidx.core.content.ContextCompat.getColor(
@@ -454,12 +507,25 @@ public class SpeakingResultFragment extends Fragment {
                     )
             );
 
-            checkBox.setBackgroundResource(R.drawable.bg_card);
+            checkBox.setBackgroundResource(
+                    R.drawable.bg_sm_result_word
+            );
+
+            checkBox.setGravity(
+                    android.view.Gravity.CENTER_VERTICAL
+            );
+
+            checkBox.setMinHeight(dp(76));
+
+            checkBox.setLineSpacing(
+                    dp(4),
+                    1f
+            );
 
             checkBox.setPadding(
                     dp(12),
                     dp(14),
-                    dp(12),
+                    dp(14),
                     dp(14)
             );
 

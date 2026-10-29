@@ -3,8 +3,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/sm_background"
+    android:focusableInTouchMode="true"
     android:orientation="vertical">
 
+    <!-- Thanh tiêu đề -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -19,9 +21,10 @@
             android:id="@+id/btnBackGeneratedReview"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:background="@drawable/bg_card"
+            android:background="@drawable/bg_home_button_secondary"
             android:backgroundTint="@null"
             android:contentDescription="Quay lại"
+            android:elevation="0dp"
             android:gravity="center"
             android:includeFontPadding="false"
             android:minWidth="0dp"
@@ -37,6 +40,8 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="14dp"
             android:layout_weight="1"
+            android:fontFamily="sans-serif"
+            android:letterSpacing="-0.02"
             android:text="Xem lại từ vựng"
             android:textColor="@color/sm_text_primary"
             android:textSize="20sp"
@@ -48,6 +53,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
+        android:clipToPadding="false"
         android:fillViewport="true"
         android:overScrollMode="never">
 
@@ -68,34 +74,51 @@
                 android:textColor="@color/sm_text_secondary"
                 android:textSize="14sp" />
 
-            <TextView
+            <!-- Thông tin bộ thẻ -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:labelFor="@id/etGeneratedDeckName"
-                android:text="Tên bộ thẻ"
-                android:textColor="@color/sm_text_primary"
-                android:textSize="15sp"
-                android:textStyle="bold" />
-
-            <androidx.appcompat.widget.AppCompatEditText
-                android:id="@+id/etGeneratedDeckName"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginTop="8dp"
                 android:background="@drawable/bg_card"
-                android:backgroundTint="@null"
-                android:hint="Nhập tên bộ thẻ"
-                android:imeOptions="actionDone"
-                android:inputType="textCapSentences"
-                android:maxLength="100"
-                android:paddingStart="14dp"
-                android:paddingEnd="14dp"
-                android:saveEnabled="false"
-                android:singleLine="true"
-                android:textColor="@color/sm_text_primary"
-                android:textColorHint="@color/sm_text_hint"
-                android:textSize="15sp" />
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:drawableStart="@drawable/ic_sm_stat_decks"
+                    android:drawablePadding="12dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="center_vertical"
+                    android:labelFor="@id/etGeneratedDeckName"
+                    android:minHeight="36dp"
+                    android:text="Tên bộ thẻ"
+                    android:textColor="@color/sm_text_primary"
+                    android:textSize="16sp" />
+
+                <androidx.appcompat.widget.AppCompatEditText
+                    android:id="@+id/etGeneratedDeckName"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/bg_home_button_secondary"
+                    android:backgroundTint="@null"
+                    android:gravity="center_vertical"
+                    android:hint="Nhập tên bộ thẻ"
+                    android:imeOptions="actionDone"
+                    android:inputType="textCapSentences"
+                    android:maxLength="100"
+                    android:paddingStart="14dp"
+                    android:paddingTop="0dp"
+                    android:paddingEnd="14dp"
+                    android:paddingBottom="0dp"
+                    android:saveEnabled="false"
+                    android:singleLine="true"
+                    android:textColor="@color/sm_text_primary"
+                    android:textColorHint="@color/sm_text_hint"
+                    android:textSize="15sp" />
+
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/tvGeneratedSelectedCount"
@@ -103,10 +126,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:accessibilityLiveRegion="polite"
+                android:fontFamily="sans-serif-medium"
                 android:textColor="@color/sm_cyan"
-                android:textSize="15sp"
-                android:textStyle="bold" />
+                android:textSize="15sp" />
 
+            <!-- Java thêm các mục từ vựng vào đây -->
             <LinearLayout
                 android:id="@+id/generatedReviewContainer"
                 android:layout_width="match_parent"
@@ -130,8 +154,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="20dp"
-                android:background="@drawable/bg_button_primary"
-                android:backgroundTint="@null"
+                android:background="@drawable/bg_card"
+                android:backgroundTint="@color/sm_cyan"
+                android:elevation="0dp"
+                android:fontFamily="sans-serif-medium"
                 android:gravity="center"
                 android:includeFontPadding="false"
                 android:minHeight="0dp"
@@ -142,24 +168,28 @@
                 android:text="Lưu vào bộ thẻ của tôi"
                 android:textAllCaps="false"
                 android:textColor="@color/sm_background"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textSize="16sp" />
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnOpenGeneratedDeck"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
                 android:layout_marginTop="12dp"
-                android:background="@drawable/bg_card"
+                android:background="@drawable/bg_home_button_secondary"
                 android:backgroundTint="@null"
+                android:elevation="0dp"
+                android:fontFamily="sans-serif-medium"
                 android:gravity="center"
                 android:includeFontPadding="false"
                 android:minHeight="0dp"
+                android:paddingStart="12dp"
+                android:paddingTop="0dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="0dp"
                 android:text="Mở bộ thẻ vừa lưu"
                 android:textAllCaps="false"
                 android:textColor="@color/sm_cyan"
                 android:textSize="15sp"
-                android:textStyle="bold"
                 android:visibility="gone" />
 
         </LinearLayout>

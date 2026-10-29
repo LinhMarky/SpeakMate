@@ -24,11 +24,6 @@ public class HomeFragment extends Fragment {
     ) {
         super.onViewCreated(view, savedInstanceState);
 
-        view.findViewById(R.id.btnHomeSpeakingHistory)
-                .setOnClickListener(button ->
-                        ((MainActivity) requireActivity())
-                                .openSpeakingHistory()
-                );
 
         view.findViewById(R.id.btnHomeEditLearningPlan)
                 .setOnClickListener(v ->
@@ -42,11 +37,6 @@ public class HomeFragment extends Fragment {
                 );
 
         view.findViewById(R.id.cardFlashcards)
-                .setOnClickListener(v ->
-                        navigateToTab(R.id.nav_flashcards)
-                );
-
-        view.findViewById(R.id.btnHomeOpenLibrary)
                 .setOnClickListener(v ->
                         navigateToTab(R.id.nav_flashcards)
                 );

@@ -27,6 +27,15 @@ public class LoginFragment extends Fragment {
     ) {
         super.onViewCreated(view, savedInstanceState);
 
+        view.findViewById(R.id.btnForgotPassword)
+                .setOnClickListener(button ->
+                        android.widget.Toast.makeText(
+                                requireContext(),
+                                "Chức năng quên mật khẩu đang được cập nhật.",
+                                android.widget.Toast.LENGTH_SHORT
+                        ).show()
+                );
+
         openingRegister = false;
 
         EditText usernameInput =

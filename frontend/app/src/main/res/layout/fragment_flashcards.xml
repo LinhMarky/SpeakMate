@@ -3,12 +3,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/sm_background"
+    android:focusableInTouchMode="true"
     android:orientation="vertical"
     android:padding="24dp">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:fontFamily="sans-serif"
+        android:letterSpacing="-0.02"
         android:text="Bộ thẻ của tôi"
         android:textColor="@color/sm_text_primary"
         android:textSize="26sp"
@@ -18,6 +21,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
+        android:lineSpacingExtra="3dp"
         android:text="Học và ôn tập từ vựng theo chủ đề."
         android:textColor="@color/sm_text_secondary"
         android:textSize="14sp" />
@@ -27,14 +31,18 @@
         android:layout_width="match_parent"
         android:layout_height="52dp"
         android:layout_marginTop="20dp"
-        android:background="@drawable/bg_card"
+        android:background="@drawable/bg_home_button_secondary"
         android:backgroundTint="@null"
+        android:fontFamily="sans-serif"
+        android:gravity="center_vertical"
         android:hint="Tìm tên bộ thẻ..."
-        android:inputType="text"
-        android:singleLine="true"
         android:imeOptions="actionDone"
+        android:inputType="text"
         android:paddingStart="16dp"
+        android:paddingTop="0dp"
         android:paddingEnd="16dp"
+        android:paddingBottom="0dp"
+        android:singleLine="true"
         android:textColor="@color/sm_text_primary"
         android:textColorHint="@color/sm_text_hint"
         android:textSize="15sp" />
@@ -44,21 +52,38 @@
         android:layout_width="match_parent"
         android:layout_height="52dp"
         android:layout_marginTop="16dp"
-        android:background="@drawable/bg_button_primary"
-        android:backgroundTint="@null"
+        android:background="@drawable/bg_card"
+        android:backgroundTint="@color/sm_cyan"
+        android:elevation="0dp"
+        android:fontFamily="sans-serif-medium"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:minHeight="0dp"
+        android:paddingStart="12dp"
+        android:paddingTop="0dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="0dp"
         android:text="Tạo bộ thẻ bằng AI"
         android:textAllCaps="false"
         android:textColor="@color/sm_background"
-        android:textSize="16sp"
-        android:textStyle="bold" />
+        android:textSize="16sp" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/btnCreateDeckManual"
         android:layout_width="match_parent"
         android:layout_height="52dp"
         android:layout_marginTop="10dp"
-        android:background="@drawable/bg_card"
+        android:background="@drawable/bg_home_button_secondary"
         android:backgroundTint="@null"
+        android:elevation="0dp"
+        android:fontFamily="sans-serif-medium"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:minHeight="0dp"
+        android:paddingStart="12dp"
+        android:paddingTop="0dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="0dp"
         android:text="+ Tạo thủ công"
         android:textAllCaps="false"
         android:textColor="@color/sm_cyan"
@@ -70,19 +95,24 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="22dp"
         android:layout_marginBottom="12dp"
+        android:accessibilityLiveRegion="polite"
+        android:fontFamily="sans-serif-medium"
         android:textColor="@color/sm_text_secondary"
         android:textSize="14sp" />
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:overScrollMode="never">
 
         <LinearLayout
             android:id="@+id/deckContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" />
+            android:orientation="vertical"
+            android:paddingBottom="4dp" />
 
     </ScrollView>
 
