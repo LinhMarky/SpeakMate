@@ -78,7 +78,7 @@
                     android:layout_gravity="center"
                     android:contentDescription="@null"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/sm_mascot_wave" />
+                    android:src="@drawable/sm_mascot_robot" />
 
                 <ImageView
                     android:layout_width="32dp"
