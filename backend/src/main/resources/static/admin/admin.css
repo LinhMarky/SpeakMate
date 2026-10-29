@@ -1,0 +1,87 @@
+:root {
+    font:
+        16px/1.6 system-ui,
+        sans-serif;
+    color: #f5f3ff;
+    background: #171628;
+}
+
+body {
+    margin: 0;
+}
+
+main {
+    max-width: 850px;
+    margin: auto;
+    padding: 24px;
+}
+
+h1 {
+    color: #20d9f4;
+}
+
+section,
+article {
+    background: #24233f;
+    border: 1px solid #45416b;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+label {
+    display: block;
+    margin: 14px 0;
+}
+
+input,
+textarea,
+select {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 12px;
+    margin-top: 5px;
+    color: inherit;
+    background: #171628;
+    border: 1px solid #777398;
+    border-radius: 6px;
+    font: inherit;
+}
+
+button {
+    font: inherit;
+    background: #8654ff;
+    color: white;
+    border: 0;
+    border-radius: 7px;
+    padding: 10px 16px;
+    cursor: pointer;
+    margin: 5px;
+}
+
+button:disabled {
+    opacity: 0.45;
+    cursor: wait;
+}
+
+p {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+#message {
+    color: #ffc66d;
+    min-height: 26px;
+}
+
+.paging {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+[hidden] {
+    display: none !important;
+}

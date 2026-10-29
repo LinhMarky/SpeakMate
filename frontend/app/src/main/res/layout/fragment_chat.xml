@@ -101,7 +101,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:lineSpacingExtra="3dp"
-            android:text="Chế độ demo · Phản hồi mẫu, chưa kết nối AI"
+            android:id="@+id/tvChatState"
+            android:text="Đang tải hội thoại…"
             android:textColor="@color/sm_text_hint"
             android:textSize="11sp" />
 

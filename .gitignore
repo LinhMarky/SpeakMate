@@ -2,6 +2,7 @@
 # Android Studio
 .idea/
 *.iml
+.vscode/
 
 # Gradle and generated files
 .gradle/
@@ -10,6 +11,18 @@
 local.properties
 .externalNativeBuild/
 .cxx/
+bin/
+*.class
+
+# Logs, temporary files and OS metadata
+*.log
+*.tmp
+*.bak
+*.orig
+*.rej
+.DS_Store
+Thumbs.db
+desktop.ini
 
 # Local secrets and signing files
 .env
@@ -18,3 +31,7 @@ local.properties
 *.jks
 *.keystore
 keystore.properties
+
+# Local recovery snapshots
+/.recovery/
+*.zip

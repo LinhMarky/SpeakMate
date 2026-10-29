@@ -1,0 +1,55 @@
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: speakmate
+      MYSQL_USER: ${MYSQL_USER:-speakmate}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env}
+      TZ: UTC
+    ports:
+      - "127.0.0.1:${MYSQL_HOST_PORT:-3307}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # Chỉ chạy khi volume rỗng. SQL v3 dùng tên database cố định speakmate.
+      - ./speakmate.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./Docs/seeds/V1__topics.sql:/docker-entrypoint-initdb.d/02-topics.sql:ro
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'MYSQL_PWD="$${MYSQL_PASSWORD}" mysql --protocol=TCP --host=127.0.0.1 --user="$${MYSQL_USER}" --database=speakmate --silent --execute="SELECT 1 FROM word_practices LIMIT 1" >/dev/null'
+      interval: 5s
+      timeout: 5s
+      start_period: 40s
+      retries: 20
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      PORT: "8081"
+      # Optional overrides use the DB_* variables already supported by Spring.
+      DB_URL: ${DB_URL:-jdbc:mysql://mysql:3306/speakmate?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true&allowPublicKeyRetrieval=true&useSSL=false}
+      DB_USERNAME: ${DB_USERNAME:-${MYSQL_USER:-speakmate}}
+      DB_PASSWORD: ${DB_PASSWORD:-${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      # application.properties maps this variable to app.ai.api-key.
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash-lite}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      MAIL_FROM: ${MAIL_FROM:-}
+      SPRING_MAIL_HOST: ${SMTP_HOST:-}
+      SPRING_MAIL_PORT: ${SMTP_PORT:-587}
+      SPRING_MAIL_USERNAME: ${SMTP_USERNAME:-}
+      SPRING_MAIL_PASSWORD: ${SMTP_PASSWORD:-}
+    ports:
+      - "${BACKEND_HOST_PORT:-8081}:8081"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  mysql_data:

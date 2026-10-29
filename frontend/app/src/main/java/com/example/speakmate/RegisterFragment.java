@@ -11,9 +11,17 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
+import com.example.speakmate.ui.NetworkFragment;
+import com.example.speakmate.auth.AuthApi;
 
-public class RegisterFragment extends Fragment {
+public class RegisterFragment extends NetworkFragment {
+
+    private boolean busy;
+
+    @Override
+    protected boolean requiresAuthentication() {
+        return false;
+    }
 
     public RegisterFragment() {
         super(R.layout.fragment_register);
@@ -25,12 +33,10 @@ public class RegisterFragment extends Fragment {
             @Nullable Bundle savedInstanceState
     ) {
         super.onViewCreated(view, savedInstanceState);
+        busy = false;
 
         EditText nameInput =
                 view.findViewById(R.id.etRegisterName);
-
-        EditText usernameInput =
-                view.findViewById(R.id.etRegisterUsername);
 
         EditText emailInput =
                 view.findViewById(R.id.etRegisterEmail);
@@ -67,10 +73,6 @@ public class RegisterFragment extends Fragment {
                             .toString()
                             .trim();
 
-                    String username = usernameInput.getText()
-                            .toString()
-                            .trim();
-
                     String email = emailInput.getText()
                             .toString()
                             .trim();
@@ -89,14 +91,6 @@ public class RegisterFragment extends Fragment {
                         return;
                     }
 
-                    if (username.isEmpty()) {
-                        usernameInput.setError(
-                                "Bạn hãy nhập tên đăng nhập."
-                        );
-                        usernameInput.requestFocus();
-                        return;
-                    }
-
                     if (email.isEmpty()
                             || !Patterns.EMAIL_ADDRESS
                             .matcher(email)
@@ -108,9 +102,10 @@ public class RegisterFragment extends Fragment {
                         return;
                     }
 
-                    if (password.isEmpty()) {
+                    if (password.length() < 8 || password.length() > 64
+                            || password.getBytes(java.nio.charset.StandardCharsets.UTF_8).length > 72) {
                         passwordInput.setError(
-                                "Bạn hãy nhập mật khẩu."
+                                "Mật khẩu cần 8–64 ký tự, tối đa 72 byte UTF-8."
                         );
                         passwordInput.requestFocus();
                         return;
@@ -132,11 +127,30 @@ public class RegisterFragment extends Fragment {
                         return;
                     }
 
-                    errorText.setText(
-                            "Chức năng đăng ký chưa kết nối máy chủ."
-                    );
-
-                    errorText.setVisibility(View.VISIBLE);
+                    if (busy) return;
+                    busy = true;
+                    view.findViewById(R.id.progressRegister).setVisibility(View.VISIBLE);
+                    view.findViewById(R.id.btnRegister).setEnabled(false);
+                    view.findViewById(R.id.btnBackToLogin).setEnabled(false);
+                    call(() -> {
+                        new AuthApi().register(name, email, password);
+                        return true;
+                    }, registered -> {
+                        busy = false;
+                        view.findViewById(R.id.progressRegister).setVisibility(View.GONE);
+                        passwordInput.setText("");
+                        confirmInput.setText("");
+                        android.widget.Toast.makeText(requireContext(),
+                                "Đăng ký thành công. Hãy đăng nhập để tiếp tục.", android.widget.Toast.LENGTH_LONG).show();
+                        goBack();
+                    }, error -> {
+                        busy = false;
+                        view.findViewById(R.id.progressRegister).setVisibility(View.GONE);
+                        view.findViewById(R.id.btnRegister).setEnabled(true);
+                        view.findViewById(R.id.btnBackToLogin).setEnabled(true);
+                        errorText.setText(error.getMessage());
+                        errorText.setVisibility(View.VISIBLE);
+                    });
                 });
     }
 

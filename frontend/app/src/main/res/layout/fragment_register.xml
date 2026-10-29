@@ -117,7 +117,7 @@
                 android:imeOptions="actionNext"
                 android:inputType="textCapWords|textPersonName"
                 android:maxLength="40"
-                android:nextFocusForward="@id/etRegisterUsername"
+                android:nextFocusForward="@id/etRegisterEmail"
                 android:paddingStart="14dp"
                 android:paddingTop="0dp"
                 android:paddingEnd="14dp"
@@ -134,12 +134,14 @@
                 android:layout_marginTop="18dp"
                 android:fontFamily="sans-serif-medium"
                 android:labelFor="@id/etRegisterUsername"
+                android:visibility="gone"
                 android:text="Tên đăng nhập"
                 android:textColor="@color/sm_text_primary"
                 android:textSize="14sp" />
 
             <androidx.appcompat.widget.AppCompatEditText
                 android:id="@+id/etRegisterUsername"
+                android:visibility="gone"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="8dp"

@@ -16,6 +16,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.example.speakmate.auth.SessionManager;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -287,6 +288,14 @@ public class MainActivity extends AppCompatActivity {
                 .commitNow();
 
         updateNavigation(next);
+    }
+
+    public void showSpeakingResult(long conversationId) {
+        if (getSupportFragmentManager().isStateSaved()) return;
+        hideKeyboard();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragmentContainer, SpeakingResultFragment.newInstance(conversationId))
+                .commit();
     }
 
     public void showSpeakingResult(
@@ -580,6 +589,17 @@ public class MainActivity extends AppCompatActivity {
                 )
                 .addToBackStack("login")
                 .commit();
+    }
+
+    public void onSessionExpired() {
+        SessionManager.get(this).clear();
+        if (getSupportFragmentManager().isStateSaved()) return;
+        navigateToTab(R.id.nav_home);
+        openLogin();
+    }
+
+    public void onSignedIn() {
+        navigateToTab(R.id.nav_speaking);
     }
 
     private void hideKeyboard() {

@@ -1,0 +1,909 @@
+{
+  "contractVersion": "1.0.0",
+  "notice": "Illustrative fixtures, not real accounts/tokens or a database seed. Choose one named case; cases represent different lifecycle stages, not one simultaneous database snapshot. Keep IDs consistent within a case. Never submit EXAMPLE_ONLY tokens to a real server.",
+  "ids": {
+    "userA": 101,
+    "userB": 102,
+    "topic": 201,
+    "conversation": 301,
+    "userMessages": [
+      501,
+      503,
+      505
+    ],
+    "aiMessages": [
+      502,
+      504,
+      506
+    ],
+    "suggestions": [
+      601,
+      602
+    ],
+    "savedWords": [
+      701,
+      702
+    ],
+    "createRequestId": "10000000-0000-4000-8000-000000000001",
+    "requestIds": [
+      "20000000-0000-4000-8000-000000000001",
+      "20000000-0000-4000-8000-000000000002",
+      "20000000-0000-4000-8000-000000000003"
+    ]
+  },
+  "requests": {
+    "createConversation": {
+      "topicId": 201,
+      "level": "B2",
+      "createRequestId": "10000000-0000-4000-8000-000000000001"
+    },
+    "sendConversationMessage": {
+      "content": "I have a reservation for two nights, but I am not sure whether breakfast is included in the price.",
+      "requestId": "20000000-0000-4000-8000-000000000001"
+    },
+    "saveSuggestedWords": {
+      "suggestionIds": [
+        601,
+        602
+      ]
+    },
+    "reviewSavedWord": {
+      "status": "MASTERED"
+    },
+    "adminCreateTopic": {
+      "name": "Nhận phòng khách sạn",
+      "description": "Bạn là khách, AI là lễ tân. Hãy nhận phòng và hỏi về dịch vụ.",
+      "level": "A1",
+      "scenario": "Bạn là khách đến nhận phòng. AI đóng vai lễ tân, hỗ trợ đặt phòng, ăn sáng và gửi hành lý."
+    },
+    "adminSetTopicActive": {
+      "active": false
+    }
+  },
+  "fixtures": [
+    {
+      "name": "register-success",
+      "operationId": "registerAccount",
+      "httpStatus": 201,
+      "stage": "account",
+      "headers": {},
+      "body": {
+        "statusCode": 201,
+        "error": null,
+        "message": "Thành công",
+        "data": {
+          "id": 101,
+          "name": "Nguyễn An",
+          "email": "an@example.test",
+          "level": "A1",
+          "role": "USER",
+          "active": true,
+          "passwordEnabled": true,
+          "googleLinked": false
+        }
+      }
+    },
+    {
+      "name": "login-success",
+      "operationId": "loginWithPassword",
+      "httpStatus": 200,
+      "stage": "account",
+      "headers": {},
+      "body": {
+        "statusCode": 200,
+        "error": null,
+        "message": "Thành công",
+        "data": {
+          "access_token": "EXAMPLE_ONLY_NOT_A_VALID_ACCESS_TOKEN",
+          "refresh_token": "EXAMPLE_ONLY_NOT_A_VALID_REFRESH_TOKEN",
+          "token_type": "Bearer",
+          "expires_in": 900,
+          "user": {
+            "id": 101,
+            "name": "Nguyễn An",
+            "email": "an@example.test",
+            "level": "A1",
+            "role": "USER",
+            "active": true,
+            "passwordEnabled": true,
+            "googleLinked": false
+          }
+        }
+      }
+    },
+    {
+      "name": "forgot-accepted",
+      "operationId": "requestPasswordReset",
+      "httpStatus": 202,
+      "stage": "account",
+      "headers": {},
+      "body": {
+        "statusCode": 202,
+        "error": null,
+        "message": "Nếu tài khoản đủ điều kiện, bạn sẽ nhận được email hướng dẫn đặt lại mật khẩu.",
+        "data": null
+      }
+    },
+    {
+      "name": "topics-success",
+      "operationId": "listTopics",
+      "httpStatus": 200,
+      "stage": "before-session",
+      "headers": {},
+      "body": {
+        "statusCode": 200,
+        "error": null,
+        "message": "Thành công",
+        "data": {
+          "meta": {
+            "page": 1,
+            "pageSize": 20,
+            "pages": 1,
+            "total": 5
+          },
+          "result": [
+            {
+              "id": 203,
+              "name": "Giới thiệu ở lớp học",
+              "description": "Làm quen với một bạn học mới.",
+              "level": "A2"
+            },
+            {
+              "id": 202,
+              "name": "Gọi món tại quán cà phê",
+              "description": "Gọi đồ uống và hỏi lựa chọn phù hợp.",
+              "level": "A1"
+            },
+            {
+              "id": 204,
+              "name": "Lên kế hoạch du lịch",
+              "description": "Bàn lịch, chi phí và hoạt động cùng bạn.",
+              "level": "B1"
+            },
+            {
+              "id": 201,
+              "name": "Nhận phòng khách sạn",
+              "description": "Bạn là khách, AI là lễ tân. Hãy nhận phòng và hỏi về dịch vụ.",
+              "level": "A1"
+            },
+            {
+              "id": 205,
+              "name": "Thảo luận cách học hiệu quả",
+              "description": "Trao đổi quan điểm và giải thích lý do.",
+              "level": "B2"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "topics-empty",
+      "operationId": "listTopics",
+      "httpStatus": 200,
+      "stage": "no-active-topics",
+      "headers": {},
+      "body": {
+        "statusCode": 200,
+        "error": null,
+        "message": "Thành công",
+        "data": {
+          "meta": {
+            "page": 1,
+            "pageSize": 20,
+            "pages": 0,
+            "total": 0
+          },
+          "result": []
+        }
+      }
+    },
+    {
+      "name": "conversation-created",
+      "operationId": "createConversation",
+      "httpStatus": 201,
+      "stage": "created",
+      "headers": {},
+      "body": {
+        "statusCode": 201,
+        "error": null,
+        "message": "Thành công",
+        "data": {
+          "id": 301,
+          "topicId": 201,
+          "topicName": "Nhận phòng khách sạn",
+          "scenario": "Bạn là khách đến nhận phòng. AI đóng vai lễ tân, hỗ trợ đặt phòng, ăn sáng và gửi hành lý.",
+          "profileLevelSnapshot": "A1",
+          "level": "B2",
+          "status": "OPEN",
+          "reviewStatus": "NOT_STARTED",
+          "createdAt": "2026-10-25T10:00:00Z",
+          "endedAt": null,
+          "userTurnCount": 0,
+          "pendingReply": null,
+          "messages": []
+        }
+      }
+    },
+    {
+      "name": "conversation-restored",
+      "operationId": "getConversation",
+      "httpStatus": 200,
+      "stage": "during-session",
+      "headers": {},
+      "body": {
+        "statusCode": 200,
+        "error": null,
+        "message": "Thành công",
+        "data": {
+          "id": 301,
+          "topicId": 201,
+          "topicName": "Nhận phòng khách sạn",
+          "scenario": "Bạn là khách đến nhận phòng. AI đóng vai lễ tân, hỗ trợ đặt phòng, ăn sáng và gửi hành lý.",
+          "profileLevelSnapshot": "A1",
+          "level": "B2",
+          "status": "OPEN",
+          "reviewStatus": "NOT_STARTED",
+          "createdAt": "2026-10-25T10:00:00Z",
+          "endedAt": null,
+          "userTurnCount": 3,
+          "pendingReply": null,
+          "messages": [
+            {
+              "id": 501,
+              "sender": "USER",
+              "content": "I have a reservation for two nights, but I am not sure whether breakfast is included in the price.",
+              "requestId": "20000000-0000-4000-8000-000000000001",
+              "createdAt": "2026-10-25T10:00:00Z"
+            },
+            {
+              "id": 502,
+              "sender": "AI",
+              "content": "Let me check your booking. What name is the reservation under?",
+              "requestId": "20000000-0000-4000-8000-000000000001",
+              "createdAt": "2026-10-25T10:00:05Z"
+            },
+            {
+              "id": 503,
+              "sender": "USER",
+              "content": "Yesterday I book a quiet room because I need to sleep well before an important meeting tomorrow morning.",
+              "requestId": "20000000-0000-4000-8000-000000000002",
+              "createdAt": "2026-10-25T10:01:00Z"
+            },
+            {
+              "id": 504,
+              "sender": "AI",
+              "content": "I can help with that. Would you prefer a room away from the elevator?",
+              "requestId": "20000000-0000-4000-8000-000000000002",
+              "createdAt": "2026-10-25T10:01:05Z"
+            },
+            {
+              "id": 505,
+              "sender": "USER",
+              "content": "Yes, please. Could you also tell me what time breakfast starts and whether I can leave my bags after checkout?",
+              "requestId": "20000000-0000-4000-8000-000000000003",
+              "createdAt": "2026-10-25T10:02:00Z"
+            },
+            {
+              "id": 506,
+              "sender": "AI",
+              "content": "Breakfast starts at seven. You can leave your bags with us after checkout.",
+              "requestId": "20000000-0000-4000-8000-000000000003",
+              "createdAt": "2026-10-25T10:02:05Z"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "reply-completed",
+      "operationId": "sendConversationMessage",
+      "httpStatus": 200,
+      "stage": "turn1",
+      "headers": {},
+      "body": {
+        "statusCode": 200,
+        "error": null,
+        "message": "Thành công",
+        "data": {
+          "conversationId": 301,
+          "requestId": "20000000-0000-4000-8000-000000000001",
+          "replyStatus": "COMPLETED",
+          "userMessage": {
+            "id": 501,
+            "sender": "USER",
+            "content": "I have a reservation for two nights, but I am not sure whether breakfast is included in the price.",
+            "requestId": "20000000-0000-4000-8000-000000000001",
+            "createdAt": "2026-10-25T10:00:00Z"
+          },
+          "aiMessage": {
+            "id": 502,
+            "sender": "AI",
+            "content": "Let me check your booking. What name is the reservation under?",
+            "requestId": "20000000-0000-4000-8000-000000000001",
+            "createdAt": "2026-10-25T10:00:05Z"
+          },
+          "pollAfterSeconds": 0,
+          "replayed": false
+        }
+      }
+    },
+    {
+      "name": "reply-processing",
+      "operationId": "sendConversationMessage",
+      "httpStatus": 202,
+      "stage": "turn2",
+      "headers": {
+        "Retry-After": "3"
+      },
+      "body": {
+        "statusCode": 202,
+        "error": null,
+        "message": "Thành công",
+        "data": {
+          "conversationId": 301,
+          "requestId": "20000000-0000-4000-8000-000000000002",
+          "replyStatus": "PROCESSING",
+          "userMessage": {
+            "id": 503,
+            "sender": "USER",
+            "content": "Yesterday I book a quiet room because I need to sleep well before an important meeting tomorrow morning.",
+            "requestId": "20000000-0000-4000-8000-000000000002",
+            "createdAt": "2026-10-25T10:01:00Z"
+          },
+          "aiMessage": null,
+          "pollAfterSeconds": 3,
+          "replayed": true
+        }
+      }
+    },
+    {
+      "name": "conversation-with-pending-reply",
+      "operationId": "getConversation",
+      "httpStatus": 200,
+      "stage": "reply-failed",
+      "headers": {},
+      "body": {
+        "statusCode": 200,
+        "error": null,
+        "message": "Thành công",
+        "data": {
+          "id": 301,
+          "topicId": 201,
+          "topicName": "Nhận phòng khách sạn",
+          "scenario": "Bạn là khách đến nhận phòng. AI đóng vai lễ tân, hỗ trợ đặt phòng, ăn sáng và gửi hành lý.",
+          "profileLevelSnapshot": "A1",
+          "level": "B2",
+          "status": "OPEN",
+          "reviewStatus": "NOT_STARTED",
+          "createdAt": "2026-10-25T10:00:00Z",
+          "endedAt": null,
+          "userTurnCount": 2,
+          "pendingReply": {
+            "requestId": "20000000-0000-4000-8000-000000000002",
+            "userMessageId": 503,
+            "status": "RETRYABLE",
+            "pollAfterSeconds": 0
+          },
+          "messages": [
+            {
+              "id": 501,
+              "sender": "USER",
+              "content": "I have a reservation for two nights, but I am not sure whether breakfast is included in the price.",
+              "requestId": "20000000-0000-4000-8000-000000000001",
+              "createdAt": "2026-10-25T10:00:00Z"
+            },
+            {
+              "id": 502,
+              "sender": "AI",
+              "content": "Let me check your booking. What name is the reservation under?",
+              "requestId": "20000000-0000-4000-8000-000000000001",
+              "createdAt": "2026-10-25T10:00:05Z"
+            },
+            {
+              "id": 503,
+              "sender": "USER",
+              "content": "Yesterday I book a quiet room because I need to sleep well before an important meeting tomorrow morning.",
+              "requestId": "20000000-0000-4000-8000-000000000002",
+              "createdAt": "2026-10-25T10:01:00Z"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "review-processing",
+      "operationId": "finishConversation",
+      "httpStatus": 202,
+      "stage": "review-running",
+      "headers": {
+        "Retry-After": "3"
+      },
+      "body": {
+        "statusCode": 202,
+        "error": null,
+        "message": "Thành công",
+        "data": {
+          "conversationId": 301,
+          "reviewStatus": "PROCESSING",
+          "summary": null,
+          "strengths": null,
+          "weaknesses": null,
+          "recommendedLevel": null,
+          "levelFeedback": null,
+          "grammarCorrections": [],
+          "suggestedWords": [],
+          "canRetry": false,
+          "pollAfterSeconds": 3
+        }
+      }
+    },
+    {
+      "name": "review-completed",
+      "operationId": "getConversationReview",
+      "httpStatus": 200,
+      "stage": "review-completed",
+      "headers": {},
+      "body": {
+        "statusCode": 200,
+        "error": null,
+        "message": "Thành công",
+        "data": {
+          "conversationId": 301,
+          "reviewStatus": "COMPLETED",
+          "summary": "Bạn đã diễn đạt nhu cầu nhận phòng và hỏi thêm được thông tin về dịch vụ.",
+          "strengths": "Bạn dùng được lời yêu cầu lịch sự như Could you also tell me... và hỏi thông tin liên quan.",
+          "weaknesses": "Cần luyện thêm động từ quá khứ; cách diễn đạt hiện còn ngắn so với mức B2 đã chọn.",
+          "recommendedLevel": "A2",
+          "levelFeedback": "Bài cho thấy bạn xử lý được tình huống quen thuộc nhưng còn lỗi quá khứ. Hãy luyện A2 trước khi tăng độ khó; đây là gợi ý luyện tập, không phải kết quả kiểm định CEFR.",
+          "grammarCorrections": [
+            {
+              "messageId": 503,
+              "originalContent": "Yesterday I book a quiet room because I need to sleep well before an important meeting tomorrow morning.",
+              "correctedContent": "Yesterday I booked a quiet room because I need to sleep well before an important meeting tomorrow morning.",
+              "feedback": "Yesterday nói về quá khứ nên dùng booked thay cho book."
+            }
+          ],
+          "suggestedWords": [
+            {
+              "id": 601,
+              "word": "reservation",
+              "meaning": "sự đặt chỗ",
+              "example": "I have a reservation for two nights.",
+              "savedWordId": null
+            },
+            {
+              "id": 602,
+              "word": "breakfast",
+              "meaning": "bữa sáng",
+              "example": "What time does breakfast start?",
+              "savedWordId": null
+            }
+          ],
+          "canRetry": false,
+          "pollAfterSeconds": 0
+        }
+      }
+    },
+    {
+      "name": "review-failed",
+      "operationId": "getConversationReview",
+      "httpStatus": 200,
+      "stage": "review-failed",
+      "headers": {},
+      "body": {
+        "statusCode": 200,
+        "error": null,
+        "message": "Thành công",
+        "data": {
+          "conversationId": 301,
+          "reviewStatus": "FAILED",
+          "summary": null,
+          "strengths": null,
+          "weaknesses": null,
+          "recommendedLevel": null,
+          "levelFeedback": null,
+          "grammarCorrections": [],
+          "suggestedWords": [],
+          "canRetry": true,
+          "pollAfterSeconds": 0
+        }
+      }
+    },
+    {
+      "name": "review-insufficient",
+      "operationId": "finishConversation",
+      "httpStatus": 200,
+      "stage": "short-session",
+      "headers": {},
+      "body": {
+        "statusCode": 200,
+        "error": null,
+        "message": "Thành công",
+        "data": {
+          "conversationId": 301,
+          "reviewStatus": "INSUFFICIENT_DATA",
+          "summary": "Chưa đủ nội dung để nhận xét. Hãy thử nói ít nhất ba lượt với nội dung rõ hơn.",
+          "strengths": null,
+          "weaknesses": null,
+          "recommendedLevel": null,
+          "levelFeedback": null,
+          "grammarCorrections": [],
+          "suggestedWords": [],
+          "canRetry": false,
+          "pollAfterSeconds": 0
+        }
+      }
+    },
+    {
+      "name": "save-words-success",
+      "operationId": "saveSuggestedWords",
+      "httpStatus": 200,
+      "stage": "after-save",
+      "headers": {},
+      "body": {
+        "statusCode": 200,
+        "error": null,
+        "message": "Thành công",
+        "data": {
+          "created": [
+            {
+              "suggestionId": 601,
+              "savedWord": {
+                "id": 701,
+                "word": "reservation",
+                "meaning": "sự đặt chỗ",
+                "example": "I have a reservation for two nights.",
+                "status": "NEW",
+                "lastReviewedAt": null,
+                "createdAt": "2026-10-25T10:06:00Z"
+              }
+            }
+          ],
+          "existing": [
+            {
+              "suggestionId": 602,
+              "savedWord": {
+                "id": 702,
+                "word": "breakfast",
+                "meaning": "bữa sáng",
+                "example": "Breakfast starts at seven.",
+                "status": "LEARNING",
+                "lastReviewedAt": "2026-10-24T08:00:00Z",
+                "createdAt": "2026-10-24T07:00:00Z"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "saved-words-success",
+      "operationId": "listSavedWords",
+      "httpStatus": 200,
+      "stage": "after-save",
+      "headers": {},
+      "body": {
+        "statusCode": 200,
+        "error": null,
+        "message": "Thành công",
+        "data": {
+          "meta": {
+            "page": 1,
+            "pageSize": 20,
+            "pages": 1,
+            "total": 2
+          },
+          "result": [
+            {
+              "id": 702,
+              "word": "breakfast",
+              "meaning": "bữa sáng",
+              "example": "Breakfast starts at seven.",
+              "status": "LEARNING",
+              "lastReviewedAt": "2026-10-24T08:00:00Z",
+              "createdAt": "2026-10-24T07:00:00Z"
+            },
+            {
+              "id": 701,
+              "word": "reservation",
+              "meaning": "sự đặt chỗ",
+              "example": "I have a reservation for two nights.",
+              "status": "NEW",
+              "lastReviewedAt": null,
+              "createdAt": "2026-10-25T10:06:00Z"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "flashcard-remembered",
+      "operationId": "reviewSavedWord",
+      "httpStatus": 200,
+      "stage": "after-self-review",
+      "headers": {},
+      "body": {
+        "statusCode": 200,
+        "error": null,
+        "message": "Thành công",
+        "data": {
+          "id": 701,
+          "word": "reservation",
+          "meaning": "sự đặt chỗ",
+          "example": "I have a reservation for two nights.",
+          "status": "MASTERED",
+          "lastReviewedAt": "2026-10-25T10:07:00Z",
+          "createdAt": "2026-10-25T10:06:00Z"
+        }
+      }
+    },
+    {
+      "name": "history-success",
+      "operationId": "listConversations",
+      "httpStatus": 200,
+      "stage": "after-review",
+      "headers": {},
+      "body": {
+        "statusCode": 200,
+        "error": null,
+        "message": "Thành công",
+        "data": {
+          "meta": {
+            "page": 1,
+            "pageSize": 20,
+            "pages": 1,
+            "total": 1
+          },
+          "result": [
+            {
+              "id": 301,
+              "topicId": 201,
+              "topicName": "Nhận phòng khách sạn",
+              "profileLevelSnapshot": "A1",
+              "level": "B2",
+              "status": "CLOSED",
+              "reviewStatus": "COMPLETED",
+              "createdAt": "2026-10-25T10:00:00Z",
+              "endedAt": "2026-10-25T10:05:00Z"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "admin-topics-success",
+      "operationId": "adminListTopics",
+      "httpStatus": 200,
+      "stage": "admin",
+      "headers": {},
+      "body": {
+        "statusCode": 200,
+        "error": null,
+        "message": "Thành công",
+        "data": {
+          "meta": {
+            "page": 1,
+            "pageSize": 20,
+            "pages": 1,
+            "total": 6
+          },
+          "result": [
+            {
+              "id": 206,
+              "name": "Tình huống đang biên soạn",
+              "description": null,
+              "level": "A1",
+              "scenario": "Nội dung đang biên soạn.",
+              "active": false
+            },
+            {
+              "id": 205,
+              "name": "Thảo luận cách học hiệu quả",
+              "description": "Trao đổi quan điểm và giải thích lý do.",
+              "level": "B2",
+              "scenario": "AI đóng vai người cùng trò chuyện trong tình huống Thảo luận cách học hiệu quả.",
+              "active": true
+            },
+            {
+              "id": 204,
+              "name": "Lên kế hoạch du lịch",
+              "description": "Bàn lịch, chi phí và hoạt động cùng bạn.",
+              "level": "B1",
+              "scenario": "AI đóng vai người cùng trò chuyện trong tình huống Lên kế hoạch du lịch.",
+              "active": true
+            },
+            {
+              "id": 203,
+              "name": "Giới thiệu ở lớp học",
+              "description": "Làm quen với một bạn học mới.",
+              "level": "A2",
+              "scenario": "AI đóng vai người cùng trò chuyện trong tình huống Giới thiệu ở lớp học.",
+              "active": true
+            },
+            {
+              "id": 202,
+              "name": "Gọi món tại quán cà phê",
+              "description": "Gọi đồ uống và hỏi lựa chọn phù hợp.",
+              "level": "A1",
+              "scenario": "AI đóng vai người cùng trò chuyện trong tình huống Gọi món tại quán cà phê.",
+              "active": true
+            },
+            {
+              "id": 201,
+              "name": "Nhận phòng khách sạn",
+              "description": "Bạn là khách, AI là lễ tân. Hãy nhận phòng và hỏi về dịch vụ.",
+              "level": "A1",
+              "scenario": "Bạn là khách đến nhận phòng. AI đóng vai lễ tân, hỗ trợ đặt phòng, ăn sáng và gửi hành lý.",
+              "active": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "admin-topic-disabled",
+      "operationId": "adminSetTopicActive",
+      "httpStatus": 200,
+      "stage": "topic-disabled-after-session",
+      "headers": {},
+      "body": {
+        "statusCode": 200,
+        "error": null,
+        "message": "Thành công",
+        "data": {
+          "id": 201,
+          "name": "Nhận phòng khách sạn",
+          "description": "Bạn là khách, AI là lễ tân. Hãy nhận phòng và hỏi về dịch vụ.",
+          "level": "A1",
+          "scenario": "Bạn là khách đến nhận phòng. AI đóng vai lễ tân, hỗ trợ đặt phòng, ăn sáng và gửi hành lý.",
+          "active": false
+        }
+      }
+    },
+    {
+      "name": "unknown-registration-field",
+      "operationId": "registerAccount",
+      "httpStatus": 400,
+      "stage": "error",
+      "headers": {},
+      "body": {
+        "statusCode": 400,
+        "error": "INVALID_JSON",
+        "message": "JSON có trường không được phép.",
+        "data": null
+      }
+    },
+    {
+      "name": "expired-session",
+      "operationId": "getCurrentUser",
+      "httpStatus": 401,
+      "stage": "error",
+      "headers": {},
+      "body": {
+        "statusCode": 401,
+        "error": "UNAUTHORIZED",
+        "message": "Vui lòng đăng nhập lại.",
+        "data": null
+      }
+    },
+    {
+      "name": "user-cannot-admin",
+      "operationId": "adminListTopics",
+      "httpStatus": 403,
+      "stage": "error",
+      "headers": {},
+      "body": {
+        "statusCode": 403,
+        "error": "FORBIDDEN",
+        "message": "Bạn không có quyền thực hiện thao tác này.",
+        "data": null
+      }
+    },
+    {
+      "name": "foreign-conversation",
+      "operationId": "getConversation",
+      "httpStatus": 404,
+      "stage": "error",
+      "headers": {},
+      "body": {
+        "statusCode": 404,
+        "error": "RESOURCE_NOT_FOUND",
+        "message": "Không tìm thấy tài nguyên.",
+        "data": null
+      }
+    },
+    {
+      "name": "topic-disabled",
+      "operationId": "createConversation",
+      "httpStatus": 409,
+      "stage": "error",
+      "headers": {},
+      "body": {
+        "statusCode": 409,
+        "error": "TOPIC_DISABLED",
+        "message": "Tình huống hiện không nhận bài mới.",
+        "data": null
+      }
+    },
+    {
+      "name": "same-id-different-content",
+      "operationId": "sendConversationMessage",
+      "httpStatus": 409,
+      "stage": "error",
+      "headers": {},
+      "body": {
+        "statusCode": 409,
+        "error": "REQUEST_CONFLICT",
+        "message": "Mã yêu cầu đã được dùng với nội dung khác.",
+        "data": null
+      }
+    },
+    {
+      "name": "previous-turn-pending",
+      "operationId": "sendConversationMessage",
+      "httpStatus": 409,
+      "stage": "error",
+      "headers": {},
+      "body": {
+        "statusCode": 409,
+        "error": "TURN_PENDING",
+        "message": "Hãy chờ hoặc thử lại lượt đang chờ trước khi gửi câu mới.",
+        "data": null
+      }
+    },
+    {
+      "name": "too-many-auth-requests",
+      "operationId": "loginWithPassword",
+      "httpStatus": 429,
+      "stage": "error",
+      "headers": {
+        "Retry-After": "60"
+      },
+      "body": {
+        "statusCode": 429,
+        "error": "TOO_MANY_REQUESTS",
+        "message": "Bạn thao tác quá nhanh. Vui lòng thử lại sau một phút.",
+        "data": null
+      }
+    },
+    {
+      "name": "reply-provider-failed",
+      "operationId": "sendConversationMessage",
+      "httpStatus": 502,
+      "stage": "error",
+      "headers": {},
+      "body": {
+        "statusCode": 502,
+        "error": "AI_UNAVAILABLE",
+        "message": "Chưa thể nhận lời đáp. Câu đã lưu vẫn được giữ.",
+        "data": null
+      }
+    },
+    {
+      "name": "review-provider-timeout",
+      "operationId": "finishConversation",
+      "httpStatus": 504,
+      "stage": "error",
+      "headers": {},
+      "body": {
+        "statusCode": 504,
+        "error": "AI_TIMEOUT",
+        "message": "Phân tích chưa thành công. Bạn có thể thử lại.",
+        "data": null
+      }
+    },
+    {
+      "name": "google-not-configured",
+      "operationId": "loginWithGoogle",
+      "httpStatus": 503,
+      "stage": "error",
+      "headers": {},
+      "body": {
+        "statusCode": 503,
+        "error": "GOOGLE_NOT_CONFIGURED",
+        "message": "Đăng nhập Google chưa được cấu hình.",
+        "data": null
+      }
+    }
+  ]
+}

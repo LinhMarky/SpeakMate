@@ -10,11 +10,20 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
+import com.example.speakmate.ui.NetworkFragment;
+import com.example.speakmate.auth.AuthApi;
+import com.example.speakmate.auth.SessionManager;
+import android.util.Patterns;
 
-public class LoginFragment extends Fragment {
+public class LoginFragment extends NetworkFragment {
 
     private boolean openingRegister;
+    private boolean busy;
+
+    @Override
+    protected boolean requiresAuthentication() {
+        return false;
+    }
 
     public LoginFragment() {
         super(R.layout.fragment_login);
@@ -26,6 +35,7 @@ public class LoginFragment extends Fragment {
             @Nullable Bundle savedInstanceState
     ) {
         super.onViewCreated(view, savedInstanceState);
+        busy = false;
 
         view.findViewById(R.id.btnForgotPassword)
                 .setOnClickListener(button ->
@@ -68,9 +78,9 @@ public class LoginFragment extends Fragment {
 
                     errorText.setVisibility(View.GONE);
 
-                    if (username.isEmpty()) {
+                    if (!Patterns.EMAIL_ADDRESS.matcher(username).matches()) {
                         usernameInput.setError(
-                                "Bạn hãy nhập tên đăng nhập."
+                                "Bạn hãy nhập email hợp lệ."
                         );
                         usernameInput.requestFocus();
                         return;
@@ -84,11 +94,22 @@ public class LoginFragment extends Fragment {
                         return;
                     }
 
-                    errorText.setText(
-                            "Chức năng đăng nhập chưa kết nối máy chủ."
-                    );
-
-                    errorText.setVisibility(View.VISIBLE);
+                    if (busy) return;
+                    setBusy(view, true);
+                    SessionManager sessions = SessionManager.get(requireContext());
+                    call(() -> {
+                        var session = new AuthApi().login(username, password);
+                        sessions.save(session);
+                        return session;
+                    }, session -> {
+                        setBusy(view, false);
+                        passwordInput.setText("");
+                        ((MainActivity) requireActivity()).onSignedIn();
+                    }, error -> {
+                        setBusy(view, false);
+                        errorText.setText(error.getMessage());
+                        errorText.setVisibility(View.VISIBLE);
+                    });
                 });
 
         view.findViewById(R.id.btnOpenRegister)
@@ -127,6 +148,15 @@ public class LoginFragment extends Fragment {
                 });
     }
 
+    private void setBusy(View view, boolean loading) {
+        busy = loading;
+        view.findViewById(R.id.progressLogin).setVisibility(loading ? View.VISIBLE : View.GONE);
+        for (int id : new int[]{R.id.btnLogin, R.id.btnLoginGoogle, R.id.btnOpenRegister, R.id.btnContinueAsGuest,
+                R.id.etLoginUsername, R.id.etLoginPassword}) {
+            view.findViewById(id).setEnabled(!loading);
+        }
+    }
+
     @Override
     public void onResume() {
         super.onResume();
@@ -137,7 +167,7 @@ public class LoginFragment extends Fragment {
 
         if (view != null) {
             view.findViewById(R.id.btnOpenRegister)
-                    .setEnabled(true);
+                    .setEnabled(!busy);
         }
     }
 

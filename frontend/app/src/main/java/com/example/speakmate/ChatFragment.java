@@ -4,6 +4,8 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -22,13 +24,26 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.fragment.app.Fragment;
+import com.example.speakmate.api.PendingRequests;
+import com.example.speakmate.ui.NetworkFragment;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
-public class ChatFragment extends Fragment {
+public class ChatFragment extends NetworkFragment {
+
+    private long conversationId;
+    private PendingRequests pending;
+    private JSONObject detail;
+    private TextView networkStatus;
+    private boolean loading, sending, ready, open = true, mayRetry;
+    private String sendError;
+    private boolean ending;
+    private final Handler pollHandler = new Handler(Looper.getMainLooper());
 
     private static final String ARG_LEVEL = "level";
     private static final String ARG_TOPIC = "topic";
@@ -98,6 +113,20 @@ public class ChatFragment extends Fragment {
 
     public ChatFragment() {
         super(R.layout.fragment_chat);
+    }
+
+    public static ChatFragment newInstance(long conversationId) {
+        ChatFragment fragment = new ChatFragment();
+        Bundle arguments = new Bundle();
+        arguments.putLong("conversationId", conversationId);
+        fragment.setArguments(arguments);
+        return fragment;
+    }
+
+    public static ChatFragment newReviewInstance(long conversationId) {
+        ChatFragment fragment = newInstance(conversationId);
+        fragment.getArguments().putBoolean(ARG_REVIEW_ONLY, true);
+        return fragment;
     }
 
     public static ChatFragment newInstance(
@@ -174,6 +203,7 @@ public class ChatFragment extends Fragment {
         Bundle arguments = getArguments();
 
         if (arguments != null) {
+            conversationId = arguments.getLong("conversationId");
             level = valueOrDefault(
                     arguments.getString(ARG_LEVEL),
                     "A2"
@@ -217,11 +247,6 @@ public class ChatFragment extends Fragment {
             );
         }
 
-        // Chỉ tạo lời chào cho phiên luyện mới.
-        if (!reviewOnly && messages.isEmpty()) {
-            messages.add(getOpeningMessage());
-            userMessages.add(false);
-        }
     }
 
     @Override
@@ -232,6 +257,13 @@ public class ChatFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         leavingSession = false;
+        loading = false;
+        sending = false;
+        ending = false;
+        ready = reviewOnly;
+        pending = new PendingRequests(requireContext());
+        networkStatus = view.findViewById(R.id.tvChatState);
+        networkStatus.setOnClickListener(v -> loadConversation(true));
         voicePending = false;
         fingerHolding = false;
 
@@ -371,7 +403,7 @@ public class ChatFragment extends Fragment {
         leavingSession = false;
         updateInputControls();
 
-        speakLatestPartnerMessage(false);
+        if (conversationId > 0) loadConversation(false);
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -583,82 +615,182 @@ public class ChatFragment extends Fragment {
         updateInputControls();
     }
 
+    private String pendingKey() {
+        return "turn-" + conversationId;
+    }
+
+    private boolean canSend() {
+        return ready && open && !loading && !sending && !ending && detail != null
+                && pending.get(pendingKey()) == null && detail.optInt("userTurnCount") < 20;
+    }
+
     private void updateInputControls() {
         View view = getView();
+        if (view == null || pending == null) return;
+        boolean free = !reviewOnly && !leavingSession && !ending && !permissionRequestPending;
+        boolean editable = free && !voicePending && canSend();
+        // Micro vẫn phải nhận ACTION_UP khi người dùng thả tay.
+        view.findViewById(R.id.btnVoiceInput).setEnabled(free && canSend());
+        view.findViewById(R.id.etMessage).setEnabled(editable);
+        android.widget.Button send = view.findViewById(R.id.btnSendMessage);
+        send.setText(mayRetry ? "Thử lại" : "Gửi");
+        send.setEnabled(free && !voicePending && !sending && !loading && (mayRetry || canSend()));
+        view.findViewById(R.id.btnEndChat).setEnabled(!leavingSession && !ending && !voicePending);
+        view.findViewById(R.id.btnBackChat).setEnabled(!leavingSession);
+    }
 
-        if (view == null) {
-            return;
+    private void loadConversation(boolean retryAfterRead) {
+        if (loading || leavingSession || conversationId <= 0) return;
+        loading = true;
+        updateInputControls();
+        call(() -> api.get("conversations/" + conversationId), data -> {
+            loading = false;
+            detail = data;
+            ready = true;
+            renderConversation();
+            if (!open && !reviewOnly) {
+                showServerResult();
+                return;
+            }
+            if (retryAfterRead && mayRetry && !sending) {
+                JSONObject request = pending.get(pendingKey());
+                if (request != null) transmit(request);
+            } else {
+                JSONObject waiting = data.optJSONObject("pendingReply");
+                if (waiting != null && "PROCESSING".equals(waiting.optString("status"))) poll();
+            }
+            updateInputControls();
+        }, error -> {
+            loading = false;
+            networkStatus.setText(error.getMessage() + " Bấm vào đây để tải lại.");
+            updateInputControls();
+        });
+    }
+
+    private void renderConversation() {
+        // Transcript chính thức lấy từ server; máy chỉ giữ lượt đang chờ.
+        open = "OPEN".equals(detail.optString("status"));
+        topic = detail.optString("topicName");
+        level = detail.optString("level");
+        ((TextView) requireView().findViewById(R.id.tvChatTopic)).setText(topic);
+        ((TextView) requireView().findViewById(R.id.tvChatLevel)).setText(
+                "Mức luyện " + level + " · " + detail.optInt("userTurnCount") + "/20 lượt");
+        JSONArray transcript = detail.optJSONArray("messages");
+        JSONObject local = pending.get(pendingKey());
+        boolean completedLocal = false;
+        messages.clear();
+        userMessages.clear();
+        messageContainer.removeAllViews();
+        if (transcript != null) {
+            for (int i = 0; i < transcript.length(); i++) {
+                JSONObject message = transcript.optJSONObject(i);
+                if (message == null) continue;
+                boolean user = "USER".equals(message.optString("sender"));
+                String content = message.optString("content");
+                messages.add(content);
+                userMessages.add(user);
+                displayMessage(content, user);
+                if (!user && local != null
+                        && message.optString("requestId").equals(local.optString("requestId"))) {
+                    completedLocal = true;
+                }
+            }
         }
-
-        boolean editable =
-                !reviewOnly
-                        && !voicePending
-                        && !permissionRequestPending
-                        && !leavingSession;
-
-        // Micro vẫn phải nhận được ACTION_UP khi người dùng thả tay.
-        view.findViewById(R.id.btnVoiceInput)
-                .setEnabled(
-                        !reviewOnly
-                                && !permissionRequestPending
-                                && !leavingSession
-                );
-
-        view.findViewById(R.id.btnSendMessage)
-                .setEnabled(editable);
-
-        view.findViewById(R.id.etMessage)
-                .setEnabled(editable);
-
-        view.findViewById(R.id.btnEndChat)
-                .setEnabled(editable);
-
-        view.findViewById(R.id.btnBackChat)
-                .setEnabled(!leavingSession);
+        try {
+            if (completedLocal || !open) {
+                pending.clear(pendingKey());
+                local = null;
+                messageInput.setText("");
+                draftMessage = "";
+            }
+            JSONObject waiting = detail.optJSONObject("pendingReply");
+            if (open && waiting != null && transcript != null) {
+                for (int i = 0; i < transcript.length(); i++) {
+                    JSONObject message = transcript.optJSONObject(i);
+                    if (message != null && message.optLong("id") == waiting.optLong("userMessageId")) {
+                        local = new JSONObject().put("content", message.optString("content"))
+                                .put("requestId", message.optString("requestId"));
+                        pending.put(pendingKey(), local);
+                        break;
+                    }
+                }
+            }
+            mayRetry = open && local != null
+                    && (waiting == null || "RETRYABLE".equals(waiting.optString("status")));
+            if (local != null) messageInput.setText(local.optString("content"));
+            if (!open) networkStatus.setText("Bài đã kết thúc. Tin nhắn đã được lưu.");
+            else if (sending || waiting != null && "PROCESSING".equals(waiting.optString("status")))
+                networkStatus.setText("Đang chờ trợ lý trả lời…");
+            else if (mayRetry) networkStatus.setText((sendError == null ? "Lượt vừa gửi chưa có kết quả." : sendError)
+                    + " Bấm Thử lại để tiếp tục đúng lượt.");
+            else if (detail.optInt("userTurnCount") >= 20)
+                networkStatus.setText("Đã đủ 20 lượt. Hãy kết thúc để xem nhận xét.");
+            else networkStatus.setText(messages.isEmpty() ? "Bạn bắt đầu nhé. Nói hoặc nhập câu tiếng Anh." : "Đến lượt bạn.");
+        } catch (Exception error) {
+            networkStatus.setText("Không lưu được trạng thái lượt chờ trên máy. Hãy tải lại.");
+        }
+        if (completedLocal) speakLatestPartnerMessage(false);
+        // Không tự đọc lại tin cũ khi quay lại màn hình.
+        lastAutoSpokenIndex = messages.size() - 1;
+        scrollConversation(false);
     }
 
     private void sendMessage() {
-        if (reviewOnly
-                || !canAct()
-                || messageInput == null
-                || endDialog != null) {
+        if (reviewOnly || !canAct() || sending || loading || endDialog != null) return;
+        if (mayRetry) {
+            loadConversation(true);
             return;
         }
-
-        String content =
-                messageInput.getText().toString().trim();
-
+        if (!canSend()) return;
+        String content = messageInput.getText().toString().trim();
         if (content.isEmpty()) {
-            messageInput.setError(
-                    "Bạn hãy nhập hoặc nói câu trả lời."
-            );
-
-            messageInput.requestFocus();
+            messageInput.setError("Bạn hãy nhập hoặc nói câu trả lời.");
             return;
         }
-
-        messageInput.setError(null);
-
-        addMessage(content, true);
-
-        messageInput.setText("");
-        draftMessage = "";
-        voiceBaseDraft = "";
-
-        // Phản hồi mẫu, chưa gọi backend AI.
-        addMessage(getDemoReply(), false);
-
-        if (voiceHint != null) {
-            voiceHint.setText(
-                    "Giữ micro để nói tiếng Anh, "
-                            + "thả tay để kết thúc."
-            );
+        if (content.length() > 2000) {
+            messageInput.setError("Mỗi lượt tối đa 2000 ký tự.");
+            return;
         }
+        try {
+            JSONObject request = new JSONObject().put("content", content)
+                    .put("requestId", UUID.randomUUID().toString());
+            // Lưu trước khi gửi; timeout hay mở lại màn hình vẫn dùng cùng UUID.
+            pending.put(pendingKey(), request);
+            hideKeyboard();
+            messageInput.clearFocus();
+            transmit(request);
+        } catch (Exception error) {
+            networkStatus.setText("Không lưu được câu đang gửi. Hãy thử lại.");
+        }
+    }
 
-        hideKeyboard();
-        messageInput.clearFocus();
+    private void transmit(JSONObject request) {
+        sending = true;
+        sendError = null;
+        mayRetry = false;
+        stopChatSpeech();
+        networkStatus.setText("Đang chờ trợ lý trả lời…");
+        updateInputControls();
+        call(() -> api.send(conversationId, request.getString("content"), request.getString("requestId")), response -> {
+            sending = false;
+            loadConversation(false);
+            updateInputControls();
+        }, error -> {
+            sending = false;
+            sendError = error.getMessage();
+            if (error.status == 400) {
+                try { pending.clear(pendingKey()); } catch (Exception ignored) { }
+            }
+            networkStatus.setText(error.getMessage() + " Bấm vào đây để kiểm tra và thử lại.");
+            // Kiểm tra server trước khi gửi lại sau timeout hoặc lỗi AI.
+            loadConversation(false);
+            updateInputControls();
+        });
+    }
 
-        scrollConversation(false);
+    private void poll() {
+        pollHandler.removeCallbacksAndMessages(null);
+        if (isResumed()) pollHandler.postDelayed(() -> loadConversation(false), 3000);
     }
 
     private void restoreConversation(
@@ -728,7 +860,9 @@ public class ChatFragment extends Fragment {
                 new MaterialAlertDialogBuilder(requireContext())
                         .setTitle("Kết thúc phiên luyện?")
                         .setMessage(
-                                "Xem tổng kết để nhìn lại phiên luyện, "
+                                conversationId > 0
+                                        ? "Kết thúc để nhận góp ý. Thoát phiên sẽ giữ bài đang mở trong lịch sử."
+                                        : "Xem tổng kết để nhìn lại phiên luyện, "
                                         + "hoặc thoát về trang chủ."
                                         + "\n\nCâu đang nhập chưa gửi "
                                         + "sẽ không được đưa vào tổng kết."
@@ -756,6 +890,7 @@ public class ChatFragment extends Fragment {
         });
 
         dialog.show();
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(!ending);
     }
 
     private void exitSession() {
@@ -771,25 +906,41 @@ public class ChatFragment extends Fragment {
     }
 
     private void finishSession() {
-        if (!canAct()) {
+        if (!canAct() || ending) {
             return;
         }
 
-        ArrayList<String> transcript =
-                new ArrayList<>(messages);
+        if (conversationId > 0) {
+            ending = true;
+            stopChatSpeech();
+            updateInputControls();
+            networkStatus.setText("Đang kết thúc và tạo nhận xét…");
+            call(() -> api.finish(conversationId, false), result -> {
+                ending = false;
+                open = false;
+                showServerResult();
+            }, error -> {
+                ending = false;
+                networkStatus.setText(error.getMessage());
+                // Server có thể đã đóng bài trước khi kết nối bị gián đoạn.
+                loadConversation(false);
+                updateInputControls();
+            });
+            return;
+        }
 
+        ArrayList<String> transcript = new ArrayList<>(messages);
         boolean[] roles = createRolesArray();
-
         leavingSession = true;
         updateInputControls();
+        ((MainActivity) requireActivity()).showSpeakingResult(level, topic, transcript, roles);
+    }
 
-        ((MainActivity) requireActivity())
-                .showSpeakingResult(
-                        level,
-                        topic,
-                        transcript,
-                        roles
-                );
+    private void showServerResult() {
+        if (!isResumed() || leavingSession || getParentFragmentManager().isStateSaved()) return;
+        leavingSession = true;
+        stopChatSpeech();
+        ((MainActivity) requireActivity()).showSpeakingResult(conversationId);
     }
 
     private boolean[] createRolesArray() {
@@ -810,56 +961,6 @@ public class ChatFragment extends Fragment {
                 && !voicePending
                 && !permissionRequestPending
                 && !getParentFragmentManager().isStateSaved();
-    }
-
-    private String getOpeningMessage() {
-        switch (topic) {
-            case "Introducing Yourself":
-                return "Hi! I'm your practice partner. What's your name?";
-
-            case "Travel":
-                return "Hello! Where would you like to travel?";
-
-            case "University Life":
-                return "Hi! What do you study at university?";
-
-            case "Ordering Food":
-                return "Welcome! What would you like to order?";
-
-            default:
-                return "Hi! Let's practise English. "
-                        + "What would you like to share about this topic?";
-        }
-    }
-
-    private String getDemoReply() {
-        switch (topic) {
-            case "Introducing Yourself":
-                return "Nice to meet you! What do you enjoy doing?";
-
-            case "Travel":
-                return "What would you like to do there?";
-
-            case "University Life":
-                return "What do you enjoy most about university?";
-
-            case "Ordering Food":
-                return "Would you like something to drink?";
-
-            default:
-                return "Could you tell me more about that?";
-        }
-    }
-
-    private void addMessage(String content, boolean fromUser) {
-        messages.add(content);
-        userMessages.add(fromUser);
-
-        displayMessage(content, fromUser);
-
-        if (!fromUser) {
-            speakLatestPartnerMessage(false);
-        }
     }
 
     private void displayMessage(
@@ -1137,6 +1238,7 @@ public class ChatFragment extends Fragment {
 
     @Override
     public void onPause() {
+        pollHandler.removeCallbacksAndMessages(null);
         stopChatSpeech();
         cancelVoiceInput();
 
@@ -1175,6 +1277,7 @@ public class ChatFragment extends Fragment {
 
     @Override
     public void onDestroyView() {
+        pollHandler.removeCallbacksAndMessages(null);
         if (chatSpeech != null) {
             chatSpeech.close();
             chatSpeech = null;

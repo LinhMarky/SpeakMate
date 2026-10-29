@@ -50,16 +50,8 @@ public class HomeFragment extends Fragment {
         View homeView = getView();
 
         if (homeView != null) {
-            String displayName = requireContext()
-                    .getSharedPreferences(
-                            "speakmate_profile",
-                            android.content.Context.MODE_PRIVATE
-                    )
-                    .getString("display_name", "Khoa");
-
-            if (displayName == null || displayName.trim().isEmpty()) {
-                displayName = "Khoa";
-            }
+            var session = com.example.speakmate.auth.SessionManager.get(requireContext()).load();
+            String displayName = session == null ? "bạn" : session.getName();
 
             android.widget.TextView greeting =
                     homeView.findViewById(R.id.tvGreeting);
@@ -234,9 +226,7 @@ public class HomeFragment extends Fragment {
         if (!"A1".equals(level)
                 && !"A2".equals(level)
                 && !"B1".equals(level)
-                && !"B2".equals(level)
-                && !"C1".equals(level)
-                && !"C2".equals(level)) {
+                && !"B2".equals(level)) {
             level = "A2";
         }
 

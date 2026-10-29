@@ -1,0 +1,20 @@
+# Copy to application-local.properties and set your local MySQL credentials.
+# The real application-local.properties is ignored by Git.
+server.port=${PORT:8081}
+spring.datasource.url=jdbc:mysql://localhost:3306/speakmate?connectionTimeZone=UTC&forceConnectionTimeZoneToSession=true
+spring.datasource.username=root
+spring.datasource.password=
+
+# Generate a random Base64 secret (at least 32 bytes); see Docs/SpeakMate-luong-tai-khoan.md.
+app.auth.jwt-secret=
+# Google OAuth WEB client ID (Android requests an ID token for this audience).
+app.auth.google-client-id=
+# Gemini key belongs to the backend only; never put it in the Android app.
+app.ai.api-key=
+app.ai.model=gemini-3.5-flash-lite
+# Enable SMTP only after obtaining credentials. Gmail uses an App Password.
+app.mail.from=
+# spring.mail.host=smtp.gmail.com
+# spring.mail.port=587
+# spring.mail.username=
+# spring.mail.password=

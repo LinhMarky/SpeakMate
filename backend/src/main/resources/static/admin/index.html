@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="vi">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>SpeakMate · Quản lý chủ đề</title>
+        <link rel="stylesheet" href="admin.css" />
+        <script src="admin.js" defer></script>
+    </head>
+    <body>
+        <main>
+            <h1>SpeakMate · Quản lý chủ đề</h1>
+            <p>Quản lý tình huống luyện nói và nội dung cho trợ lý AI.</p>
+            <p id="message" role="status" aria-live="polite"></p>
+            <section id="loginPanel">
+                <h2>Đăng nhập quản trị</h2>
+                <p>Dùng tài khoản ADMIN riêng. Tải lại trang sẽ cần đăng nhập lại.</p>
+                <form id="loginForm">
+                    <label>
+                        Email
+                        <input id="email" type="email" maxlength="255" autocomplete="username" required />
+                    </label>
+                    <label>
+                        Mật khẩu
+                        <input id="password" type="password" maxlength="256" autocomplete="current-password" required />
+                    </label>
+                    <button>Đăng nhập</button>
+                </form>
+            </section>
+            <section id="workspace" hidden>
+                <p id="account"></p>
+                <button id="logout">Đăng xuất</button>
+                <h2 id="formTitle">Thêm chủ đề</h2>
+                <form id="topicForm">
+                    <label>
+                        Tên chủ đề
+                        <input id="name" maxlength="100" required />
+                    </label>
+                    <label>
+                        Mức gợi ý
+                        <select id="level">
+                            <option>A1</option>
+                            <option>A2</option>
+                            <option>B1</option>
+                            <option>B2</option>
+                        </select>
+                    </label>
+                    <label>
+                        Mô tả và mục tiêu cho người học
+                        <textarea id="description" maxlength="2000" rows="3"></textarea>
+                    </label>
+                    <label>
+                        Vai và bối cảnh của AI
+                        <textarea
+                            id="scenario"
+                            maxlength="4000"
+                            rows="4"
+                            required
+                            placeholder="You are a friendly hotel receptionist..."
+                        ></textarea>
+                    </label>
+                    <button id="save">Lưu chủ đề</button>
+                    <button id="cancelEdit" type="button">Bỏ sửa / tạo mới</button>
+                </form>
+                <h2>Danh sách chủ đề</h2>
+                <button id="reload">Tải lại</button>
+                <div id="topics"></div>
+                <div class="paging">
+                    <button id="previous">Trang trước</button>
+                    <span id="pageInfo"></span>
+                    <button id="next">Trang tiếp</button>
+                </div>
+            </section>
+        </main>
+    </body>
+</html>

@@ -30,7 +30,7 @@ public class ProfileFragment extends Fragment {
     private static final String KEY_GOAL = "daily_goal_minutes";
 
     private static final String[] LEVELS = {
-            "A1", "A2", "B1", "B2", "C1", "C2"
+            "A1", "A2", "B1", "B2"
     };
 
     private static final int[] GOALS = {

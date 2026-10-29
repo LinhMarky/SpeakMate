@@ -48,7 +48,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:text="Vuốt ngang để xem các mức A1–C2."
+                android:text="Chọn mức luyện từ A1 đến B2."
                 android:textColor="@color/sm_text_hint"
                 android:textSize="12sp" />
 
@@ -129,6 +129,7 @@
 
                     <RadioButton
                         android:id="@+id/rbC1"
+                        android:visibility="gone"
                         android:layout_width="64dp"
                         android:layout_height="72dp"
                         android:layout_marginEnd="8dp"
@@ -144,6 +145,7 @@
 
                     <RadioButton
                         android:id="@+id/rbC2"
+                        android:visibility="gone"
                         android:layout_width="64dp"
                         android:layout_height="72dp"
                         android:background="@drawable/bg_option"
@@ -281,7 +283,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:lineSpacingExtra="4dp"
-                android:text="Phiên demo: phản hồi hội thoại hiện được chuẩn bị sẵn, chưa điều chỉnh theo trình độ bằng AI."
+                android:id="@+id/tvSpeakingState"
+                android:text="Đang tải chủ đề…"
                 android:textColor="@color/sm_text_hint"
                 android:textSize="12sp" />
 

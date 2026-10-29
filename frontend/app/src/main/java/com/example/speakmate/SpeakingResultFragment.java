@@ -10,12 +10,25 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatCheckBox;
-import androidx.fragment.app.Fragment;
+import com.example.speakmate.ui.NetworkFragment;
+import android.os.Handler;
+import android.os.Looper;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import java.util.HashSet;
+import java.util.Set;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class SpeakingResultFragment extends Fragment {
+public class SpeakingResultFragment extends NetworkFragment {
+
+    // ID dương dùng kết quả server; nhánh cũ chỉ phục vụ bản xem trước local.
+    private long conversationId;
+    private JSONObject serverReview;
+    private boolean loadingReview;
+    private final Set<Long> selectedSuggestions = new HashSet<>();
+    private final Handler reviewPoll = new Handler(Looper.getMainLooper());
 
     private static final String STATE_SELECTED = "result_selected";
     private static final String STATE_DECK_NAME = "result_deck_name";
@@ -47,6 +60,14 @@ public class SpeakingResultFragment extends Fragment {
         super(R.layout.fragment_speaking_result);
     }
 
+    public static SpeakingResultFragment newInstance(long id) {
+        SpeakingResultFragment fragment = new SpeakingResultFragment();
+        Bundle args = new Bundle();
+        args.putLong("conversationId", id);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
     public static SpeakingResultFragment newInstance(
             String level,
             String topic,
@@ -73,6 +94,7 @@ public class SpeakingResultFragment extends Fragment {
         Bundle arguments = getArguments();
 
         if (arguments != null) {
+            conversationId = arguments.getLong("conversationId");
             level = arguments.getString("level", "A2");
             topic = arguments.getString("topic", "");
             userTurnCount = Math.max(
@@ -89,7 +111,7 @@ public class SpeakingResultFragment extends Fragment {
             topic = "Chủ đề luyện nói";
         }
 
-        prepareVocabulary();
+        if (conversationId == 0) prepareVocabulary();
 
         selected = new boolean[vocabulary.size()];
 
@@ -100,6 +122,8 @@ public class SpeakingResultFragment extends Fragment {
         draftDeckName = "Từ vựng - " + topic;
 
         if (savedInstanceState != null) {
+            long[] ids = savedInstanceState.getLongArray("selectedSuggestionIds");
+            if (ids != null) for (long id : ids) selectedSuggestions.add(id);
             boolean[] savedSelected =
                     savedInstanceState.getBooleanArray(STATE_SELECTED);
 
@@ -143,6 +167,11 @@ public class SpeakingResultFragment extends Fragment {
 
         openButton =
                 view.findViewById(R.id.btnOpenResultDeck);
+
+        if (conversationId > 0) {
+            bindServerReview(view);
+            return;
+        }
 
         deckNameInput.setText(draftDeckName);
 
@@ -206,6 +235,10 @@ public class SpeakingResultFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        if (conversationId > 0) {
+            loadServerReview();
+            return;
+        }
 
         openingDeck = false;
         refreshCreatedDeckState();
@@ -568,6 +601,10 @@ public class SpeakingResultFragment extends Fragment {
         if (getView() == null || createButton == null) {
             return;
         }
+        if (conversationId > 0) {
+            updateServerControls();
+            return;
+        }
 
         boolean created = createdDeckId != null;
 
@@ -729,6 +766,10 @@ public class SpeakingResultFragment extends Fragment {
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
+        long[] ids = new long[selectedSuggestions.size()];
+        int next = 0;
+        for (Long id : selectedSuggestions) ids[next++] = id;
+        outState.putLongArray("selectedSuggestionIds", ids);
 
         if (deckNameInput != null) {
             draftDeckName = deckNameInput.getText().toString();
@@ -817,6 +858,8 @@ public class SpeakingResultFragment extends Fragment {
 
     @Override
     public void onDestroyView() {
+        reviewPoll.removeCallbacksAndMessages(null);
+        loadingReview = false;
         if (deckNameInput != null) {
             draftDeckName = deckNameInput.getText().toString();
         }
@@ -830,5 +873,167 @@ public class SpeakingResultFragment extends Fragment {
         openButton = null;
 
         super.onDestroyView();
+    }
+
+    private void bindServerReview(View view) {
+        loadingReview = false;
+        deckNameInput.setVisibility(View.GONE);
+        ((TextView) createButton).setText("Lưu từ đã chọn");
+        ((TextView) openButton).setText("Mở Từ của tôi");
+        // Danh sách từ trên tài khoản chưa nối vào màn bộ thẻ offline.
+        openButton.setVisibility(View.GONE);
+        text(R.id.tvResultSaveTitle, "Ôn từ mới sau buổi luyện");
+        text(R.id.tvResultSaveDescription, "Chọn từ muốn lưu vào Từ của tôi. Bạn có thể ôn lại bất cứ lúc nào.");
+        text(R.id.tvResultNotice, "Nhận xét do AI tạo dựa trên hội thoại, không thay thế bài kiểm tra trình độ.");
+        text(R.id.tvResultSummary, "Đang tải kết quả…");
+        createButton.setEnabled(false);
+        createButton.setOnClickListener(v -> {
+            if (serverReview != null && serverReview.optBoolean("canRetry")) retryServerReview();
+            else saveServerWords();
+        });
+        openButton.setOnClickListener(v -> navigateToTab(R.id.nav_flashcards));
+        deckStatusText.setOnClickListener(v -> loadServerReview());
+        view.findViewById(R.id.btnViewResultConversation).setVisibility(View.VISIBLE);
+        view.findViewById(R.id.btnViewResultConversation).setOnClickListener(v -> {
+            if (canAct()) getParentFragmentManager().beginTransaction()
+                    .replace(R.id.fragmentContainer, ChatFragment.newReviewInstance(conversationId))
+                    .addToBackStack("conversation_review").commit();
+        });
+        TextView back = view.findViewById(R.id.btnBackToPractice);
+        boolean history = requireArguments().getBoolean("fromHistory");
+        back.setText(history ? "Quay lại lịch sử" : "Chọn bài luyện tiếp");
+        back.setOnClickListener(v -> {
+            if (!canAct()) return;
+            if (history) getParentFragmentManager().popBackStack();
+            else navigateToTab(R.id.nav_speaking);
+        });
+        view.findViewById(R.id.btnResultHome).setOnClickListener(v -> navigateToTab(R.id.nav_home));
+    }
+
+    private void loadServerReview() {
+        if (loadingReview || saving || getView() == null) return;
+        loadingReview = true;
+        reviewPoll.removeCallbacksAndMessages(null);
+        updateServerControls();
+        call(() -> new JSONObject().put("detail", api.get("conversations/" + conversationId))
+                .put("review", api.get("conversations/" + conversationId + "/review")), response -> {
+            loadingReview = false;
+            JSONObject detail = response.optJSONObject("detail");
+            serverReview = response.optJSONObject("review");
+            text(R.id.tvResultTopic, detail.optString("topicName"));
+            text(R.id.tvResultStats, "Mức luyện: " + detail.optString("level") + " · " + detail.optInt("userTurnCount") + " lượt");
+            renderServerReview();
+        }, error -> {
+            loadingReview = false;
+            deckStatusText.setVisibility(View.VISIBLE);
+            deckStatusText.setText(error.getMessage() + " Chạm để tải lại.");
+            updateServerControls();
+        });
+    }
+
+    private void renderServerReview() {
+        String status = serverReview.optString("reviewStatus");
+        boolean complete = "COMPLETED".equals(status);
+        String description = "PROCESSING".equals(status) ? "Đang tạo nhận xét…"
+                : "INSUFFICIENT_DATA".equals(status) ? "Bài còn ngắn, chưa đủ dữ liệu để đánh giá. Hãy luyện ít nhất 3 lượt trả lời có nội dung."
+                : "FAILED".equals(status) ? "Chưa tạo được nhận xét. Hội thoại vẫn được giữ; bạn có thể thử lại."
+                : "Chưa có nhận xét cho bài này.";
+        text(R.id.tvResultSummary, complete ? value(serverReview, "summary") : description);
+        text(R.id.tvResultEstimatedLevel, complete ? value(serverReview, "recommendedLevel") : "Chưa có đánh giá");
+        text(R.id.tvResultLevelDetail, complete ? value(serverReview, "levelFeedback") : "");
+        text(R.id.tvResultStrengths, complete ? value(serverReview, "strengths") : "Chưa có kết quả phân tích.");
+        text(R.id.tvResultWeaknesses, complete ? value(serverReview, "weaknesses") : "Chưa có kết quả phân tích.");
+        StringBuilder grammar = new StringBuilder();
+        JSONArray corrections = serverReview.optJSONArray("grammarCorrections");
+        if (complete && corrections != null) for (int i = 0; i < corrections.length(); i++) {
+            JSONObject item = corrections.optJSONObject(i);
+            if (item == null) continue;
+            if (grammar.length() > 0) grammar.append("\n\n");
+            grammar.append("Bạn nói: ").append(value(item, "originalContent"))
+                    .append("\nGợi ý sửa: ").append(value(item, "correctedContent"))
+                    .append("\n").append(value(item, "feedback"));
+        }
+        text(R.id.tvResultGrammar, grammar.length() > 0 ? grammar.toString()
+                : complete ? "AI không đề xuất sửa câu nào trong bài này." : "Chưa có kết quả ngữ pháp.");
+        vocabulary.clear();
+        JSONArray words = serverReview.optJSONArray("suggestedWords");
+        int count = complete && words != null ? words.length() : 0;
+        selected = new boolean[count];
+        for (int i = 0; i < count; i++) {
+            JSONObject word = words.optJSONObject(i);
+            vocabulary.add(new Flashcard(value(word, "word"), value(word, "meaning"), value(word, "example")));
+            selected[i] = word.optLong("savedWordId") <= 0 && selectedSuggestions.contains(word.optLong("id"));
+        }
+        text(R.id.tvResultVocabularyNote, count == 0 ? "Chưa có từ được đề xuất." : "Từ và ví dụ được đề xuất từ bài vừa luyện.");
+        renderVocabulary(requireView());
+        deckStatusText.setVisibility(View.VISIBLE);
+        deckStatusText.setText(complete ? "Đã tải kết quả. Chạm để cập nhật trạng thái từ đã lưu." : description + " Chạm để tải lại.");
+        updateServerControls();
+        if ("PROCESSING".equals(status) && isResumed()) reviewPoll.postDelayed(this::loadServerReview,
+                Math.max(2, Math.min(10, serverReview.optInt("pollAfterSeconds", 3))) * 1000L);
+    }
+
+    private void updateServerControls() {
+        if (createButton == null) return;
+        JSONArray words = serverReview == null ? null : serverReview.optJSONArray("suggestedWords");
+        if (words != null && checkBoxes.size() == words.length()) selectedSuggestions.clear();
+        for (int i = 0; i < checkBoxes.size() && words != null && i < words.length(); i++) {
+            JSONObject word = words.optJSONObject(i);
+            boolean saved = word.optLong("savedWordId") > 0;
+            AppCompatCheckBox box = checkBoxes.get(i);
+            box.setEnabled(!saving && !loadingReview && !saved);
+            box.setTag(word.optLong("id"));
+            if (saved) box.setText(value(word, "word") + " · " + value(word, "meaning") + " · Đã lưu");
+            if (selected[i] && !saved) selectedSuggestions.add(word.optLong("id"));
+        }
+        boolean retry = serverReview != null && serverReview.optBoolean("canRetry");
+        ((TextView) createButton).setText(retry ? "Thử lại nhận xét" : "Lưu từ đã chọn");
+        createButton.setEnabled(!saving && !loadingReview && (retry || !selectedSuggestions.isEmpty()));
+        selectedCountText.setText("Đã chọn " + selectedSuggestions.size() + " từ");
+    }
+
+    private void saveServerWords() {
+        if (!canAct() || saving || loadingReview || selectedSuggestions.isEmpty()) return;
+        JSONArray ids = new JSONArray();
+        for (Long id : selectedSuggestions) ids.put(id);
+        saving = true;
+        updateServerControls();
+        call(() -> api.saveWords(ids), result -> {
+            saving = false;
+            showMessage("Đã lưu từ vào tài khoản.");
+            loadServerReview();
+        }, error -> {
+            saving = false;
+            deckStatusText.setText(error.getMessage() + " Chạm để kiểm tra trạng thái đã lưu.");
+            updateServerControls();
+        });
+    }
+
+    private void retryServerReview() {
+        if (!canAct() || loadingReview || saving || serverReview == null || !serverReview.optBoolean("canRetry")) return;
+        saving = true;
+        updateServerControls();
+        call(() -> api.finish(conversationId, true), result -> {
+            saving = false;
+            loadServerReview();
+        }, error -> {
+            saving = false;
+            showMessage(error.getMessage());
+            loadServerReview();
+        });
+    }
+
+    private String value(JSONObject object, String key) {
+        return object == null || object.isNull(key) ? "" : object.optString(key, "");
+    }
+
+    private void text(int id, String value) {
+        ((TextView) requireView().findViewById(id)).setText(value);
+    }
+
+    @Override
+    public void onPause() {
+        reviewPoll.removeCallbacksAndMessages(null);
+        super.onPause();
     }
 }

@@ -1,0 +1,3932 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "SpeakMate shared FE-BE contract",
+    "version": "1.0.0",
+    "description": "Two-person, three-day demo. All 24 P0 backend operations implemented and checked against disposable MySQL (external AI stubbed). Five P1 endpoints remain CONTRACT_ONLY. Live Gemini/Google/SMTP and Android learning integration are not yet verified. MySQL v3. UTC timestamps, numeric IDs, 1-based pagination; snake_case only token response fields."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8081",
+      "description": "Desktop/backend development"
+    },
+    {
+      "url": "http://10.0.2.2:8081",
+      "description": "Android emulator to developer machine"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Auth"
+    },
+    {
+      "name": "Topics"
+    },
+    {
+      "name": "Conversations"
+    },
+    {
+      "name": "Review"
+    },
+    {
+      "name": "Words"
+    },
+    {
+      "name": "Admin topics"
+    },
+    {
+      "name": "Later"
+    }
+  ],
+  "paths": {
+    "/api/v1/auth/register": {
+      "post": {
+        "operationId": "registerAccount",
+        "summary": "Register a USER account",
+        "tags": [
+          "Auth"
+        ],
+        "x-implementation-status": "IMPLEMENTED",
+        "x-priority": "P0",
+        "security": [],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "operationId": "loginWithPassword",
+        "summary": "Sign in with a SpeakMate password",
+        "tags": [
+          "Auth"
+        ],
+        "x-implementation-status": "IMPLEMENTED",
+        "x-priority": "P0",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponseEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/google": {
+      "post": {
+        "operationId": "loginWithGoogle",
+        "summary": "Sign in/create account with a verified Google ID token",
+        "tags": [
+          "Auth"
+        ],
+        "x-implementation-status": "IMPLEMENTED",
+        "x-priority": "P0",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponseEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GoogleLoginRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "operationId": "refreshSession",
+        "summary": "Rotate one current refresh token",
+        "tags": [
+          "Auth"
+        ],
+        "x-implementation-status": "IMPLEMENTED",
+        "x-priority": "P0",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponseEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "operationId": "getCurrentUser",
+        "summary": "Read the authenticated account",
+        "tags": [
+          "Auth"
+        ],
+        "x-implementation-status": "IMPLEMENTED",
+        "x-priority": "P0",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "operationId": "logoutAccount",
+        "summary": "Revoke current access and refresh session",
+        "tags": [
+          "Auth"
+        ],
+        "x-implementation-status": "IMPLEMENTED",
+        "x-priority": "P0",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Logged out",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoidResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/google/link": {
+      "post": {
+        "operationId": "linkGoogleAccount",
+        "summary": "Explicitly link Google to this account",
+        "tags": [
+          "Auth"
+        ],
+        "x-implementation-status": "IMPLEMENTED",
+        "x-priority": "P0",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GoogleLoginRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/password/forgot": {
+      "post": {
+        "operationId": "requestPasswordReset",
+        "summary": "Queue a generic password-reset request",
+        "tags": [
+          "Auth"
+        ],
+        "x-implementation-status": "IMPLEMENTED",
+        "x-priority": "P0",
+        "security": [],
+        "responses": {
+          "202": {
+            "description": "Same response for eligible/unknown/disabled/Google-only accounts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoidResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/password/reset": {
+      "post": {
+        "operationId": "resetPassword",
+        "summary": "Consume reset code and revoke sessions",
+        "tags": [
+          "Auth"
+        ],
+        "x-implementation-status": "IMPLEMENTED",
+        "x-priority": "P0",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Password changed; sign in again",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoidResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/topics": {
+      "get": {
+        "operationId": "listTopics",
+        "summary": "List active learner topics",
+        "tags": [
+          "Topics"
+        ],
+        "x-implementation-status": "IMPLEMENTED",
+        "x-priority": "P0",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TopicResponsePageEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "description": "1-based."
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          }
+        ],
+        "description": "Name ascending, id ascending. Suggested topic level does not restrict the learner's chosen level."
+      }
+    },
+    "/api/v1/conversations": {
+      "post": {
+        "operationId": "createConversation",
+        "summary": "Create a conversation; learner speaks first",
+        "tags": [
+          "Conversations"
+        ],
+        "x-implementation-status": "IMPLEMENTED",
+        "x-priority": "P0",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Same createRequestId and same topicId/level returns existing conversation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationDetailEnvelope"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "New conversation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationDetailEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateConversationRequest"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "listConversations",
+        "summary": "List own conversations newest first",
+        "tags": [
+          "Conversations"
+        ],
+        "x-implementation-status": "IMPLEMENTED",
+        "x-priority": "P0",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationSummaryPageEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "description": "1-based."
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/conversations/{id}": {
+      "get": {
+        "operationId": "getConversation",
+        "summary": "Restore own conversation and transcript",
+        "tags": [
+          "Conversations"
+        ],
+        "x-implementation-status": "IMPLEMENTED",
+        "x-priority": "P0",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationDetailEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/conversations/{id}/messages": {
+      "post": {
+        "operationId": "sendConversationMessage",
+        "summary": "Accept one USER turn and generate only an AI reply",
+        "tags": [
+          "Conversations"
+        ],
+        "x-implementation-status": "IMPLEMENTED",
+        "x-priority": "P0",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Completed/replayed/cancelled turn",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TurnResponseEnvelope"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "The same turn is still running; retryAfterSeconds describes remaining90s lease",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TurnResponseEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "GET status after3seconds; does not authorize a second AI attempt.",
+                "schema": {
+                  "type": "integer",
+                  "enum": [
+                    3
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error"
+          },
+          "502": {
+            "$ref": "#/components/responses/Error"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error"
+          },
+          "504": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendMessageRequest"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            }
+          }
+        ],
+        "description": "AI call is synchronous outside DB transactions; AI timeout20s. On502/503, GET conversation and retry the same requestId/content. New requestId while a previous turn is unresolved is409."
+      }
+    },
+    "/api/v1/conversations/{id}/finish": {
+      "post": {
+        "operationId": "finishConversation",
+        "summary": "Close once, then review a frozen transcript",
+        "tags": [
+          "Review"
+        ],
+        "x-implementation-status": "IMPLEMENTED",
+        "x-priority": "P0",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Terminal result or existing result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewResponseEnvelope"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Review already running",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewResponseEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "GET status after3seconds; does not authorize a second AI attempt.",
+                "schema": {
+                  "type": "integer",
+                  "enum": [
+                    3
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error"
+          },
+          "502": {
+            "$ref": "#/components/responses/Error"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error"
+          },
+          "504": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            }
+          }
+        ],
+        "description": "No request body. Commit endedAt before AI. Timeout45s; failure keeps closed conversation and sets FAILED. Repeated finish never changes endedAt."
+      }
+    },
+    "/api/v1/conversations/{id}/review": {
+      "get": {
+        "operationId": "getConversationReview",
+        "summary": "Read review state/result without starting AI work",
+        "tags": [
+          "Review"
+        ],
+        "x-implementation-status": "IMPLEMENTED",
+        "x-priority": "P0",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewResponseEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/conversations/{id}/review/retry": {
+      "post": {
+        "operationId": "retryConversationReview",
+        "summary": "Retry FAILED or expired PROCESSING review",
+        "tags": [
+          "Review"
+        ],
+        "x-implementation-status": "IMPLEMENTED",
+        "x-priority": "P0",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewResponseEnvelope"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "An active attempt is still running",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewResponseEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "Retry-After": {
+                "description": "GET status after3seconds; does not authorize a second AI attempt.",
+                "schema": {
+                  "type": "integer",
+                  "enum": [
+                    3
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error"
+          },
+          "502": {
+            "$ref": "#/components/responses/Error"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error"
+          },
+          "504": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            }
+          }
+        ],
+        "description": "No body. Requires a closed conversation. COMPLETED/INSUFFICIENT_DATA returns existing result; never forces repeated paid AI calls."
+      }
+    },
+    "/api/v1/saved-words": {
+      "get": {
+        "operationId": "listSavedWords",
+        "summary": "List own personal words; no decks",
+        "tags": [
+          "Words"
+        ],
+        "x-implementation-status": "IMPLEMENTED",
+        "x-priority": "P0",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedWordResponsePageEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "description": "1-based."
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/SavedWordStatus"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/saved-words/from-suggestions": {
+      "post": {
+        "operationId": "saveSuggestedWords",
+        "summary": "Selectively copy own completed-review suggestions",
+        "tags": [
+          "Words"
+        ],
+        "x-implementation-status": "IMPLEMENTED",
+        "x-priority": "P0",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaveSuggestionsResponseEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveSuggestionsRequest"
+              }
+            }
+          }
+        },
+        "description": "All IDs must be valid/owned/from COMPLETED reports or the entire request fails. Duplicate spelling returns existing word without overwriting meaning. Stable processing order: suggestionId ascending."
+      }
+    },
+    "/api/v1/saved-words/{id}/review": {
+      "patch": {
+        "operationId": "reviewSavedWord",
+        "summary": "Record latest self-reported flashcard result",
+        "tags": [
+          "Words"
+        ],
+        "x-implementation-status": "IMPLEMENTED",
+        "x-priority": "P0",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SavedWordResponseEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewWordRequest"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            }
+          }
+        ],
+        "description": "NEW is initial-only in this operation. Backend sets lastReviewedAt; flipping a card alone sends no request."
+      }
+    },
+    "/api/v1/admin/topics": {
+      "get": {
+        "operationId": "adminListTopics",
+        "summary": "List enabled and disabled topics",
+        "tags": [
+          "Admin topics"
+        ],
+        "x-implementation-status": "IMPLEMENTED",
+        "x-priority": "P0",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminTopicResponsePageEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "description": "1-based."
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          }
+        ],
+        "x-required-role": "ADMIN"
+      },
+      "post": {
+        "operationId": "adminCreateTopic",
+        "summary": "Create an active topic",
+        "tags": [
+          "Admin topics"
+        ],
+        "x-implementation-status": "IMPLEMENTED",
+        "x-priority": "P0",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminTopicResponseEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TopicRequest"
+              }
+            }
+          }
+        },
+        "x-required-role": "ADMIN"
+      }
+    },
+    "/api/v1/admin/topics/{id}": {
+      "put": {
+        "operationId": "adminUpdateTopic",
+        "summary": "Replace topic content for future conversations",
+        "tags": [
+          "Admin topics"
+        ],
+        "x-implementation-status": "IMPLEMENTED",
+        "x-priority": "P0",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminTopicResponseEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TopicRequest"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            }
+          }
+        ],
+        "description": "Omitted description becomes null. Does not alter active or existing snapshots.",
+        "x-required-role": "ADMIN"
+      }
+    },
+    "/api/v1/admin/topics/{id}/active": {
+      "patch": {
+        "operationId": "adminSetTopicActive",
+        "summary": "Enable/disable topic; never delete history",
+        "tags": [
+          "Admin topics"
+        ],
+        "x-implementation-status": "IMPLEMENTED",
+        "x-priority": "P0",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminTopicResponseEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActiveRequest"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            }
+          }
+        ],
+        "x-required-role": "ADMIN"
+      }
+    },
+    "/api/v1/users/me": {
+      "patch": {
+        "operationId": "updateMyProfile",
+        "summary": "P1: edit own display name/default level",
+        "tags": [
+          "Later"
+        ],
+        "x-implementation-status": "CONTRACT_ONLY",
+        "x-priority": "P1",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileRequest"
+              }
+            }
+          }
+        },
+        "description": "Reject explicit null, empty body, or fields other than name/level. Does not rewrite historical snapshots."
+      }
+    },
+    "/api/v1/saved-words/{id}": {
+      "delete": {
+        "operationId": "deleteSavedWord",
+        "summary": "P1: remove own word",
+        "tags": [
+          "Later"
+        ],
+        "x-implementation-status": "CONTRACT_ONLY",
+        "x-priority": "P1",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Removed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoidResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/users": {
+      "get": {
+        "operationId": "adminListUsers",
+        "summary": "P1: safe account list",
+        "tags": [
+          "Later"
+        ],
+        "x-implementation-status": "CONTRACT_ONLY",
+        "x-priority": "P1",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponsePageEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "description": "1-based."
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          }
+        ],
+        "x-required-role": "ADMIN"
+      }
+    },
+    "/api/v1/admin/users/{id}/active": {
+      "patch": {
+        "operationId": "adminSetUserActive",
+        "summary": "P1: enable/disable a USER; ADMIN accounts protected",
+        "tags": [
+          "Later"
+        ],
+        "x-implementation-status": "CONTRACT_ONLY",
+        "x-priority": "P1",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActiveRequest"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            }
+          }
+        ],
+        "description": "Never accepts role changes. ADMIN targets including current admin cannot be disabled. Disabling USER increments authVersion and clears refresh token/expiry.",
+        "x-required-role": "ADMIN"
+      }
+    },
+    "/api/v1/admin/statistics": {
+      "get": {
+        "operationId": "adminGetStatistics",
+        "summary": "P1: count real data, including COMPLETED reports only",
+        "tags": [
+          "Later"
+        ],
+        "x-implementation-status": "CONTRACT_ONLY",
+        "x-priority": "P1",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminStatsEnvelope"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error"
+          }
+        },
+        "x-required-role": "ADMIN"
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "responses": {
+      "Error": {
+        "description": "HTTP status is authoritative. Read error code; never parse message text as business logic. Generic model lists possible errors, not a promise that every code applies to every operation.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "EnglishLevel": {
+        "type": "string",
+        "enum": [
+          "A1",
+          "A2",
+          "B1",
+          "B2"
+        ]
+      },
+      "ReviewStatus": {
+        "type": "string",
+        "enum": [
+          "NOT_STARTED",
+          "PROCESSING",
+          "COMPLETED",
+          "FAILED",
+          "INSUFFICIENT_DATA"
+        ]
+      },
+      "SavedWordStatus": {
+        "type": "string",
+        "enum": [
+          "NEW",
+          "LEARNING",
+          "MASTERED"
+        ]
+      },
+      "UserResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 255,
+            "format": "email"
+          },
+          "level": {
+            "$ref": "#/components/schemas/EnglishLevel"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "USER",
+              "ADMIN"
+            ]
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "passwordEnabled": {
+            "type": "boolean"
+          },
+          "googleLinked": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email",
+          "level",
+          "role",
+          "active",
+          "passwordEnabled",
+          "googleLinked"
+        ],
+        "additionalProperties": false
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 255,
+            "format": "email"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 64,
+            "format": "password",
+            "minLength": 8,
+            "description": "Nonblank; <=72 UTF-8 bytes; do not trim."
+          },
+          "level": {
+            "$ref": "#/components/schemas/EnglishLevel"
+          }
+        },
+        "required": [
+          "name",
+          "email",
+          "password"
+        ],
+        "additionalProperties": false
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 255,
+            "format": "email"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 256,
+            "format": "password",
+            "minLength": 1,
+            "description": "DTO accepts <=256 chars; actual BCrypt verification accepts <=64 chars and <=72 UTF-8 bytes, otherwise generic401."
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ],
+        "additionalProperties": false
+      },
+      "GoogleLoginRequest": {
+        "type": "object",
+        "properties": {
+          "idToken": {
+            "type": "string",
+            "maxLength": 10000,
+            "minLength": 1,
+            "description": "Google ID token for configured WEB client ID, never a Google access token/client secret."
+          }
+        },
+        "required": [
+          "idToken"
+        ],
+        "additionalProperties": false
+      },
+      "RefreshTokenRequest": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "maxLength": 512,
+            "minLength": 1
+          }
+        },
+        "required": [
+          "refreshToken"
+        ],
+        "additionalProperties": false
+      },
+      "ForgotPasswordRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 255,
+            "format": "email"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "additionalProperties": false
+      },
+      "ResetPasswordRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 255,
+            "format": "email"
+          },
+          "code": {
+            "type": "string",
+            "maxLength": 6,
+            "pattern": "^[0-9]{6}$"
+          },
+          "newPassword": {
+            "type": "string",
+            "maxLength": 64,
+            "format": "password",
+            "minLength": 8,
+            "description": "<=72 UTF-8 bytes; do not trim."
+          }
+        },
+        "required": [
+          "email",
+          "code",
+          "newPassword"
+        ],
+        "additionalProperties": false
+      },
+      "TokenResponse": {
+        "type": "object",
+        "properties": {
+          "access_token": {
+            "type": "string"
+          },
+          "refresh_token": {
+            "type": "string"
+          },
+          "token_type": {
+            "type": "string",
+            "enum": [
+              "Bearer"
+            ]
+          },
+          "expires_in": {
+            "type": "integer",
+            "minimum": 1,
+            "example": 900
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserResponse"
+          }
+        },
+        "required": [
+          "access_token",
+          "refresh_token",
+          "token_type",
+          "expires_in",
+          "user"
+        ]
+      },
+      "TopicResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "nullable": true
+          },
+          "level": {
+            "$ref": "#/components/schemas/EnglishLevel"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "level"
+        ]
+      },
+      "AdminTopicResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "nullable": true
+          },
+          "level": {
+            "$ref": "#/components/schemas/EnglishLevel"
+          },
+          "scenario": {
+            "type": "string",
+            "maxLength": 4000
+          },
+          "active": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "level",
+          "scenario",
+          "active"
+        ]
+      },
+      "TopicRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 2000,
+            "nullable": true
+          },
+          "level": {
+            "$ref": "#/components/schemas/EnglishLevel"
+          },
+          "scenario": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1
+          }
+        },
+        "required": [
+          "name",
+          "level",
+          "scenario"
+        ],
+        "additionalProperties": false
+      },
+      "ActiveRequest": {
+        "type": "object",
+        "properties": {
+          "active": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "active"
+        ],
+        "additionalProperties": false
+      },
+      "CreateConversationRequest": {
+        "type": "object",
+        "properties": {
+          "topicId": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "level": {
+            "$ref": "#/components/schemas/EnglishLevel"
+          },
+          "createRequestId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+          }
+        },
+        "required": [
+          "topicId",
+          "level",
+          "createRequestId"
+        ],
+        "additionalProperties": false
+      },
+      "SendMessageRequest": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+          }
+        },
+        "required": [
+          "content",
+          "requestId"
+        ],
+        "additionalProperties": false
+      },
+      "MessageResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "sender": {
+            "type": "string",
+            "enum": [
+              "USER",
+              "AI"
+            ]
+          },
+          "content": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "sender",
+          "content",
+          "requestId",
+          "createdAt"
+        ]
+      },
+      "PendingReply": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+          },
+          "userMessageId": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PROCESSING",
+              "RETRYABLE"
+            ]
+          },
+          "pollAfterSeconds": {
+            "type": "integer",
+            "enum": [
+              0,
+              3
+            ],
+            "description": "GET polling interval, not an AI processing lease. Processing=3; terminal=0."
+          }
+        },
+        "required": [
+          "requestId",
+          "userMessageId",
+          "status",
+          "pollAfterSeconds"
+        ],
+        "nullable": true
+      },
+      "ConversationSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "topicId": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "topicName": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "profileLevelSnapshot": {
+            "$ref": "#/components/schemas/EnglishLevel"
+          },
+          "level": {
+            "$ref": "#/components/schemas/EnglishLevel"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "OPEN",
+              "CLOSED"
+            ]
+          },
+          "reviewStatus": {
+            "$ref": "#/components/schemas/ReviewStatus"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "topicId",
+          "topicName",
+          "profileLevelSnapshot",
+          "level",
+          "status",
+          "reviewStatus",
+          "createdAt",
+          "endedAt"
+        ]
+      },
+      "ConversationDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "topicId": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "topicName": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "scenario": {
+            "type": "string",
+            "maxLength": 4000
+          },
+          "profileLevelSnapshot": {
+            "$ref": "#/components/schemas/EnglishLevel"
+          },
+          "level": {
+            "$ref": "#/components/schemas/EnglishLevel"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "OPEN",
+              "CLOSED"
+            ]
+          },
+          "reviewStatus": {
+            "$ref": "#/components/schemas/ReviewStatus"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "userTurnCount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 20
+          },
+          "pendingReply": {
+            "$ref": "#/components/schemas/PendingReply"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MessageResponse"
+            },
+            "maxItems": 40
+          }
+        },
+        "required": [
+          "id",
+          "topicId",
+          "topicName",
+          "scenario",
+          "profileLevelSnapshot",
+          "level",
+          "status",
+          "reviewStatus",
+          "createdAt",
+          "endedAt",
+          "userTurnCount",
+          "pendingReply",
+          "messages"
+        ]
+      },
+      "TurnResponse": {
+        "type": "object",
+        "properties": {
+          "conversationId": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+          },
+          "replyStatus": {
+            "type": "string",
+            "enum": [
+              "PROCESSING",
+              "COMPLETED",
+              "CANCELLED"
+            ]
+          },
+          "userMessage": {
+            "$ref": "#/components/schemas/MessageResponse"
+          },
+          "aiMessage": {
+            "$ref": "#/components/schemas/NullableMessageResponse"
+          },
+          "replayed": {
+            "type": "boolean"
+          },
+          "pollAfterSeconds": {
+            "type": "integer",
+            "enum": [
+              0,
+              3
+            ],
+            "description": "GET polling interval, not an AI processing lease. Processing=3; terminal=0."
+          }
+        },
+        "required": [
+          "conversationId",
+          "requestId",
+          "replyStatus",
+          "userMessage",
+          "aiMessage",
+          "pollAfterSeconds",
+          "replayed"
+        ],
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "replyStatus": {
+                "enum": [
+                  "COMPLETED"
+                ]
+              },
+              "aiMessage": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "integer",
+                    "format": "int64",
+                    "minimum": 1
+                  },
+                  "sender": {
+                    "type": "string",
+                    "enum": [
+                      "USER",
+                      "AI"
+                    ]
+                  },
+                  "content": {
+                    "type": "string",
+                    "maxLength": 4000,
+                    "minLength": 1
+                  },
+                  "requestId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+                  },
+                  "createdAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                },
+                "required": [
+                  "id",
+                  "sender",
+                  "content",
+                  "requestId",
+                  "createdAt"
+                ]
+              },
+              "pollAfterSeconds": {
+                "enum": [
+                  0
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "properties": {
+              "replyStatus": {
+                "enum": [
+                  "PROCESSING"
+                ]
+              },
+              "aiMessage": {
+                "type": "object",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              },
+              "replayed": {
+                "enum": [
+                  true
+                ]
+              },
+              "pollAfterSeconds": {
+                "enum": [
+                  3
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "properties": {
+              "replyStatus": {
+                "enum": [
+                  "CANCELLED"
+                ]
+              },
+              "aiMessage": {
+                "type": "object",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              },
+              "pollAfterSeconds": {
+                "enum": [
+                  0
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "GrammarCorrection": {
+        "type": "object",
+        "properties": {
+          "messageId": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "originalContent": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "correctedContent": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1
+          },
+          "feedback": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 1
+          }
+        },
+        "required": [
+          "messageId",
+          "originalContent",
+          "correctedContent",
+          "feedback"
+        ]
+      },
+      "WordSuggestionResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "word": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1
+          },
+          "meaning": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1
+          },
+          "example": {
+            "type": "string",
+            "maxLength": 1000,
+            "nullable": true
+          },
+          "savedWordId": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1,
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "word",
+          "meaning",
+          "example",
+          "savedWordId"
+        ]
+      },
+      "ReviewResponse": {
+        "type": "object",
+        "properties": {
+          "conversationId": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "reviewStatus": {
+            "$ref": "#/components/schemas/ReviewStatus"
+          },
+          "summary": {
+            "type": "string",
+            "maxLength": 3000,
+            "nullable": true
+          },
+          "strengths": {
+            "type": "string",
+            "maxLength": 3000,
+            "nullable": true
+          },
+          "weaknesses": {
+            "type": "string",
+            "maxLength": 3000,
+            "nullable": true
+          },
+          "recommendedLevel": {
+            "type": "string",
+            "enum": [
+              "A1",
+              "A2",
+              "B1",
+              "B2",
+              null
+            ],
+            "nullable": true
+          },
+          "levelFeedback": {
+            "type": "string",
+            "maxLength": 3000,
+            "nullable": true
+          },
+          "grammarCorrections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GrammarCorrection"
+            },
+            "maxItems": 20
+          },
+          "suggestedWords": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WordSuggestionResponse"
+            },
+            "maxItems": 10
+          },
+          "canRetry": {
+            "type": "boolean"
+          },
+          "pollAfterSeconds": {
+            "type": "integer",
+            "enum": [
+              0,
+              3
+            ],
+            "description": "GET polling interval, not an AI processing lease. Processing=3; terminal=0."
+          }
+        },
+        "required": [
+          "conversationId",
+          "reviewStatus",
+          "summary",
+          "strengths",
+          "weaknesses",
+          "recommendedLevel",
+          "levelFeedback",
+          "grammarCorrections",
+          "suggestedWords",
+          "canRetry",
+          "pollAfterSeconds"
+        ],
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "reviewStatus": {
+                "enum": [
+                  "NOT_STARTED"
+                ]
+              },
+              "summary": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              },
+              "strengths": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              },
+              "weaknesses": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              },
+              "recommendedLevel": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              },
+              "levelFeedback": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              },
+              "grammarCorrections": {
+                "type": "array",
+                "maxItems": 0
+              },
+              "suggestedWords": {
+                "type": "array",
+                "maxItems": 0
+              },
+              "canRetry": {
+                "enum": [
+                  false
+                ]
+              },
+              "pollAfterSeconds": {
+                "enum": [
+                  0
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "properties": {
+              "reviewStatus": {
+                "enum": [
+                  "PROCESSING"
+                ]
+              },
+              "summary": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              },
+              "strengths": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              },
+              "weaknesses": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              },
+              "recommendedLevel": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              },
+              "levelFeedback": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              },
+              "grammarCorrections": {
+                "type": "array",
+                "maxItems": 0
+              },
+              "suggestedWords": {
+                "type": "array",
+                "maxItems": 0
+              }
+            },
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "canRetry": {
+                    "enum": [
+                      false
+                    ]
+                  },
+                  "pollAfterSeconds": {
+                    "enum": [
+                      3
+                    ]
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "canRetry": {
+                    "enum": [
+                      true
+                    ]
+                  },
+                  "pollAfterSeconds": {
+                    "enum": [
+                      0
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "reviewStatus": {
+                "enum": [
+                  "FAILED"
+                ]
+              },
+              "summary": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              },
+              "strengths": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              },
+              "weaknesses": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              },
+              "recommendedLevel": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              },
+              "levelFeedback": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              },
+              "grammarCorrections": {
+                "type": "array",
+                "maxItems": 0
+              },
+              "suggestedWords": {
+                "type": "array",
+                "maxItems": 0
+              },
+              "canRetry": {
+                "enum": [
+                  true
+                ]
+              },
+              "pollAfterSeconds": {
+                "enum": [
+                  0
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "properties": {
+              "reviewStatus": {
+                "enum": [
+                  "INSUFFICIENT_DATA"
+                ]
+              },
+              "summary": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 3000
+              },
+              "strengths": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              },
+              "weaknesses": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              },
+              "recommendedLevel": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              },
+              "levelFeedback": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              },
+              "grammarCorrections": {
+                "type": "array",
+                "maxItems": 0
+              },
+              "suggestedWords": {
+                "type": "array",
+                "maxItems": 0
+              },
+              "canRetry": {
+                "enum": [
+                  false
+                ]
+              },
+              "pollAfterSeconds": {
+                "enum": [
+                  0
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "properties": {
+              "reviewStatus": {
+                "enum": [
+                  "COMPLETED"
+                ]
+              },
+              "summary": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 3000
+              },
+              "strengths": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 3000
+              },
+              "weaknesses": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 3000
+              },
+              "levelFeedback": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 3000
+              },
+              "recommendedLevel": {
+                "$ref": "#/components/schemas/EnglishLevel"
+              },
+              "canRetry": {
+                "enum": [
+                  false
+                ]
+              },
+              "pollAfterSeconds": {
+                "enum": [
+                  0
+                ]
+              }
+            }
+          }
+        ],
+        "description": "PROCESSING active: canRetry=false/pollAfterSeconds=3; expired90s: canRetry=true/pollAfterSeconds=0. GET never starts work."
+      },
+      "SaveSuggestionsRequest": {
+        "type": "object",
+        "properties": {
+          "suggestionIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1
+            },
+            "minItems": 1,
+            "maxItems": 10,
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "suggestionIds"
+        ],
+        "additionalProperties": false
+      },
+      "SavedWordResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "word": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "meaning": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "example": {
+            "type": "string",
+            "maxLength": 1000,
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/SavedWordStatus"
+          },
+          "lastReviewedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "word",
+          "meaning",
+          "example",
+          "status",
+          "lastReviewedAt",
+          "createdAt"
+        ],
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "status": {
+                "enum": [
+                  "NEW"
+                ]
+              },
+              "lastReviewedAt": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "properties": {
+              "status": {
+                "enum": [
+                  "LEARNING",
+                  "MASTERED"
+                ]
+              },
+              "lastReviewedAt": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        ]
+      },
+      "SaveWordEntry": {
+        "type": "object",
+        "properties": {
+          "suggestionId": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "savedWord": {
+            "$ref": "#/components/schemas/SavedWordResponse"
+          }
+        },
+        "required": [
+          "suggestionId",
+          "savedWord"
+        ]
+      },
+      "SaveSuggestionsResponse": {
+        "type": "object",
+        "properties": {
+          "created": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SaveWordEntry"
+            },
+            "maxItems": 10
+          },
+          "existing": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SaveWordEntry"
+            },
+            "maxItems": 10
+          }
+        },
+        "required": [
+          "created",
+          "existing"
+        ]
+      },
+      "ReviewWordRequest": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "LEARNING",
+              "MASTERED"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "additionalProperties": false
+      },
+      "ProfileRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1
+          },
+          "level": {
+            "$ref": "#/components/schemas/EnglishLevel"
+          }
+        },
+        "required": [],
+        "additionalProperties": false,
+        "minProperties": 1
+      },
+      "AdminStats": {
+        "type": "object",
+        "properties": {
+          "totalUsers": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "activeTopics": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "totalConversations": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "closedConversations": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "reviewedConversations": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "totalUsers",
+          "activeTopics",
+          "totalConversations",
+          "closedConversations",
+          "reviewedConversations"
+        ]
+      },
+      "PageMeta": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "pages": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "page",
+          "pageSize",
+          "pages",
+          "total"
+        ]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "minimum": 400,
+            "maximum": 599
+          },
+          "error": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object",
+            "nullable": true,
+            "enum": [
+              null
+            ],
+            "description": "Always null."
+          }
+        },
+        "required": [
+          "statusCode",
+          "error",
+          "message",
+          "data"
+        ]
+      },
+      "VoidResponse": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "minimum": 200,
+            "maximum": 299
+          },
+          "error": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              null
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object",
+            "nullable": true,
+            "enum": [
+              null
+            ],
+            "description": "Always null."
+          }
+        },
+        "required": [
+          "statusCode",
+          "error",
+          "message",
+          "data"
+        ]
+      },
+      "NullableMessageResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 1
+          },
+          "sender": {
+            "type": "string",
+            "enum": [
+              "USER",
+              "AI"
+            ]
+          },
+          "content": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "sender",
+          "content",
+          "requestId",
+          "createdAt"
+        ],
+        "nullable": true
+      },
+      "TopicResponsePage": {
+        "type": "object",
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/PageMeta"
+          },
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TopicResponse"
+            }
+          }
+        },
+        "required": [
+          "meta",
+          "result"
+        ]
+      },
+      "AdminTopicResponsePage": {
+        "type": "object",
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/PageMeta"
+          },
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminTopicResponse"
+            }
+          }
+        },
+        "required": [
+          "meta",
+          "result"
+        ]
+      },
+      "ConversationSummaryPage": {
+        "type": "object",
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/PageMeta"
+          },
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConversationSummary"
+            }
+          }
+        },
+        "required": [
+          "meta",
+          "result"
+        ]
+      },
+      "SavedWordResponsePage": {
+        "type": "object",
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/PageMeta"
+          },
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SavedWordResponse"
+            }
+          }
+        },
+        "required": [
+          "meta",
+          "result"
+        ]
+      },
+      "UserResponsePage": {
+        "type": "object",
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/PageMeta"
+          },
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserResponse"
+            }
+          }
+        },
+        "required": [
+          "meta",
+          "result"
+        ]
+      },
+      "UserResponseEnvelope": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "minimum": 200,
+            "maximum": 299
+          },
+          "error": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              null
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/UserResponse"
+          }
+        },
+        "required": [
+          "statusCode",
+          "error",
+          "message",
+          "data"
+        ]
+      },
+      "TokenResponseEnvelope": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "minimum": 200,
+            "maximum": 299
+          },
+          "error": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              null
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/TokenResponse"
+          }
+        },
+        "required": [
+          "statusCode",
+          "error",
+          "message",
+          "data"
+        ]
+      },
+      "TopicResponsePageEnvelope": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "minimum": 200,
+            "maximum": 299
+          },
+          "error": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              null
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/TopicResponsePage"
+          }
+        },
+        "required": [
+          "statusCode",
+          "error",
+          "message",
+          "data"
+        ]
+      },
+      "AdminTopicResponsePageEnvelope": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "minimum": 200,
+            "maximum": 299
+          },
+          "error": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              null
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AdminTopicResponsePage"
+          }
+        },
+        "required": [
+          "statusCode",
+          "error",
+          "message",
+          "data"
+        ]
+      },
+      "AdminTopicResponseEnvelope": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "minimum": 200,
+            "maximum": 299
+          },
+          "error": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              null
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AdminTopicResponse"
+          }
+        },
+        "required": [
+          "statusCode",
+          "error",
+          "message",
+          "data"
+        ]
+      },
+      "ConversationSummaryPageEnvelope": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "minimum": 200,
+            "maximum": 299
+          },
+          "error": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              null
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ConversationSummaryPage"
+          }
+        },
+        "required": [
+          "statusCode",
+          "error",
+          "message",
+          "data"
+        ]
+      },
+      "ConversationDetailEnvelope": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "minimum": 200,
+            "maximum": 299
+          },
+          "error": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              null
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ConversationDetail"
+          }
+        },
+        "required": [
+          "statusCode",
+          "error",
+          "message",
+          "data"
+        ]
+      },
+      "TurnResponseEnvelope": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "minimum": 200,
+            "maximum": 299
+          },
+          "error": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              null
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/TurnResponse"
+          }
+        },
+        "required": [
+          "statusCode",
+          "error",
+          "message",
+          "data"
+        ]
+      },
+      "ReviewResponseEnvelope": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "minimum": 200,
+            "maximum": 299
+          },
+          "error": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              null
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ReviewResponse"
+          }
+        },
+        "required": [
+          "statusCode",
+          "error",
+          "message",
+          "data"
+        ]
+      },
+      "SavedWordResponsePageEnvelope": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "minimum": 200,
+            "maximum": 299
+          },
+          "error": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              null
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/SavedWordResponsePage"
+          }
+        },
+        "required": [
+          "statusCode",
+          "error",
+          "message",
+          "data"
+        ]
+      },
+      "SaveSuggestionsResponseEnvelope": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "minimum": 200,
+            "maximum": 299
+          },
+          "error": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              null
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/SaveSuggestionsResponse"
+          }
+        },
+        "required": [
+          "statusCode",
+          "error",
+          "message",
+          "data"
+        ]
+      },
+      "SavedWordResponseEnvelope": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "minimum": 200,
+            "maximum": 299
+          },
+          "error": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              null
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/SavedWordResponse"
+          }
+        },
+        "required": [
+          "statusCode",
+          "error",
+          "message",
+          "data"
+        ]
+      },
+      "UserResponsePageEnvelope": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "minimum": 200,
+            "maximum": 299
+          },
+          "error": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              null
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/UserResponsePage"
+          }
+        },
+        "required": [
+          "statusCode",
+          "error",
+          "message",
+          "data"
+        ]
+      },
+      "AdminStatsEnvelope": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "minimum": 200,
+            "maximum": 299
+          },
+          "error": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              null
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AdminStats"
+          }
+        },
+        "required": [
+          "statusCode",
+          "error",
+          "message",
+          "data"
+        ]
+      }
+    }
+  }
+}

@@ -918,7 +918,7 @@ public class DeckDetailFragment extends Fragment {
         ));
 
         input.setBackgroundResource(R.drawable.bg_card);
-        input.setSupportBackgroundTintList(null);
+        input.setBackgroundTintList(null);
 
         input.setPadding(
                 dp(14),
@@ -951,7 +951,7 @@ public class DeckDetailFragment extends Fragment {
         button.setMinHeight(dp(48));
 
         button.setBackgroundResource(R.drawable.bg_card);
-        button.setSupportBackgroundTintList(null);
+        button.setBackgroundTintList(null);
 
         button.setTextColor(ContextCompat.getColor(
                 requireContext(),

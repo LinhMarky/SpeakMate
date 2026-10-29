@@ -1,0 +1,18 @@
+# Chỉ gửi mã nguồn và Gradle Wrapper vào Docker build context.
+**
+!Dockerfile
+!.dockerignore
+!gradlew
+!build.gradle.kts
+!settings.gradle.kts
+!gradle/
+!gradle/wrapper/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+!src/
+!src/**
+**/application-local.properties
+**/.env
+**/.env.*
+**/*.keystore
+**/*.jks
