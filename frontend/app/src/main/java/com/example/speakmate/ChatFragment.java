@@ -866,14 +866,14 @@ public class ChatFragment extends Fragment {
             String content,
             boolean fromUser
     ) {
-        if (messageContainer == null) {
+        if (!isAdded() || messageContainer == null) {
             return;
         }
 
-        LinearLayout row = new LinearLayout(requireContext());
+        android.content.Context context = requireContext();
 
+        LinearLayout row = new LinearLayout(context);
         row.setOrientation(LinearLayout.HORIZONTAL);
-
         row.setGravity(
                 (fromUser ? Gravity.END : Gravity.START)
                         | Gravity.TOP
@@ -887,14 +887,14 @@ public class ChatFragment extends Fragment {
 
         rowParams.bottomMargin = dp(18);
 
-        // Avatar chỉ để trang trí, không can thiệp thao tác hội thoại.
+        // Avatar chỉ để trang trí.
         android.widget.ImageView avatar =
-                new android.widget.ImageView(requireContext());
+                new android.widget.ImageView(context);
 
         avatar.setImportantForAccessibility(
                 View.IMPORTANT_FOR_ACCESSIBILITY_NO
         );
-
+        avatar.setContentDescription(null);
         avatar.setClickable(false);
         avatar.setFocusable(false);
 
@@ -906,34 +906,18 @@ public class ChatFragment extends Fragment {
                 R.drawable.bg_sm_chat_avatar
         );
 
-        if (fromUser) {
-            avatar.setImageResource(
-                    R.drawable.ic_sm_nav_profile
-            );
+        avatar.setImageResource(
+                fromUser
+                        ? R.drawable.ic_sm_topic_intro
+                        : R.drawable.sm_mascot_robot
+        );
 
-            avatar.setPadding(
-                    dp(6),
-                    dp(6),
-                    dp(6),
-                    dp(6)
-            );
-        } else {
-            avatar.setImageResource(
-                    R.drawable.sm_mascot_wave
-            );
-
-            avatar.setPadding(
-                    dp(1),
-                    dp(1),
-                    dp(1),
-                    dp(1)
-            );
-        }
+        avatar.setPadding(0, 0, 0, 0);
 
         LinearLayout.LayoutParams avatarParams =
                 new LinearLayout.LayoutParams(
-                        dp(32),
-                        dp(32)
+                        dp(36),
+                        dp(36)
                 );
 
         avatarParams.topMargin = dp(2);
@@ -944,9 +928,9 @@ public class ChatFragment extends Fragment {
             avatarParams.setMarginEnd(dp(8));
         }
 
-        TextView bubble = new TextView(requireContext());
-
-        bubble.setText(content);
+        // Nội dung tin nhắn.
+        TextView bubble = new TextView(context);
+        bubble.setText(content == null ? "" : content);
         bubble.setTextSize(15);
 
         bubble.setTypeface(
@@ -958,17 +942,13 @@ public class ChatFragment extends Fragment {
 
         bubble.setTextColor(
                 ContextCompat.getColor(
-                        requireContext(),
+                        context,
                         R.color.sm_text_primary
                 )
         );
 
         bubble.setTextIsSelectable(true);
-
-        bubble.setLineSpacing(
-                dp(3),
-                1f
-        );
+        bubble.setLineSpacing(dp(3), 1f);
 
         bubble.setBackgroundResource(
                 fromUser
@@ -983,31 +963,6 @@ public class ChatFragment extends Fragment {
                 dp(12)
         );
 
-        /*
-         * Tính chiều rộng theo vùng hội thoại.
-         * Khi view chưa được đo, dùng chiều rộng màn hình dự phòng.
-         */
-        int availableWidth =
-                messageContainer.getWidth()
-                        - messageContainer.getPaddingLeft()
-                        - messageContainer.getPaddingRight();
-
-        if (availableWidth <= 0) {
-            availableWidth =
-                    getResources().getDisplayMetrics().widthPixels
-                            - dp(32);
-        }
-
-        int bubbleMaxWidth = Math.max(
-                1,
-                Math.min(
-                        Math.round(availableWidth * 0.78f),
-                        availableWidth - dp(40)
-                )
-        );
-
-        bubble.setMaxWidth(bubbleMaxWidth);
-
         LinearLayout.LayoutParams bubbleParams =
                 new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.WRAP_CONTENT,
@@ -1021,6 +976,65 @@ public class ChatFragment extends Fragment {
             row.addView(avatar, avatarParams);
             row.addView(bubble, bubbleParams);
         }
+
+        /*
+         * Giới hạn chiều rộng theo vùng chat thực tế.
+         * Cập nhật lại khi hàng được đo hoặc đổi kích thước.
+         */
+        row.addOnLayoutChangeListener(
+                (v, left, top, right, bottom,
+                 oldLeft, oldTop, oldRight, oldBottom) -> {
+
+                    int rowWidth = right - left;
+
+                    if (rowWidth <= 0) {
+                        return;
+                    }
+
+                    int availableWidth = Math.max(
+                            1,
+                            rowWidth
+                                    - row.getPaddingLeft()
+                                    - row.getPaddingRight()
+                    );
+
+                    int bubbleMaxWidth = Math.max(
+                            1,
+                            Math.min(
+                                    Math.round(availableWidth * 0.78f),
+                                    availableWidth - dp(44)
+                            )
+                    );
+
+                    if (bubble.getMaxWidth() != bubbleMaxWidth) {
+                        bubble.setMaxWidth(bubbleMaxWidth);
+                    }
+                }
+        );
+
+        // Chiều rộng dự phòng trước lần đo đầu tiên.
+        int availableWidth =
+                messageContainer.getWidth()
+                        - messageContainer.getPaddingLeft()
+                        - messageContainer.getPaddingRight();
+
+        if (availableWidth <= 0) {
+            availableWidth = Math.max(
+                    1,
+                    getResources().getDisplayMetrics().widthPixels
+                            - dp(48)
+            );
+        }
+
+        bubble.setMaxWidth(
+                Math.max(
+                        1,
+                        Math.min(
+                                Math.round(availableWidth * 0.78f),
+                                availableWidth - dp(44)
+                        )
+                )
+        );
 
         messageContainer.addView(row, rowParams);
     }

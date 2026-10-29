@@ -90,23 +90,23 @@
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btnProfileSpeakingHistory"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:background="@drawable/bg_home_button_secondary"
+            android:background="@drawable/bg_card"
             android:backgroundTint="@null"
-            android:drawableStart="@drawable/ic_sm_stat_remaining"
+            android:drawableStart="@drawable/ic_sm_history"
+            android:drawableEnd="@drawable/ic_sm_topic_chevron"
             android:drawablePadding="12dp"
             android:elevation="0dp"
             android:fontFamily="sans-serif-medium"
             android:gravity="start|center_vertical"
             android:includeFontPadding="false"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:paddingStart="14dp"
-            android:paddingTop="0dp"
-            android:paddingEnd="14dp"
-            android:paddingBottom="0dp"
-            android:text="Lịch sử luyện tập"
+            android:minHeight="60dp"
+            android:paddingStart="16dp"
+            android:paddingTop="16dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="16dp"
+            android:text="Lịch sử luyện nói"
             android:textAllCaps="false"
             android:textColor="@color/sm_text_primary"
             android:textSize="15sp" />
@@ -255,8 +255,10 @@
                 android:paddingBottom="0dp"
                 android:text="Lưu thay đổi"
                 android:textAllCaps="false"
-                android:textColor="@color/sm_background"
-                android:textSize="16sp" />
+                android:textColor="@color/sm_on_primary"
+                android:textSize="16sp"
+                android:drawableStart="@drawable/ic_sm_check_white"
+                android:drawablePadding="10dp"/>
 
         </LinearLayout>
 
@@ -264,35 +266,40 @@
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btnProfileOpenLogin"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/bg_home_button_secondary"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_sm_button_outline"
             android:backgroundTint="@null"
+            android:drawableStart="@drawable/ic_sm_account"
+            android:drawableEnd="@drawable/ic_sm_topic_chevron"
+            android:drawablePadding="12dp"
             android:elevation="0dp"
             android:fontFamily="sans-serif-medium"
-            android:gravity="center"
+            android:gravity="start|center_vertical"
             android:includeFontPadding="false"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
+            android:minHeight="56dp"
             android:paddingStart="16dp"
-            android:paddingTop="0dp"
+            android:paddingTop="14dp"
             android:paddingEnd="16dp"
-            android:paddingBottom="0dp"
+            android:paddingBottom="14dp"
             android:text="Đăng nhập"
             android:textAllCaps="false"
-            android:textColor="@color/sm_cyan"
-            android:textSize="16sp" />
+            android:textColor="@color/sm_primary"
+            android:textSize="15sp" />
 
         <!-- Giới thiệu -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:fontFamily="sans-serif"
+            android:drawableStart="@drawable/ic_sm_info"
+            android:drawablePadding="10dp"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="center_vertical"
+            android:minHeight="40dp"
             android:text="Về SpeakMate"
             android:textColor="@color/sm_text_primary"
-            android:textSize="19sp"
-            android:textStyle="bold" />
+            android:textSize="18sp" />
 
         <TextView
             android:layout_width="match_parent"

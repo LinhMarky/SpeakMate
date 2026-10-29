@@ -30,14 +30,13 @@ public class MatchFragment extends Fragment {
     private static final String PREFS_RECORDS =
             "speakmate_match_records";
 
-    private static final int COLOR_SURFACE = 0xFF24233F;
-    private static final int COLOR_BORDER = 0xFF45416B;
-    private static final int COLOR_SELECTED = 0xFF20D9F4;
-    private static final int COLOR_SUCCESS = 0xFF35D6A0;
-    private static final int COLOR_ERROR = 0xFFFF668C;
-    private static final int COLOR_WARNING = 0xFFFFC66D;
-    private static final int COLOR_TEXT = 0xFFF5F3FF;
-
+    private static final int COLOR_SURFACE = 0xFFFFFFFF;
+    private static final int COLOR_BORDER = 0xFFDCE8E4;
+    private static final int COLOR_SELECTED = 0xFF0F766E;
+    private static final int COLOR_SUCCESS = 0xFF15805A;
+    private static final int COLOR_ERROR = 0xFFC64055;
+    private static final int COLOR_WARNING = 0xFFA66312;
+    private static final int COLOR_TEXT = 0xFF172B2A;
     private final Handler handler =
             new Handler(Looper.getMainLooper());
 
@@ -463,7 +462,7 @@ public class MatchFragment extends Fragment {
         updatePairCount();
 
         feedbackText.setText("Chọn hai thẻ tương ứng");
-        feedbackText.setTextColor(Color.parseColor("#B8B5D6"));
+        feedbackText.setTextColor(Color.parseColor("#607572"));
 
         buildBoard();
     }

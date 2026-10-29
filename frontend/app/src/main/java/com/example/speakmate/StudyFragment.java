@@ -31,11 +31,10 @@ public class StudyFragment extends Fragment {
     private static final String STATE_MEANINGS = "study_meanings";
     private static final String STATE_EXAMPLES = "study_examples";
 
-    private static final int COLOR_SURFACE = 0xFF24233F;
-    private static final int COLOR_BORDER = 0xFF45416B;
-    private static final int COLOR_SUCCESS = 0xFF35D6A0;
-    private static final int COLOR_WARNING = 0xFFFFC66D;
-
+    private static final int COLOR_SURFACE = 0xFFFFFFFF;
+    private static final int COLOR_BORDER = 0xFFDCE8E4;
+    private static final int COLOR_SUCCESS = 0xFF15805A;
+    private static final int COLOR_WARNING = 0xFFA66312;
     private List<Flashcard> allCards = new ArrayList<>();
     private List<Flashcard> cards = new ArrayList<>();
 
@@ -166,6 +165,9 @@ public class StudyFragment extends Fragment {
         loadDeck();
 
         speech = new DeckSpeech(requireContext());
+
+        view.findViewById(R.id.btnStudySpeak)
+                .setOnClickListener(button -> speakCurrentWord());
 
         view.findViewById(R.id.btnCloseStudy)
                 .setOnClickListener(v -> closeStudy());

@@ -2,87 +2,77 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="14dp"
+    android:layout_marginBottom="12dp"
     android:background="@drawable/bg_card"
     android:clickable="true"
     android:focusable="true"
     android:foreground="?attr/selectableItemBackground"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="14dp">
+
+    <ImageView
+        android:id="@+id/ivDeckIcon"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginEnd="12dp"
+        android:contentDescription="@null"
+        android:importantForAccessibility="no"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_sm_stat_decks" />
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
-
-        <ImageView
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginEnd="12dp"
-            android:contentDescription="@null"
-            android:importantForAccessibility="no"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_sm_stat_decks" />
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@id/tvDeckName"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fontFamily="sans-serif"
-                android:lineSpacingExtra="3dp"
-                android:textColor="@color/sm_text_primary"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@id/tvDeckInfo"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:textColor="@color/sm_text_secondary"
-                android:textSize="13sp" />
-
-        </LinearLayout>
+        android:layout_weight="1"
+        android:orientation="vertical">
 
         <TextView
-            android:layout_width="24dp"
+            android:id="@+id/tvDeckName"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:gravity="center"
-            android:importantForAccessibility="no"
-            android:text="›"
+            android:fontFamily="sans-serif"
+            android:textColor="@color/sm_text_primary"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvDeckInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
             android:textColor="@color/sm_text_secondary"
-            android:textSize="28sp" />
+            android:textSize="12sp" />
+
+        <ProgressBar
+            android:id="@+id/progressDeck"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="6dp"
+            android:layout_marginTop="10dp"
+            android:indeterminate="false"
+            android:max="100"
+            android:progressBackgroundTint="@null"
+            android:progressDrawable="@drawable/progress_sm_vocabulary"
+            android:progressTint="@null"
+            android:secondaryProgressTint="@null" />
+
+        <TextView
+            android:id="@+id/tvDeckProgress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textColor="@color/sm_text_secondary"
+            android:textSize="11sp" />
 
     </LinearLayout>
 
-    <ProgressBar
-        android:id="@id/progressDeck"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="match_parent"
-        android:layout_height="6dp"
-        android:layout_marginTop="16dp"
-        android:indeterminate="false"
-        android:max="100"
-        android:progressBackgroundTint="@null"
-        android:progressDrawable="@drawable/progress_sm_vocabulary"
-        android:progressTint="@null"
-        android:secondaryProgressTint="@null" />
-
-    <TextView
-        android:id="@id/tvDeckProgress"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="9dp"
-        android:lineSpacingExtra="3dp"
-        android:textColor="@color/sm_text_secondary"
-        android:textSize="12sp" />
+    <ImageView
+        android:layout_width="20dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="8dp"
+        android:contentDescription="@null"
+        android:importantForAccessibility="no"
+        android:src="@drawable/ic_sm_topic_chevron" />
 
 </LinearLayout>

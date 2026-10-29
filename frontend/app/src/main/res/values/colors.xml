@@ -1,32 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- Màu mặc định của project -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <!-- Nền -->
-    <color name="sm_background">#12112C</color>
-    <color name="sm_surface">#24233F</color>
-    <color name="sm_surface_light">#302E50</color>
+    <!-- Nền sáng -->
+    <color name="sm_background">#F6FAF9</color>
+    <color name="sm_surface">#FFFFFF</color>
+    <color name="sm_surface_light">#E3F5EF</color>
 
-    <!-- Màu chủ đạo -->
-    <color name="sm_primary">#8654FF</color>
-    <color name="sm_cyan">#20D9F4</color>
-    <color name="sm_blue">#397BFF</color>
+    <!-- Màu thương hiệu -->
+    <color name="sm_primary">#0F766E</color>
+    <color name="sm_cyan">#0F766E</color>
+    <color name="sm_blue">#147D92</color>
 
     <!-- Chữ -->
-    <color name="sm_text_primary">#F5F3FF</color>
-    <color name="sm_text_secondary">#B8B5D6</color>
-    <color name="sm_text_hint">#9692B5</color>
+    <color name="sm_text_primary">#172B2A</color>
+    <color name="sm_text_secondary">#607572</color>
+    <color name="sm_text_hint">#6C807C</color>
 
-    <!-- Viền và đường phân cách -->
-    <color name="sm_border">#45416B</color>
-    <color name="sm_divider">#34314F</color>
+    <!-- Viền -->
+    <color name="sm_border">#DCE8E4</color>
+    <color name="sm_divider">#E6EEEB</color>
 
     <!-- Trạng thái -->
-    <color name="sm_success">#35D6A0</color>
-    <color name="sm_warning">#FFC66D</color>
-    <color name="sm_error">#FF668C</color>
+    <color name="sm_success">#15805A</color>
+    <color name="sm_warning">#A66312</color>
+    <color name="sm_error">#C64055</color>
+
+    <!-- Màu bổ sung cho giao diện sáng -->
+    <color name="sm_on_primary">#FFFFFF</color>
+    <color name="sm_primary_soft">#E3F5EF</color>
+    <color name="sm_input_background">#F4F8F6</color>
+    <color name="sm_disabled_background">#E8EFEC</color>
+    <color name="sm_success_soft">#E6F6ED</color>
+    <color name="sm_warning_soft">#FFF3E3</color>
+    <color name="sm_error_soft">#FDECEF</color>
 
 </resources>

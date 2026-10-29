@@ -4,23 +4,29 @@
 
     <item android:id="@android:id/mask">
         <shape android:shape="rectangle">
-            <solid android:color="#FFFFFFFF" />
+            <solid android:color="@color/white" />
             <corners android:radius="15dp" />
         </shape>
     </item>
 
     <item>
-        <shape android:shape="rectangle">
+        <selector>
 
-            <gradient
-                android:angle="0"
-                android:startColor="#20C7DD"
-                android:endColor="#369DDE"
-                android:type="linear" />
+            <item android:state_enabled="false">
+                <shape android:shape="rectangle">
+                    <solid android:color="#90AAA4" />
+                    <corners android:radius="15dp" />
+                </shape>
+            </item>
 
-            <corners android:radius="15dp" />
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/sm_primary" />
+                    <corners android:radius="15dp" />
+                </shape>
+            </item>
 
-        </shape>
+        </selector>
     </item>
 
 </ripple>

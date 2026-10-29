@@ -96,6 +96,35 @@ public class LoginFragment extends Fragment {
 
         view.findViewById(R.id.btnContinueAsGuest)
                 .setOnClickListener(button -> continueAsGuest());
+
+        view.findViewById(R.id.btnLoginGoogle)
+                .setOnClickListener(button -> {
+                    if (!isAdded() || !isResumed()) {
+                        return;
+                    }
+
+                    androidx.core.view.WindowCompat
+                            .getInsetsController(
+                                    requireActivity().getWindow(),
+                                    view
+                            )
+                            .hide(
+                                    androidx.core.view.WindowInsetsCompat
+                                            .Type.ime()
+                            );
+
+                    View focused = requireActivity().getCurrentFocus();
+
+                    if (focused != null) {
+                        focused.clearFocus();
+                    }
+
+                    android.widget.Toast.makeText(
+                            requireContext(),
+                            "Đăng nhập Google chưa được kết nối.",
+                            android.widget.Toast.LENGTH_SHORT
+                    ).show();
+                });
     }
 
     @Override

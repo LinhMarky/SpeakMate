@@ -91,13 +91,13 @@
                     android:layout_marginTop="7dp"
                     android:lineSpacingExtra="3dp"
                     android:text="Thực hành hội thoại theo chủ đề và trình độ."
-                    android:textColor="#E2E4FF"
+                    android:textColor="@color/sm_text_secondary"
                     android:textSize="13sp" />
 
                 <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/btnStartSpeaking"
                     android:layout_width="match_parent"
-                    android:layout_height="44dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="14dp"
                     android:background="@drawable/bg_sm_button_neon"
                     android:backgroundTint="@null"
@@ -106,14 +106,14 @@
                     android:gravity="center"
                     android:includeFontPadding="false"
                     android:minWidth="0dp"
-                    android:minHeight="0dp"
+                    android:minHeight="48dp"
                     android:paddingStart="8dp"
-                    android:paddingTop="0dp"
+                    android:paddingTop="10dp"
                     android:paddingEnd="8dp"
-                    android:paddingBottom="0dp"
+                    android:paddingBottom="10dp"
                     android:text="Bắt đầu  →"
                     android:textAllCaps="false"
-                    android:textColor="@color/sm_text_primary"
+                    android:textColor="@color/sm_on_primary"
                     android:textSize="15sp" />
 
             </LinearLayout>
@@ -144,7 +144,7 @@
                     android:contentDescription="@null"
                     android:focusable="false"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/sm_mascot_wave" />
+                    android:src="@drawable/sm_mascot_robot" />
 
                 <ImageView
                     android:layout_width="24dp"
@@ -587,7 +587,7 @@
                 android:paddingBottom="0dp"
                 android:text="Điều chỉnh kế hoạch →"
                 android:textAllCaps="false"
-                android:textColor="@color/sm_text_primary"
+                android:textColor="@color/sm_on_primary"
                 android:textSize="14sp" />
 
         </LinearLayout>

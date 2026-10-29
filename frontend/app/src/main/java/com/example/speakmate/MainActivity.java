@@ -45,12 +45,12 @@ public class MainActivity extends AppCompatActivity {
         WindowCompat.getInsetsController(
                 getWindow(),
                 getWindow().getDecorView()
-        ).setAppearanceLightStatusBars(false);
+        ).setAppearanceLightStatusBars(true);
 
         WindowCompat.getInsetsController(
                 getWindow(),
                 getWindow().getDecorView()
-        ).setAppearanceLightNavigationBars(false);
+        ).setAppearanceLightNavigationBars(true);
 
         setupWindowInsets();
         setupFragmentCallbacks();

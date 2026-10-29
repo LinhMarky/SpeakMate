@@ -4,13 +4,13 @@
     <item android:state_checked="true">
         <shape android:shape="rectangle">
 
-            <solid android:color="#1D3344" />
+            <solid android:color="@color/sm_primary_soft" />
 
             <corners android:radius="16dp" />
 
             <stroke
                 android:width="1dp"
-                android:color="#409EB1" />
+                android:color="#69AC98" />
 
         </shape>
     </item>

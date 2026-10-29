@@ -230,6 +230,11 @@ public class FlashcardsFragment extends Fragment {
 
             name.setText(deckName);
 
+            android.widget.ImageView deckIcon =
+                    item.findViewById(R.id.ivDeckIcon);
+
+            deckIcon.setImageResource(getDeckIconResource(deckName));
+
             info.setText(
                     totalCards + " từ · " + deck.getLevel()
             );
@@ -267,6 +272,59 @@ public class FlashcardsFragment extends Fragment {
                     "Không tìm thấy bộ thẻ phù hợp."
             );
         }
+    }
+
+    private int getDeckIconResource(@Nullable String deckName) {
+        if (deckName == null || deckName.trim().isEmpty()) {
+            return R.drawable.ic_sm_stat_decks;
+        }
+
+        String normalized = java.text.Normalizer.normalize(
+                deckName,
+                java.text.Normalizer.Form.NFD
+        );
+
+        normalized = normalized
+                .replaceAll("\\p{M}+", "")
+                .replace('đ', 'd')
+                .replace('Đ', 'D')
+                .toLowerCase(Locale.ROOT);
+
+        if (normalized.contains("travel")
+                || normalized.contains("trip")
+                || normalized.contains("tourism")
+                || normalized.contains("du lich")
+                || normalized.contains("hotel")
+                || normalized.contains("khach san")) {
+            return R.drawable.ic_sm_topic_travel;
+        }
+
+        if (normalized.contains("food")
+                || normalized.contains("drink")
+                || normalized.contains("restaurant")
+                || normalized.contains("cooking")
+                || normalized.contains("am thuc")
+                || normalized.contains("mon an")
+                || normalized.contains("do an")) {
+            return R.drawable.ic_sm_topic_food;
+        }
+
+        if (normalized.contains("university")
+                || normalized.contains("school")
+                || normalized.contains("education")
+                || normalized.contains("dai hoc")
+                || normalized.contains("truong hoc")) {
+            return R.drawable.ic_sm_topic_university;
+        }
+
+        if (normalized.contains("introduc")
+                || normalized.contains("yourself")
+                || normalized.contains("gioi thieu")
+                || normalized.contains("ban than")) {
+            return R.drawable.ic_sm_topic_intro;
+        }
+
+        return R.drawable.ic_sm_stat_decks;
     }
 
     private void openScreen(

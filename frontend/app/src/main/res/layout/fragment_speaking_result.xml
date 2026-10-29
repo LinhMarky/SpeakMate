@@ -14,20 +14,20 @@
         android:orientation="vertical"
         android:padding="24dp">
 
-        <!-- Mascot -->
+        <!-- Hình hoàn thành buổi luyện -->
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="148dp"
+            android:layout_height="140dp"
             android:layout_marginTop="12dp"
             android:importantForAccessibility="noHideDescendants">
 
             <ImageView
-                android:layout_width="136dp"
-                android:layout_height="136dp"
+                android:layout_width="144dp"
+                android:layout_height="120dp"
                 android:layout_gravity="center"
                 android:contentDescription="@null"
                 android:scaleType="fitCenter"
-                android:src="@drawable/sm_mascot_wave" />
+                android:src="@drawable/ic_sm_complete" />
 
             <ImageView
                 android:layout_width="36dp"
@@ -57,7 +57,7 @@
             android:fontFamily="sans-serif"
             android:gravity="center"
             android:letterSpacing="-0.02"
-            android:text="Nhìn lại buổi luyện"
+            android:text="Bạn đã hoàn thành buổi luyện!"
             android:textColor="@color/sm_text_primary"
             android:textSize="26sp"
             android:textStyle="bold" />
@@ -320,8 +320,10 @@
                 android:paddingBottom="0dp"
                 android:text="Tạo bộ flashcard"
                 android:textAllCaps="false"
-                android:textColor="@color/sm_background"
-                android:textSize="16sp" />
+                android:textColor="@color/sm_on_primary"
+                android:textSize="16sp"
+                android:drawableStart="@drawable/ic_sm_bookmark_white"
+                android:drawablePadding="10dp"/>
 
             <TextView
                 android:id="@+id/tvResultDeckStatus"
@@ -355,7 +357,10 @@
                 android:textAllCaps="false"
                 android:textColor="@color/sm_cyan"
                 android:textSize="16sp"
-                android:visibility="gone" />
+                android:visibility="gone"
+                android:drawableStart="@drawable/ic_sm_nav_book"
+                android:drawableTint="@color/sm_primary"
+                android:drawablePadding="10dp"/>
 
         </LinearLayout>
 
@@ -394,7 +399,10 @@
                 android:text="Xem lại hội thoại"
                 android:textAllCaps="false"
                 android:textColor="@color/sm_cyan"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:drawableStart="@drawable/ic_sm_nav_mic"
+                android:drawableTint="@color/sm_primary"
+                android:drawablePadding="10dp"/>
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnBackToPractice"
@@ -438,7 +446,10 @@
                 android:text="Về trang chủ"
                 android:textAllCaps="false"
                 android:textColor="@color/sm_cyan"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:drawableStart="@drawable/ic_sm_nav_home"
+                android:drawableTint="@color/sm_primary"
+                android:drawablePadding="10dp"/>
 
         </LinearLayout>
 

@@ -432,7 +432,7 @@ public class LearnFragment extends Fragment {
 
             feedbackText.setTextColor(
                     Color.parseColor(
-                            correct ? "#35D6A0" : "#FFC66D"
+                            correct ? "#15805A" : "#A66312"
                     )
             );
 
@@ -531,7 +531,7 @@ public class LearnFragment extends Fragment {
 
             word.setTextColor(
                     Color.parseColor(
-                            correct ? "#35D6A0" : "#FFC66D"
+                            correct ? "#15805A" : "#A66312"
                     )
             );
 

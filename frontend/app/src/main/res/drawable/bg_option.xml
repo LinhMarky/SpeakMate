@@ -1,20 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <item android:state_enabled="false">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/sm_disabled_background" />
+
+            <corners android:radius="16dp" />
+
+            <stroke
+                android:width="1dp"
+                android:color="@color/sm_border" />
+        </shape>
+    </item>
+
     <item android:state_checked="true">
         <shape android:shape="rectangle">
-            <solid android:color="@color/sm_surface_light" />
+            <solid android:color="@color/sm_primary_soft" />
+
             <corners android:radius="16dp" />
+
             <stroke
                 android:width="2dp"
-                android:color="@color/sm_cyan" />
+                android:color="@color/sm_primary" />
+        </shape>
+    </item>
+
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <solid android:color="#EDF7F3" />
+
+            <corners android:radius="16dp" />
+
+            <stroke
+                android:width="1dp"
+                android:color="#89BCAF" />
         </shape>
     </item>
 
     <item>
         <shape android:shape="rectangle">
             <solid android:color="@color/sm_surface" />
+
             <corners android:radius="16dp" />
+
             <stroke
                 android:width="1dp"
                 android:color="@color/sm_border" />

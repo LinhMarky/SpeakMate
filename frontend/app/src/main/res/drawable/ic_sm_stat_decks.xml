@@ -6,12 +6,12 @@
     android:viewportHeight="32">
 
     <path
-        android:fillColor="#164756"
+        android:fillColor="@color/sm_primary_soft"
         android:pathData="M8,0 L24,0 Q32,0 32,8 L32,24 Q32,32 24,32 L8,32 Q0,32 0,24 L0,8 Q0,0 8,0 Z" />
 
     <path
         android:fillColor="#00000000"
-        android:strokeColor="#20D9F4"
+        android:strokeColor="@color/sm_primary"
         android:strokeWidth="1.8"
         android:strokeLineJoin="round"
         android:pathData="M12,6 L24,6 L24,22 L12,22 Z M8,10 L8,26 L20,26" />

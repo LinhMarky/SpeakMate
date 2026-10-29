@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ripple xmlns:android="http://schemas.android.com/apk/res/android"
-    android:color="#2920D9F4">
+    android:color="#180F766E">
 
     <item android:id="@android:id/mask">
         <shape android:shape="rectangle">
-            <solid android:color="#FFFFFFFF" />
+            <solid android:color="@color/white" />
             <corners android:radius="16dp" />
         </shape>
     </item>
@@ -14,25 +14,25 @@
 
             <item android:state_enabled="false">
                 <shape android:shape="rectangle">
-                    <solid android:color="#201F35" />
+                    <solid android:color="@color/sm_disabled_background" />
 
                     <corners android:radius="16dp" />
 
                     <stroke
                         android:width="1dp"
-                        android:color="#343149" />
+                        android:color="@color/sm_border" />
                 </shape>
             </item>
 
             <item>
                 <shape android:shape="rectangle">
-                    <solid android:color="#25243E" />
+                    <solid android:color="@color/sm_input_background" />
 
                     <corners android:radius="16dp" />
 
                     <stroke
                         android:width="1dp"
-                        android:color="#4B486C" />
+                        android:color="@color/sm_border" />
                 </shape>
             </item>
 

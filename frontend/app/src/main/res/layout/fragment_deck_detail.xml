@@ -262,7 +262,10 @@
                 android:text="▣    Thẻ ghi nhớ"
                 android:textAllCaps="false"
                 android:textColor="@color/sm_cyan"
-                android:textSize="18sp" />
+                android:textSize="18sp"
+                android:drawableStart="@drawable/ic_sm_nav_book"
+                android:drawableTint="@color/sm_primary"
+                android:drawablePadding="12dp"/>
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnLearnDeck"
@@ -282,8 +285,10 @@
                 android:paddingBottom="0dp"
                 android:text="✎    Học"
                 android:textAllCaps="false"
-                android:textColor="#B6ACFF"
-                android:textSize="18sp" />
+                android:textColor="@color/sm_primary"
+                android:textSize="18sp"
+                android:drawableStart="@drawable/ic_sm_quiz"
+                android:drawablePadding="12dp"/>
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnMatchDeck"
@@ -304,7 +309,9 @@
                 android:text="▦    Ghép thẻ"
                 android:textAllCaps="false"
                 android:textColor="@color/sm_success"
-                android:textSize="18sp" />
+                android:textSize="18sp"
+                android:drawableStart="@drawable/ic_sm_match"
+                android:drawablePadding="12dp"/>
 
             <!-- Danh sách từ -->
             <TextView

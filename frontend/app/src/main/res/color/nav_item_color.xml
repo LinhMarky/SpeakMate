@@ -2,8 +2,12 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
+        android:state_enabled="false"
+        android:color="#A5B5AF" />
+
+    <item
         android:state_checked="true"
-        android:color="@color/sm_cyan" />
+        android:color="@color/sm_primary" />
 
     <item android:color="@color/sm_text_secondary" />
 
