@@ -617,6 +617,75 @@ class StudyIntegrationTest {
                 .andExpect(status().isOk()));
     }
 
+    @Test
+    void adminManagesRealAccountsAndRevokesBlockedSessions() throws Exception {
+        JsonNode learner = account();
+        String learnerToken = learner.path("access_token").asText();
+        long learnerId = learner.at("/user/id").asLong();
+        getAs(learnerToken, "/admin/statistics").andExpect(status().isForbidden());
+        jdbc.update("UPDATE users SET role='ADMIN' WHERE id=?", userId);
+        getAs(token, "/admin/statistics").andExpect(status().isOk()).andExpect(jsonPath("$.data.users").isNumber())
+                .andExpect(jsonPath("$.data.completedSessions").isNumber());
+        getAs(token, "/admin/users?search=" + learner.at("/user/email").asText()).andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.meta.total").value(1)).andExpect(jsonPath("$.data.result[0].password").doesNotExist());
+        call(patch("/api/v1/admin/users/" + learnerId + "/active"), token, Map.of("active", false))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.active").value(false));
+        getAs(learnerToken, "/auth/me").andExpect(status().isUnauthorized());
+        call(patch("/api/v1/admin/users/" + learnerId + "/active"), token, Map.of("active", true)).andExpect(status().isOk());
+        getAs(learnerToken, "/auth/me").andExpect(status().isUnauthorized());
+        call(patch("/api/v1/admin/users/" + userId + "/active"), token, Map.of("active", false)).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void systemDeckPublishingCopiesWordsWithoutChangingLearnerProgress() throws Exception {
+        jdbc.update("UPDATE users SET role='ADMIN' WHERE id=?", userId);
+        String name = "System " + uuid();
+        String first = "word-" + uuid();
+        Map<String, Object> body = Map.of("name", name, "level", "C2", "words", List.of(
+                Map.of("word", first, "meaning", "Initial meaning", "example", "Example."),
+                Map.of("word", "word-" + uuid(), "meaning", "Second meaning")));
+        JsonNode deck = data(postAs(token, "/admin/system-decks", body).andExpect(status().isCreated()));
+        long id = deck.path("id").asLong();
+        assertThat(deck.path("words").size()).isEqualTo(2);
+        JsonNode learner = account();
+        String learnerToken = learner.path("access_token").asText();
+        long learnerId = learner.at("/user/id").asLong();
+        postAs(learnerToken, "/admin/system-decks", body).andExpect(status().isForbidden());
+        JsonNode copied = data(postAs(learnerToken, "/system-decks/" + id + "/save", null).andExpect(status().isOk()));
+        long savedId = copied.get(0).path("id").asLong();
+        assertThat(copied.size()).isEqualTo(2);
+        assertThat(data(postAs(learnerToken, "/system-decks/" + id + "/save", null).andExpect(status().isOk()))
+                .get(0).path("id").asLong()).isEqualTo(savedId);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM saved_words WHERE user_id=?", Integer.class, learnerId)).isEqualTo(2);
+        call(patch("/api/v1/saved-words/" + savedId + "/review"), learnerToken, Map.of("status", "MASTERED"))
+                .andExpect(status().isOk());
+        call(put("/api/v1/admin/system-decks/" + id), token, Map.of("name", name, "level", "C1", "words",
+                List.of(Map.of("word", first, "meaning", "Admin changed meaning"))))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.data.words.length()").value(1));
+        assertThat(jdbc.queryForObject("SELECT meaning FROM saved_words WHERE id=?", String.class, savedId)).isEqualTo("Initial meaning");
+        assertThat(jdbc.queryForObject("SELECT status FROM saved_words WHERE id=?", String.class, savedId)).isEqualTo("MASTERED");
+        call(patch("/api/v1/admin/system-decks/" + id + "/active"), token, Map.of("active", false)).andExpect(status().isOk());
+        postAs(learnerToken, "/system-decks/" + id + "/save", null).andExpect(status().isNotFound());
+        getAs(learnerToken, "/system-decks").andExpect(status().isOk());
+        postAs(token, "/admin/system-decks", Map.of("name", name, "level", "A1", "words",
+                List.of(Map.of("word", "Repeat", "meaning", "one"), Map.of("word", "repeat", "meaning", "two"))))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void adminPasswordChangeRequiresOldPasswordAndExpiresTokens() throws Exception {
+        jdbc.update("UPDATE users SET role='ADMIN' WHERE id=?", userId);
+        String email = jdbc.queryForObject("SELECT email FROM users WHERE id=?", String.class, userId);
+        call(put("/api/v1/admin/password"), token, Map.of("currentPassword", "wrong-password", "newPassword", "New-test-pass-2026"))
+                .andExpect(status().isBadRequest());
+        getAs(token, "/auth/me").andExpect(status().isOk());
+        call(put("/api/v1/admin/password"), token, Map.of("currentPassword", "Study-pass-2026", "newPassword", "New-test-pass-2026"))
+                .andExpect(status().isOk());
+        getAs(token, "/auth/me").andExpect(status().isUnauthorized());
+        call(post("/api/v1/auth/login"), null, Map.of("email", email, "password", "Study-pass-2026")).andExpect(status().isUnauthorized());
+        call(post("/api/v1/auth/login"), null, Map.of("email", email, "password", "New-test-pass-2026")).andExpect(status().isOk());
+    }
+
     private ResultActions postAs(String auth, String path, Object body) throws Exception {
         return call(post("/api/v1" + path), auth, body);
     }

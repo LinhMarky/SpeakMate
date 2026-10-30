@@ -12,6 +12,12 @@ import vn.tailinh.speakmate.entity.User;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
+    @Query("select u from User u where (:active is null or u.active = :active) "
+            + "and (lower(u.name) like lower(concat('%', :search, '%')) "
+            + "or lower(u.email) like lower(concat('%', :search, '%')))")
+    org.springframework.data.domain.Page<User> searchAdmin(@Param("search") String search,
+            @Param("active") Boolean active, org.springframework.data.domain.Pageable pageable);
+
     Optional<User> findByEmail(String email);
 
     Optional<User> findByGoogleSubject(String googleSubject);

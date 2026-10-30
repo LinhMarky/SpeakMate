@@ -9,6 +9,9 @@ import vn.tailinh.speakmate.entity.Conversation;
 
 public interface ConversationRepository extends JpaRepository<Conversation, Long> {
 
+    @Query("select count(c) from Conversation c where c.endedAt is not null")
+    long countFinished();
+
     Optional<Conversation> findByIdAndUserId(Long id, Long userId);
 
     Optional<Conversation> findByUserIdAndCreateRequestId(Long userId, String requestId);

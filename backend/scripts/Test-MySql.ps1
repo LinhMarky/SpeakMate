@@ -96,7 +96,9 @@ try {
     $env:TEST_DB_PASSWORD = ''
     $env:DEBUG = ''
     Set-Location -LiteralPath $backendDirectory
-    & .\gradlew.bat build mysqlTest --no-daemon
+    $gradleArguments = @('build', 'mysqlTest', '--no-daemon')
+    if ($env:JAVA_HOME) { $gradleArguments += ('-Dorg.gradle.java.home=' + $env:JAVA_HOME) }
+    & .\gradlew.bat @gradleArguments
     if ($LASTEXITCODE -ne 0) {
         throw 'Backend checks failed. See build/reports/tests.'
     }
