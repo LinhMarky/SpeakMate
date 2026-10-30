@@ -15,12 +15,33 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
+import com.example.speakmate.ui.AdminFragment;
+import com.example.speakmate.api.AdminApi;
+import com.example.speakmate.auth.SessionManager;
+import org.json.JSONObject;
+import org.json.JSONArray;
 
 import java.util.ArrayList;
 import java.util.Locale;
 
-public class AdminDeckFormFragment extends Fragment {
+public class AdminDeckFormFragment extends AdminFragment {
+
+    private boolean saving, saveUncertain;
+    private long deckId;
+
+    public static AdminDeckFormFragment edit(JSONObject source) {
+        java.util.List<Flashcard> cards = new ArrayList<>();
+        JSONArray rows = source.optJSONArray("words");
+        if (rows != null) for (int i = 0; i < rows.length(); i++) {
+            JSONObject word = rows.optJSONObject(i);
+            cards.add(new Flashcard(word.optString("word"), word.optString("meaning"),
+                    word.isNull("example") ? "" : word.optString("example")));
+        }
+        AdminDeckFormFragment fragment = newEditInstance(new FlashcardDeck("", source.optString("name"),
+                source.optString("level"), cards.size(), 0), cards);
+        fragment.getArguments().putLong("serverDeckId", source.optLong("id"));
+        return fragment;
+    }
 
     private static final String ARG_EDIT_MODE = "edit_mode";
     private static final String ARG_DECK_NAME = "deck_name";
@@ -96,6 +117,7 @@ public class AdminDeckFormFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        saveUncertain = savedInstanceState != null && savedInstanceState.getBoolean("deckSavePending");
 
         if (savedInstanceState != null) {
             initialFormSnapshot =
@@ -158,6 +180,13 @@ public class AdminDeckFormFragment extends Fragment {
             @Nullable Bundle savedInstanceState
     ) {
         super.onViewCreated(view, savedInstanceState);
+        if (!hasAdminSession()) return;
+        deckId = getArguments() == null ? 0 : getArguments().getLong("serverDeckId", 0);
+        if (saveUncertain) {
+            ((TextView) view.findViewById(R.id.tvAdminDeckFormStatus))
+                    .setText("Kết quả lưu chưa xác định. Quay lại tải danh sách trước khi lưu tiếp.");
+            view.findViewById(R.id.tvAdminDeckFormStatus).setVisibility(View.VISIBLE);
+        }
 
         Spinner levelSpinner =
                 view.findViewById(R.id.spAdminDeckLevel);
@@ -262,6 +291,7 @@ public class AdminDeckFormFragment extends Fragment {
     }
 
     private void addCard(@NonNull View view) {
+        if (saving || saveUncertain) return;
         EditText wordInput =
                 view.findViewById(R.id.etAdminCardWord);
 
@@ -666,6 +696,7 @@ public class AdminDeckFormFragment extends Fragment {
     }
 
     private void validateForm(@NonNull View view) {
+        if (saving || saveUncertain) return;
         EditText nameInput =
                 view.findViewById(R.id.etAdminDeckName);
 
@@ -697,12 +728,42 @@ public class AdminDeckFormFragment extends Fragment {
             return;
         }
 
-        status.setText(
-                "Chưa thể lưu: chức năng tạo bộ thẻ hệ thống "
-                        + "chưa kết nối máy chủ."
-        );
-
+        JSONObject body = new JSONObject();
+        try {
+            JSONArray rows = new JSONArray();
+            for (int i = 0; i < words.size(); i++) rows.put(new JSONObject().put("word", words.get(i))
+                    .put("meaning", meanings.get(i)).put("example", examples.get(i)));
+            Spinner level = view.findViewById(R.id.spAdminDeckLevel);
+            body.put("name", nameInput.getText().toString().trim()).put("level", LEVELS[level.getSelectedItemPosition()])
+                    .put("words", rows);
+        } catch (Exception error) { return; }
+        saving = true;
+        setEnabled(view, false);
+        status.setText("Đang lưu bộ thẻ…");
         status.setVisibility(View.VISIBLE);
+        AdminApi admin = new AdminApi(SessionManager.get(requireContext()));
+        call(() -> admin.saveDeck(deckId, body), result -> {
+            saving = false;
+            initialFormSnapshot = createFormSnapshot(view);
+            if (!getParentFragmentManager().isStateSaved()) getParentFragmentManager().popBackStack();
+            else {
+                saveUncertain = true;
+                status.setText("Đã lưu. Quay lại danh sách để xem bộ thẻ.");
+            }
+        }, error -> {
+            saving = false;
+            saveUncertain = error.status == 0 || error.status >= 500;
+            setEnabled(view, !saveUncertain);
+            status.setText(saveUncertain ? "Kết quả lưu chưa xác định. Quay lại tải danh sách trước khi lưu tiếp." : error.getMessage());
+            showAdminError(error);
+        });
+    }
+
+    private void setEnabled(View view, boolean enabled) {
+        for (int id : new int[]{R.id.etAdminDeckName, R.id.spAdminDeckLevel, R.id.etAdminCardWord,
+                R.id.etAdminCardMeaning, R.id.etAdminCardExample, R.id.btnAddAdminCard, R.id.btnSaveAdminDeck}) {
+            view.findViewById(id).setEnabled(enabled);
+        }
     }
 
     private String normalize(@NonNull String value) {
@@ -785,6 +846,7 @@ public class AdminDeckFormFragment extends Fragment {
     }
 
     private void requestLeaveForm() {
+        if (saving) return;
         View view = getView();
 
         if (view == null
@@ -939,6 +1001,7 @@ public class AdminDeckFormFragment extends Fragment {
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
+        outState.putBoolean("deckSavePending", saving || saveUncertain);
         outState.putStringArrayList(
                 STATE_WORDS,
                 new ArrayList<>(words)
@@ -969,6 +1032,7 @@ public class AdminDeckFormFragment extends Fragment {
 
     @Override
     public void onDestroyView() {
+        if (saving) { saving = false; saveUncertain = true; }
         if (exitDialog != null) {
             exitDialog.setOnDismissListener(null);
             exitDialog.dismiss();

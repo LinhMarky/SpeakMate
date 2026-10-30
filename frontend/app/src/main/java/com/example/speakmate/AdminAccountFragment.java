@@ -2,13 +2,17 @@ package com.example.speakmate;
 
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Toast;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
+import com.example.speakmate.auth.AuthSession;
+import com.example.speakmate.auth.SessionManager;
+import com.example.speakmate.ui.AdminFragment;
 
-public class AdminAccountFragment extends Fragment {
+public class AdminAccountFragment extends AdminFragment {
+
+    private boolean loggingOut;
 
     public AdminAccountFragment() {
         super(R.layout.fragment_admin_account);
@@ -20,16 +24,30 @@ public class AdminAccountFragment extends Fragment {
             @Nullable Bundle savedInstanceState
     ) {
         super.onViewCreated(view, savedInstanceState);
+        if (!hasAdminSession()) return;
+
+        AuthSession session = SessionManager.get(requireContext()).load();
+        ((TextView) view.findViewById(R.id.tvAdminAccountName))
+                .setText("Tên hiển thị: " + session.getName());
+        ((TextView) view.findViewById(R.id.tvAdminAccountUsername))
+                .setText("Email: " + session.getEmail());
+        ((TextView) view.findViewById(R.id.tvAdminAccountRole)).setText("Vai trò: ADMIN");
+        ((TextView) view.findViewById(R.id.tvAdminAccountStatus))
+                .setText("Phiên đăng nhập quản trị SpeakMate.");
 
         view.findViewById(R.id.btnBackAdminAccount)
                 .setOnClickListener(button -> returnToDashboard());
 
-        view.findViewById(R.id.btnAdminChangePassword)
-                .setOnClickListener(button -> openChangePassword());
+        view.findViewById(R.id.btnAdminChangePassword).setVisibility(View.VISIBLE);
+        view.findViewById(R.id.btnAdminChangePassword).setEnabled(session.user.optBoolean("passwordEnabled"));
+        view.findViewById(R.id.btnAdminChangePassword).setOnClickListener(button ->
+                getParentFragmentManager().beginTransaction()
+                        .replace(R.id.fragmentContainer, new AdminChangePasswordFragment())
+                        .addToBackStack("admin_password").commit());
 
         view.findViewById(R.id.btnAdminLogout)
                 .setOnClickListener(button ->
-                        showUnavailableMessage()
+                        logout()
                 );
     }
 
@@ -43,56 +61,19 @@ public class AdminAccountFragment extends Fragment {
         getParentFragmentManager().popBackStack();
     }
 
-    private void openChangePassword() {
-        if (!isAdded()
-                || !isResumed()
-                || getParentFragmentManager().isStateSaved()) {
-            return;
-        }
-
-        // Chặn nhấn liên tục trong khi đang chuyển màn hình.
-        View view = getView();
-
-        if (view == null) {
-            return;
-        }
-
-        View button = view.findViewById(R.id.btnAdminChangePassword);
-
-        if (!button.isEnabled()) {
-            return;
-        }
-
-        button.setEnabled(false);
-
-        getParentFragmentManager()
-                .beginTransaction()
-                .setReorderingAllowed(true)
-                .replace(
-                        R.id.fragmentContainer,
-                        new AdminChangePasswordFragment()
-                )
-                .addToBackStack("admin_change_password")
-                .commit();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        View view = getView();
-
-        if (view != null) {
-            view.findViewById(R.id.btnAdminChangePassword)
-                    .setEnabled(true);
-        }
-    }
-
-    private void showUnavailableMessage() {
-        Toast.makeText(
-                requireContext(),
-                "Chưa có phiên đăng nhập quản trị.",
-                Toast.LENGTH_SHORT
-        ).show();
+    private void logout() {
+        if (loggingOut || !hasAdminSession()) return;
+        loggingOut = true;
+        requireView().findViewById(R.id.btnAdminLogout).setEnabled(false);
+        SessionManager sessions = SessionManager.get(requireContext());
+        call(() -> {
+            sessions.request("POST", "auth/logout", null, 15_000);
+            sessions.clear();
+            return true;
+        }, done -> ((MainActivity) requireActivity()).onSessionExpired(), error -> {
+            loggingOut = false;
+            requireView().findViewById(R.id.btnAdminLogout).setEnabled(true);
+            showAdminError(error);
+        });
     }
 }

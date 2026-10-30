@@ -17,6 +17,8 @@ import androidx.fragment.app.FragmentManager;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.example.speakmate.auth.SessionManager;
+import com.example.speakmate.auth.AuthSession;
+import com.example.speakmate.ui.AdminFragment;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -59,7 +61,11 @@ public class MainActivity extends AppCompatActivity {
         setupBackNavigation();
 
         if (savedInstanceState == null) {
-            navigateToTab(R.id.nav_home);
+            if (hasAdminSession()) {
+                openAdminDashboard();
+            } else {
+                navigateToTab(R.id.nav_home);
+            }
         } else {
             Fragment current = getSupportFragmentManager()
                     .findFragmentById(R.id.fragmentContainer);
@@ -197,7 +203,14 @@ public class MainActivity extends AppCompatActivity {
                                         R.id.fragmentContainer
                                 );
 
-                        if (current instanceof ChatFragment) {
+                        if (current instanceof AdminFragment) {
+                            if (manager.getBackStackEntryCount() > 0) {
+                                manager.popBackStackImmediate();
+                            } else {
+                                finish();
+                            }
+
+                        } else if (current instanceof ChatFragment) {
                             ((ChatFragment) current)
                                     .confirmEndSession();
 
@@ -236,6 +249,11 @@ public class MainActivity extends AppCompatActivity {
 
     public void navigateToTab(int itemId) {
         if (getSupportFragmentManager().isStateSaved()) {
+            return;
+        }
+
+        if (hasAdminSession()) {
+            openAdminDashboard();
             return;
         }
 
@@ -599,7 +617,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onSignedIn() {
-        navigateToTab(R.id.nav_speaking);
+        if (hasAdminSession()) {
+            openAdminDashboard();
+        } else {
+            navigateToTab(R.id.nav_speaking);
+        }
+    }
+
+    private boolean hasAdminSession() {
+        AuthSession session = SessionManager.get(this).load();
+        return session != null && session.isAdmin();
+    }
+
+    private void openAdminDashboard() {
+        FragmentManager manager = getSupportFragmentManager();
+        if (manager.isStateSaved()) return;
+
+        hideKeyboard();
+        manager.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        AdminDashboardFragment dashboard = new AdminDashboardFragment();
+        manager.beginTransaction()
+                .replace(R.id.fragmentContainer, dashboard)
+                .commitNow();
+        updateNavigation(dashboard);
     }
 
     private void hideKeyboard() {
@@ -626,7 +666,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateNavigation(Fragment fragment) {
         fullScreenMode =
-                fragment instanceof ChatFragment
+                fragment instanceof AdminFragment
+                        || fragment instanceof ChatFragment
                         || fragment instanceof SpeakingResultFragment
                         || fragment instanceof StudyFragment
                         || fragment instanceof CreateDeckFragment

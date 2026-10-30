@@ -20,8 +20,10 @@ public class LocalDeckStore {
     private static final String KEY_DECKS = "decks";
 
     private final SharedPreferences preferences;
+    private final FlashcardProgressStore progress;
 
     public LocalDeckStore(Context context) {
+        progress = new FlashcardProgressStore(context);
         preferences = context.getApplicationContext()
                 .getSharedPreferences(
                         PREFS_NAME,
@@ -72,7 +74,7 @@ public class LocalDeckStore {
                     deck.optString("name"),
                     deck.optString("level"),
                     cards == null ? 0 : cards.length(),
-                    0
+                    progress.getRememberedCount(deck.optString("id"), getCards(deck.optString("id")))
             ));
         }
 

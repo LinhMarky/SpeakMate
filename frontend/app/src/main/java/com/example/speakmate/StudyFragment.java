@@ -464,9 +464,8 @@ public class StudyFragment extends NetworkFragment {
 
         Flashcard card = cards.get(answers.size());
 
-        if (card.getSavedWordId() == 0) {
-            progressStore.saveAnswer(currentDeckId, card, remembered);
-        }
+        // Với từ đồng bộ, recordAnswer chỉ chạy sau PATCH thành công.
+        progressStore.saveAnswer(currentDeckId, card, remembered);
 
         answers.add(remembered ? 1 : 0);
         flipped = false;

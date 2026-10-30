@@ -13,9 +13,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.fragment.app.Fragment;
+import com.example.speakmate.ui.AdminFragment;
+import com.example.speakmate.api.AdminApi;
+import com.example.speakmate.auth.SessionManager;
 
-public class AdminChangePasswordFragment extends Fragment {
+public class AdminChangePasswordFragment extends AdminFragment {
+
+    private boolean saving;
 
     public AdminChangePasswordFragment() {
         super(R.layout.fragment_admin_change_password);
@@ -27,6 +31,10 @@ public class AdminChangePasswordFragment extends Fragment {
             @Nullable Bundle savedInstanceState
     ) {
         super.onViewCreated(view, savedInstanceState);
+        if (!hasAdminSession()) return;
+        for (int id : new int[]{R.id.etAdminCurrentPassword, R.id.etAdminNewPassword, R.id.etAdminConfirmPassword}) {
+            view.findViewById(id).setSaveEnabled(false);
+        }
 
         EditText currentPassword =
                 view.findViewById(R.id.etAdminCurrentPassword);
@@ -70,6 +78,7 @@ public class AdminChangePasswordFragment extends Fragment {
     }
 
     private void validateForm(@NonNull View view) {
+        if (saving) return;
         EditText currentInput =
                 view.findViewById(R.id.etAdminCurrentPassword);
 
@@ -120,12 +129,29 @@ public class AdminChangePasswordFragment extends Fragment {
             focused.clearFocus();
         }
 
-        status.setText(
-                "Chưa thể đổi mật khẩu vì chưa kết nối máy chủ "
-                        + "và chưa có phiên đăng nhập."
-        );
-
+        if (next.length() < 8 || next.length() > 64 || next.getBytes(java.nio.charset.StandardCharsets.UTF_8).length > 72) {
+            newInput.setError("Mật khẩu cần 8–64 ký tự, tối đa 72 byte UTF-8.");
+            return;
+        }
+        saving = true;
+        view.findViewById(R.id.btnSaveAdminPassword).setEnabled(false);
+        status.setText("Đang đổi mật khẩu…");
         status.setVisibility(View.VISIBLE);
+        SessionManager sessions = SessionManager.get(requireContext());
+        call(() -> {
+            new AdminApi(sessions).changePassword(current, next);
+            sessions.clear();
+            return true;
+        }, done -> {
+            currentInput.setText(""); newInput.setText(""); confirmInput.setText("");
+            android.widget.Toast.makeText(requireContext(), "Đã đổi mật khẩu. Hãy đăng nhập lại.", android.widget.Toast.LENGTH_LONG).show();
+            ((MainActivity) requireActivity()).onSessionExpired();
+        }, error -> {
+            saving = false;
+            view.findViewById(R.id.btnSaveAdminPassword).setEnabled(true);
+            status.setText(error.getMessage());
+            showAdminError(error);
+        });
     }
 
     private void setPasswordVisible(

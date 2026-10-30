@@ -1,5 +1,9 @@
 # 14 — Nối giao diện Android hiện tại vào backend
 
+> Admin Android đã nối phân luồng theo role và quản lý chủ đề qua API hiện có; hướng dẫn hiện tại ở [file 18](18-admin-android.md).
+
+> Cập nhật 30/10/2026: vòng học thật đã PASS theo [file 16](16-hoan-thien-tu-ai-cap-do-va-lich-su.md). Nút Google nay đã nối Credential Manager → API backend; build và 4 test cục bộ PASS, đăng nhập Google thật còn chờ người dùng chọn tài khoản. Cấu hình và giới hạn email đã tồn tại ở [file 17](17-google-login-android.md). Các trạng thái bị chặn bên dưới là nhật ký của đợt cũ.
+
 > Cập nhật Docker 30/10/2026: một tin nhắn qua backend Docker đã nhận Gemini HTTP 200, lưu và đọc lại MySQL đúng; lỗi thiếu key Docker đã xử lý. Đây không phải nghiệm thu lại UI Android hoặc toàn bộ vòng học. Chạy theo [README chính](../../README.md); trạng thái mới nhất ở [bàn giao nhóm](15-docker-va-ban-giao-nhom.md). Các mục bên dưới giữ kết quả của đợt nối UI trước đó.
 
 Cập nhật: 29/10/2026. Tiếp nối [audit 13](13-final-integration-audit.md), giữ nguyên giao diện XML của nhóm và backend/schema hiện có.

@@ -12,42 +12,36 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
+import com.example.speakmate.api.AdminApi;
+import com.example.speakmate.auth.SessionManager;
+import com.example.speakmate.ui.AdminFragment;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-public class AdminTopicFormFragment extends Fragment {
+public class AdminTopicFormFragment extends AdminFragment {
 
     private static final String STATE_INITIAL_FORM =
             "admin_topic_initial_form";
 
     private String initialFormSnapshot;
+    private static final String STATE_SAVE_PENDING = "admin_topic_save_pending";
+    private static final String STATE_SAVE_COMPLETED = "admin_topic_save_completed";
+    private static final String ARG_TOPIC = "admin_topic";
+    private AdminApi topicApi;
+    private long topicId;
+    private boolean saving;
+    private boolean saveUncertain;
+    private boolean saveCompleted;
 
     private androidx.appcompat.app.AlertDialog exitDialog;
 
-    private static final String ARG_EDIT_MODE = "edit_mode";
-    private static final String ARG_NAME = "topic_name";
-    private static final String ARG_DESCRIPTION = "topic_description";
-    private static final String ARG_LEVEL = "topic_level";
-    private static final String ARG_OPENING = "topic_opening";
-    private static final String ARG_INSTRUCTIONS = "topic_instructions";
-
-    public static AdminTopicFormFragment newEditInstance(
-            String name,
-            String description,
-            String level,
-            String opening,
-            String instructions
-    ) {
+    public static AdminTopicFormFragment edit(@NonNull JSONObject topic) {
         AdminTopicFormFragment fragment =
                 new AdminTopicFormFragment();
 
         Bundle arguments = new Bundle();
 
-        arguments.putBoolean(ARG_EDIT_MODE, true);
-        arguments.putString(ARG_NAME, name);
-        arguments.putString(ARG_DESCRIPTION, description);
-        arguments.putString(ARG_LEVEL, level);
-        arguments.putString(ARG_OPENING, opening);
-        arguments.putString(ARG_INSTRUCTIONS, instructions);
+        arguments.putString(ARG_TOPIC, topic.toString());
 
         fragment.setArguments(arguments);
 
@@ -69,6 +63,8 @@ public class AdminTopicFormFragment extends Fragment {
         if (savedInstanceState != null) {
             initialFormSnapshot =
                     savedInstanceState.getString(STATE_INITIAL_FORM);
+            saveUncertain = savedInstanceState.getBoolean(STATE_SAVE_PENDING);
+            saveCompleted = savedInstanceState.getBoolean(STATE_SAVE_COMPLETED);
         }
     }
 
@@ -78,16 +74,18 @@ public class AdminTopicFormFragment extends Fragment {
             @Nullable Bundle savedInstanceState
     ) {
         super.onViewCreated(view, savedInstanceState);
+        if (!hasAdminSession()) return;
+        topicApi = new AdminApi(SessionManager.get(requireContext()));
 
         Spinner levelSpinner =
                 view.findViewById(R.id.spAdminTopicLevel);
 
         levelSpinner.setAdapter(createLevelAdapter());
 
-        Bundle arguments = getArguments();
-
-        boolean editing = arguments != null
-                && arguments.getBoolean(ARG_EDIT_MODE, false);
+        JSONObject topic = readTopic();
+        boolean editing = getArguments() != null
+                && getArguments().containsKey(ARG_TOPIC);
+        topicId = topic.optLong("id", 0);
 
         TextView title =
                 view.findViewById(R.id.tvAdminTopicFormTitle);
@@ -101,32 +99,28 @@ public class AdminTopicFormFragment extends Fragment {
                 editing ? "Lưu thay đổi" : "Lưu chủ đề"
         );
 
-// Chỉ điền dữ liệu ban đầu khi mở form.
-// Khi xoay màn hình, Android khôi phục nội dung người dùng đang sửa.
+        // Android tự khôi phục bản nháp khi xoay màn hình.
         if (savedInstanceState == null) {
             levelSpinner.setSelection(1);
 
             if (editing) {
                 ((EditText) view.findViewById(R.id.etAdminTopicName))
-                        .setText(arguments.getString(ARG_NAME, ""));
+                        .setText(topic.optString("name", ""));
 
                 ((EditText) view.findViewById(
                         R.id.etAdminTopicDescription
                 )).setText(
-                        arguments.getString(ARG_DESCRIPTION, "")
+                        topic.optString("description", "")
                 );
-
-                ((EditText) view.findViewById(R.id.etAdminTopicOpening))
-                        .setText(arguments.getString(ARG_OPENING, ""));
 
                 ((EditText) view.findViewById(
                         R.id.etAdminTopicInstructions
                 )).setText(
-                        arguments.getString(ARG_INSTRUCTIONS, "")
+                        topic.optString("scenario", "")
                 );
 
                 String selectedLevel =
-                        arguments.getString(ARG_LEVEL, "A2");
+                        topic.optString("level", "A2");
 
                 for (int i = 0; i < LEVELS.length; i++) {
                     if (LEVELS[i].equals(selectedLevel)) {
@@ -158,17 +152,32 @@ public class AdminTopicFormFragment extends Fragment {
                             }
                         }
                 );
+
+        if (editing && topicId <= 0) {
+            saveUncertain = true;
+            showStatus(view, "Không đọc được mã chủ đề. Hãy quay lại danh sách.");
+        } else if (saveUncertain) {
+            showStatus(view, "Chưa xác định kết quả lưu. Hãy quay lại tải danh sách trước khi thử lại.");
+        }
+        setFormEnabled(view, !saveUncertain);
+    }
+
+    private JSONObject readTopic() {
+        try {
+            String json = getArguments() == null ? null : getArguments().getString(ARG_TOPIC);
+            return json == null ? new JSONObject() : new JSONObject(json);
+        } catch (JSONException error) {
+            return new JSONObject();
+        }
     }
 
     private void validateForm(@NonNull View view) {
+        if (saving || saveUncertain || !hasAdminSession()) return;
         EditText name =
                 view.findViewById(R.id.etAdminTopicName);
 
         EditText description =
                 view.findViewById(R.id.etAdminTopicDescription);
-
-        EditText opening =
-                view.findViewById(R.id.etAdminTopicOpening);
 
         EditText instructions =
                 view.findViewById(R.id.etAdminTopicInstructions);
@@ -182,11 +191,11 @@ public class AdminTopicFormFragment extends Fragment {
             return;
         }
 
-        if (!requireInput(description, "Bạn hãy nhập mô tả.")) {
+        if (!validateLength(name, 100, "Tên chủ đề tối đa 100 ký tự.")) {
             return;
         }
 
-        if (!requireInput(opening, "Bạn hãy nhập câu mở đầu.")) {
+        if (!validateLength(description, 2000, "Mô tả tối đa 2000 ký tự.")) {
             return;
         }
 
@@ -196,13 +205,79 @@ public class AdminTopicFormFragment extends Fragment {
         )) {
             return;
         }
+        if (!validateLength(instructions, 4000, "Tình huống tối đa 4000 ký tự.")) return;
 
-        status.setText(
-                "Chưa thể lưu: chức năng quản lý chủ đề "
-                        + "chưa kết nối máy chủ."
-        );
+        JSONObject body = new JSONObject();
+        try {
+            Spinner level = view.findViewById(R.id.spAdminTopicLevel);
+            body.put("name", name.getText().toString().trim());
+            body.put("description", description.getText().toString().trim());
+            body.put("level", LEVELS[level.getSelectedItemPosition()]);
+            body.put("scenario", instructions.getText().toString().trim());
+        } catch (JSONException error) {
+            showStatus(view, "Chưa thể đọc nội dung chủ đề. Hãy thử lại.");
+            return;
+        }
 
+        saving = true;
+        setFormEnabled(view, false);
+        showStatus(view, "Đang lưu chủ đề…");
+        call(() -> topicApi.saveTopic(topicId, body), saved -> {
+            saving = false;
+            long savedId = saved.optLong("id", 0);
+            if (savedId <= 0 || (topicId > 0 && savedId != topicId)) {
+                saveUncertain = true;
+                showStatus(view, "Phản hồi lưu không hợp lệ. Hãy quay lại tải danh sách.");
+                return;
+            }
+            initialFormSnapshot = createFormSnapshot(view);
+            saveCompleted = true;
+            finishSavedForm();
+        }, error -> {
+            saving = false;
+            // Mất kết nối có thể xảy ra sau khi máy chủ đã ghi dữ liệu.
+            saveUncertain = error.status == 0 || error.status >= 500;
+            setFormEnabled(view, !saveUncertain);
+            showStatus(view, saveUncertain
+                    ? "Chưa xác định kết quả lưu. Hãy quay lại tải danh sách trước khi thử lại."
+                    : error.getMessage());
+            showAdminError(error);
+        });
+    }
+
+    private boolean validateLength(EditText input, int limit, String message) {
+        if (input.getText().toString().trim().length() > limit) {
+            input.setError(message);
+            input.requestFocus();
+            return false;
+        }
+        input.setError(null);
+        return true;
+    }
+
+    private void setFormEnabled(View view, boolean enabled) {
+        int[] ids = {R.id.etAdminTopicName, R.id.etAdminTopicDescription,
+                R.id.spAdminTopicLevel, R.id.etAdminTopicInstructions, R.id.btnSaveAdminTopic};
+        for (int id : ids) view.findViewById(id).setEnabled(enabled);
+    }
+
+    private void showStatus(View view, String message) {
+        TextView status = view.findViewById(R.id.tvAdminTopicFormStatus);
+        status.setText(message);
         status.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        finishSavedForm();
+    }
+
+    private void finishSavedForm() {
+        if (saveCompleted && isResumed() && !getParentFragmentManager().isStateSaved()) {
+            saveCompleted = false;
+            getParentFragmentManager().popBackStack();
+        }
     }
 
     private boolean requireInput(
@@ -295,6 +370,11 @@ public class AdminTopicFormFragment extends Fragment {
     private void requestLeaveForm() {
         View view = getView();
 
+        if (saving) {
+            if (view != null) showStatus(view, "Đang lưu, bạn chờ một chút nhé.");
+            return;
+        }
+
         if (view == null
                 || !isAdded()
                 || !isResumed()
@@ -383,9 +463,6 @@ public class AdminTopicFormFragment extends Fragment {
         Spinner levelSpinner =
                 view.findViewById(R.id.spAdminTopicLevel);
 
-        EditText openingInput =
-                view.findViewById(R.id.etAdminTopicOpening);
-
         EditText instructionsInput =
                 view.findViewById(R.id.etAdminTopicInstructions);
 
@@ -402,11 +479,6 @@ public class AdminTopicFormFragment extends Fragment {
         appendSnapshotValue(
                 result,
                 String.valueOf(levelSpinner.getSelectedItemPosition())
-        );
-
-        appendSnapshotValue(
-                result,
-                openingInput.getText().toString()
         );
 
         appendSnapshotValue(
@@ -438,12 +510,18 @@ public class AdminTopicFormFragment extends Fragment {
                 STATE_INITIAL_FORM,
                 initialFormSnapshot
         );
+        outState.putBoolean(STATE_SAVE_PENDING, saving || saveUncertain);
+        outState.putBoolean(STATE_SAVE_COMPLETED, saveCompleted);
 
         super.onSaveInstanceState(outState);
     }
 
     @Override
     public void onDestroyView() {
+        if (saving) {
+            saving = false;
+            saveUncertain = true;
+        }
         if (exitDialog != null) {
             exitDialog.setOnDismissListener(null);
             exitDialog.dismiss();

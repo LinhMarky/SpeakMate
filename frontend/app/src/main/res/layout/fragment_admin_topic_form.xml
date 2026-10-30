@@ -102,7 +102,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="18dp"
                 android:labelFor="@id/etAdminTopicDescription"
-                android:text="Mô tả"
+                android:text="Mô tả (không bắt buộc)"
                 android:textColor="@color/sm_text_primary"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -117,7 +117,7 @@
                 android:gravity="top|start"
                 android:hint="Ví dụ: Gọi món tại nhà hàng"
                 android:inputType="textCapSentences|textMultiLine"
-                android:maxLength="500"
+                android:maxLength="2000"
                 android:minHeight="90dp"
                 android:padding="14dp"
                 android:textColor="@color/sm_text_primary"
@@ -150,6 +150,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="18dp"
                 android:labelFor="@id/etAdminTopicOpening"
+                android:visibility="gone"
                 android:text="Câu mở đầu"
                 android:textColor="@color/sm_text_primary"
                 android:textSize="14sp"
@@ -157,6 +158,7 @@
 
             <androidx.appcompat.widget.AppCompatEditText
                 android:id="@+id/etAdminTopicOpening"
+                android:visibility="gone"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
@@ -177,7 +179,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="18dp"
                 android:labelFor="@id/etAdminTopicInstructions"
-                android:text="Hướng dẫn tình huống cho AI"
+                android:text="Tình huống / hướng dẫn cho AI"
                 android:textColor="@color/sm_text_primary"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -192,7 +194,7 @@
                 android:gravity="top|start"
                 android:hint="Mô tả vai trò của bạn luyện và tình huống hội thoại"
                 android:inputType="textCapSentences|textMultiLine"
-                android:maxLength="2000"
+                android:maxLength="4000"
                 android:minHeight="120dp"
                 android:padding="14dp"
                 android:textColor="@color/sm_text_primary"

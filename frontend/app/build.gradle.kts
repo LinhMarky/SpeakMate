@@ -10,6 +10,8 @@ val apiLocal = Properties().apply {
 }
 val apiBaseUrl = providers.gradleProperty("speakmate.api.baseUrl").orNull
     ?: apiLocal.getProperty("speakmate.api.baseUrl", "http://10.0.2.2:8081/")
+val googleWebClientId = providers.gradleProperty("speakmate.google.webClientId").orNull
+    ?: apiLocal.getProperty("speakmate.google.webClientId", "")
 fun configString(value: String): String =
     "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
 
@@ -28,6 +30,7 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "API_BASE_URL", configString(apiBaseUrl))
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", configString(googleWebClientId))
     }
 
     buildTypes {
@@ -52,6 +55,9 @@ dependencies {
     implementation(libs.constraintlayout)
     implementation(libs.material)
     implementation("com.squareup.retrofit2:retrofit:3.0.0")
+    implementation("androidx.credentials:credentials:1.6.0")
+    implementation("androidx.credentials:credentials-play-services-auth:1.6.0")
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.2.1")
     testImplementation(libs.junit)
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.ext.junit)

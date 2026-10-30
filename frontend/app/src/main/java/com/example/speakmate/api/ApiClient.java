@@ -56,6 +56,9 @@ public final class ApiClient {
             case "POST":
                 call = api.post(path, authorization, payload);
                 break;
+            case "PUT":
+                call = api.put(path, authorization, payload);
+                break;
             case "PATCH":
                 call = api.patch(path, authorization, payload);
                 break;

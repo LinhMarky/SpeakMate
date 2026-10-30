@@ -1,6 +1,7 @@
 package com.example.speakmate;
 
 import android.os.Bundle;
+import android.os.CancellationSignal;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
 import android.view.View;
@@ -12,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.example.speakmate.ui.NetworkFragment;
 import com.example.speakmate.auth.AuthApi;
+import com.example.speakmate.auth.GoogleSignIn;
 import com.example.speakmate.auth.SessionManager;
 import android.util.Patterns;
 
@@ -19,6 +21,7 @@ public class LoginFragment extends NetworkFragment {
 
     private boolean openingRegister;
     private boolean busy;
+    private CancellationSignal googleSignIn;
 
     @Override
     protected boolean requiresAuthentication() {
@@ -140,12 +143,52 @@ public class LoginFragment extends NetworkFragment {
                         focused.clearFocus();
                     }
 
-                    android.widget.Toast.makeText(
-                            requireContext(),
-                            "Đăng nhập Google chưa được kết nối.",
-                            android.widget.Toast.LENGTH_SHORT
-                    ).show();
+                    signInWithGoogle(view);
                 });
+    }
+
+    private void signInWithGoogle(View view) {
+        if (busy) return;
+
+        TextView errorText = view.findViewById(R.id.tvLoginError);
+        errorText.setVisibility(View.GONE);
+        setBusy(view, true);
+        CancellationSignal attempt = new CancellationSignal();
+        googleSignIn = attempt;
+        SessionManager sessions = SessionManager.get(requireContext());
+
+        GoogleSignIn.start(requireActivity(), BuildConfig.GOOGLE_WEB_CLIENT_ID, attempt, idToken -> {
+            if (attempt.isCanceled() || getView() != view) return;
+            call(() -> {
+                var session = new AuthApi().google(idToken);
+                if (!attempt.isCanceled()) sessions.save(session);
+                return session;
+            }, session -> {
+                googleSignIn = null;
+                setBusy(view, false);
+                ((MainActivity) requireActivity()).onSignedIn();
+            }, error -> showGoogleError(view, error.getMessage()));
+        }, message -> {
+            if (!attempt.isCanceled() && getView() == view) showGoogleError(view, message);
+        });
+    }
+
+    private void showGoogleError(View view, String message) {
+        googleSignIn = null;
+        setBusy(view, false);
+        TextView errorText = view.findViewById(R.id.tvLoginError);
+        errorText.setText(message);
+        errorText.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void onDestroyView() {
+        // Không mở màn mới bằng kết quả chọn tài khoản của view đã đóng.
+        if (googleSignIn != null) {
+            googleSignIn.cancel();
+            googleSignIn = null;
+        }
+        super.onDestroyView();
     }
 
     private void setBusy(View view, boolean loading) {

@@ -16,128 +16,65 @@ import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.fragment.app.Fragment;
 
+import com.example.speakmate.api.AdminApi;
+import com.example.speakmate.auth.AuthApi;
+import com.example.speakmate.auth.SessionManager;
+import com.example.speakmate.ui.AdminFragment;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
-public class AdminTopicsFragment extends Fragment {
+public class AdminTopicsFragment extends AdminFragment {
 
-    private static final String STATE_VISIBLE =
-            "admin_demo_topics_visible";
-
-    private static final String[] NAMES = {
-            "Introducing Yourself",
-            "Ordering Food",
-            "Travel",
-            "University Life"
-    };
-
-    private static final String[] DESCRIPTIONS = {
-            "Giới thiệu bản thân, sở thích và quê quán.",
-            "Gọi món và giao tiếp tại nhà hàng.",
-            "Trao đổi về điểm đến và kế hoạch du lịch.",
-            "Trò chuyện về chuyên ngành và cuộc sống đại học."
-    };
-
-    private static final String[] LEVELS = {
-            "A1", "A2", "A2", "B1"
-    };
-
-    private static final String[] OPENINGS = {
-            "Hi! What's your name?",
-            "Welcome! What would you like to order?",
-            "Hello! Where would you like to travel?",
-            "Hi! What do you study at university?"
-    };
-
-    private static final String[] INSTRUCTIONS = {
-            "Đóng vai một người bạn mới. "
-                    + "Hỏi từng câu về tên, quê quán và sở thích.",
-
-            "Đóng vai nhân viên nhà hàng. "
-                    + "Hỏi người học muốn gọi món gì "
-                    + "và tiếp tục tình huống gọi món.",
-
-            "Đóng vai một người bạn cùng lên kế hoạch du lịch. "
-                    + "Hỏi về điểm đến, hoạt động và phương tiện.",
-
-            "Đóng vai một sinh viên cùng trường. "
-                    + "Hỏi về chuyên ngành, môn học và hoạt động."
-    };
-
-    private boolean[] visible = {
-            true, true, true, false
-    };
-
+    private final List<JSONObject> topics = new ArrayList<>();
+    private AdminApi adminApi;
     private EditText searchInput;
     private TextWatcher searchWatcher;
     private AlertDialog activeDialog;
     private boolean openingForm;
+    private boolean loading;
+    private boolean mutating;
+    private int nextPage = 1;
+    private int totalPages;
+    private long total;
+    private int requestVersion;
 
     public AdminTopicsFragment() {
         super(R.layout.fragment_admin_topics);
     }
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onViewCreated(@NonNull View view, @Nullable Bundle state) {
+        super.onViewCreated(view, state);
+        if (!hasAdminSession()) return;
 
-        if (savedInstanceState != null) {
-            boolean[] restored =
-                    savedInstanceState.getBooleanArray(STATE_VISIBLE);
-
-            if (restored != null && restored.length == NAMES.length) {
-                visible = restored.clone();
-            }
-        }
-    }
-
-    @Override
-    public void onViewCreated(
-            @NonNull View view,
-            @Nullable Bundle savedInstanceState
-    ) {
-        super.onViewCreated(view, savedInstanceState);
-
+        adminApi = new AdminApi(SessionManager.get(requireContext()));
         openingForm = false;
-
-        searchInput =
-                view.findViewById(R.id.etAdminTopicSearch);
-
-        TextView note =
-                view.findViewById(R.id.tvAdminTopicsStatus);
-
-        note.setText(
-                "DỮ LIỆU MẪU · Tìm kiếm và ẩn/hiện chỉ để thử "
-                        + "giao diện quản trị. Thay đổi không ảnh hưởng "
-                        + "đến các chủ đề ở màn luyện nói."
-        );
+        loading = false;
+        mutating = false;
+        topics.clear();
+        searchInput = view.findViewById(R.id.etAdminTopicSearch);
 
         view.findViewById(R.id.btnBackAdminTopics)
                 .setOnClickListener(button -> returnToDashboard());
-
         view.findViewById(R.id.btnAdminAddTopic)
-                .setOnClickListener(button -> openForm());
+                .setOnClickListener(button -> openForm(null));
+        view.findViewById(R.id.tvAdminTopicListCount)
+                .setOnClickListener(button -> loadTopics(1));
 
         searchWatcher = new TextWatcher() {
             @Override
-            public void beforeTextChanged(
-                    CharSequence text,
-                    int start,
-                    int count,
-                    int after
-            ) {
+            public void beforeTextChanged(CharSequence text, int start, int count, int after) {
             }
 
             @Override
-            public void onTextChanged(
-                    CharSequence text,
-                    int start,
-                    int before,
-                    int count
-            ) {
+            public void onTextChanged(CharSequence text, int start, int before, int count) {
                 renderTopics();
             }
 
@@ -145,30 +82,15 @@ public class AdminTopicsFragment extends Fragment {
             public void afterTextChanged(Editable text) {
             }
         };
-
         searchInput.addTextChangedListener(searchWatcher);
-
-        searchInput.setOnEditorActionListener(
-                (input, actionId, event) -> {
-                    if (actionId == EditorInfo.IME_ACTION_SEARCH
-                            || actionId == EditorInfo.IME_ACTION_DONE) {
-                        hideKeyboard(input);
-                        input.clearFocus();
-                        return true;
-                    }
-
-                    return false;
-                }
-        );
-
-        renderTopics();
-    }
-
-    @Override
-    public void onViewStateRestored(
-            @Nullable Bundle savedInstanceState
-    ) {
-        super.onViewStateRestored(savedInstanceState);
+        searchInput.setOnEditorActionListener((input, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH || actionId == EditorInfo.IME_ACTION_DONE) {
+                hideKeyboard(input);
+                input.clearFocus();
+                return true;
+            }
+            return false;
+        });
         renderTopics();
     }
 
@@ -176,305 +98,201 @@ public class AdminTopicsFragment extends Fragment {
     public void onResume() {
         super.onResume();
         openingForm = false;
+        if (adminApi != null && hasAdminSession() && !loading && !mutating) loadTopics(1);
+    }
+
+    private void loadTopics(int page) {
+        if (getView() == null || adminApi == null || loading || mutating) return;
+        loading = true;
+        int expected = ++requestVersion;
+        showStatus("Đang tải chủ đề từ máy chủ…", null);
+        renderTopics();
+
+        call(() -> adminApi.topics(page, 20), data -> {
+            if (expected != requestVersion) return;
+            loading = false;
+            if (page == 1) topics.clear();
+            JSONArray rows = data.optJSONArray("result");
+            if (rows != null) for (int i = 0; i < rows.length(); i++) {
+                JSONObject row = rows.optJSONObject(i);
+                if (row != null && row.optLong("id") > 0) topics.add(row);
+            }
+            JSONObject meta = data.optJSONObject("meta");
+            totalPages = meta == null ? page : meta.optInt("pages", page);
+            total = meta == null ? topics.size() : meta.optLong("total", topics.size());
+            nextPage = page + 1;
+            renderTopics();
+            showPageStatus();
+        }, error -> {
+            if (expected != requestVersion) return;
+            loading = false;
+            renderTopics();
+            showStatus(error.getMessage() + " Chạm để thử lại.", v -> loadTopics(page));
+            showAdminError(error);
+        });
     }
 
     private void renderTopics() {
-        View root = getView();
-
-        if (root == null || searchInput == null) {
-            return;
-        }
-
-        LinearLayout container =
-                root.findViewById(R.id.adminTopicListContainer);
-
-        TextView countText =
-                root.findViewById(R.id.tvAdminTopicListCount);
-
+        if (getView() == null || searchInput == null) return;
+        LinearLayout container = requireView().findViewById(R.id.adminTopicListContainer);
+        TextView count = requireView().findViewById(R.id.tvAdminTopicListCount);
+        requireView().findViewById(R.id.btnAdminAddTopic).setEnabled(!loading && !mutating);
         container.removeAllViews();
+        String query = normalize(searchInput.getText().toString());
+        int matches = 0;
 
-        String query = normalize(
-                searchInput.getText().toString()
-        );
-
-        int count = 0;
-
-        for (int i = 0; i < NAMES.length; i++) {
-            boolean matches =
-                    normalize(NAMES[i]).contains(query)
-                            || normalize(DESCRIPTIONS[i]).contains(query);
-
-            if (!matches) {
-                continue;
-            }
-
-            count++;
-
-            final int index = i;
-
-            View item = getLayoutInflater().inflate(
-                    R.layout.item_admin_topic,
-                    container,
-                    false
-            );
-
-            TextView name =
-                    item.findViewById(R.id.tvAdminTopicName);
-
-            TextView description =
-                    item.findViewById(R.id.tvAdminTopicDescription);
-
-            TextView status =
-                    item.findViewById(R.id.tvAdminTopicStatus);
-
-            AppCompatButton toggle =
-                    item.findViewById(
-                            R.id.btnAdminTopicToggleVisibility
-                    );
-
-            name.setText(NAMES[i]);
-
-            description.setText(
-                    DESCRIPTIONS[i]
-                            + "\nTrình độ gợi ý: " + LEVELS[i]
-            );
-
-            status.setText(
-                    visible[i]
-                            ? "Đang hiển thị · Mẫu"
-                            : "Đang ẩn · Mẫu"
-            );
-
-            status.setTextColor(
-                    ContextCompat.getColor(
-                            requireContext(),
-                            visible[i]
-                                    ? R.color.sm_success
-                                    : R.color.sm_warning
-                    )
-            );
-
-            toggle.setText(
-                    visible[i]
-                            ? "Ẩn chủ đề mẫu"
-                            : "Hiện chủ đề mẫu"
-            );
-
-            toggle.setTextColor(
-                    ContextCompat.getColor(
-                            requireContext(),
-                            visible[i]
-                                    ? R.color.sm_warning
-                                    : R.color.sm_cyan
-                    )
-            );
-
+        for (JSONObject topic : topics) {
+            if (!normalize(topic.optString("name")).contains(query)
+                    && !normalize(topic.optString("description")).contains(query)) continue;
+            matches++;
+            View item = getLayoutInflater().inflate(R.layout.item_admin_topic, container, false);
+            ((TextView) item.findViewById(R.id.tvAdminTopicName)).setText(topic.optString("name"));
+            ((TextView) item.findViewById(R.id.tvAdminTopicDescription)).setText(
+                    topic.optString("description") + "\nTrình độ gợi ý: " + topic.optString("level"));
+            boolean active = topic.optBoolean("active");
+            TextView status = item.findViewById(R.id.tvAdminTopicStatus);
+            status.setText(active ? "Đang hiển thị" : "Đang ẩn");
+            status.setTextColor(ContextCompat.getColor(requireContext(),
+                    active ? R.color.sm_success : R.color.sm_warning));
+            AppCompatButton toggle = item.findViewById(R.id.btnAdminTopicToggleVisibility);
+            toggle.setText(active ? "Ẩn chủ đề" : "Hiện chủ đề");
+            toggle.setTextColor(ContextCompat.getColor(requireContext(),
+                    active ? R.color.sm_warning : R.color.sm_cyan));
+            toggle.setEnabled(!loading && !mutating);
+            toggle.setOnClickListener(button -> confirmToggleVisibility(topic));
+            View edit = item.findViewById(R.id.btnAdminTopicEdit);
+            edit.setEnabled(!loading && !mutating);
+            edit.setOnClickListener(button -> openForm(topic));
             item.findViewById(R.id.btnAdminTopicDetail)
-                    .setOnClickListener(
-                            button -> showDetails(index)
-                    );
-
-            toggle.setOnClickListener(
-                    button -> confirmToggleVisibility(index)
-            );
-
-            item.findViewById(R.id.btnAdminTopicEdit)
-                    .setOnClickListener(
-                            button -> openEditForm(index)
-                    );
-
+                    .setOnClickListener(button -> showDetails(topic));
             container.addView(item);
         }
 
-        countText.setText(
-                count == 0
-                        ? "Không tìm thấy chủ đề phù hợp."
-                        : count + " chủ đề mẫu"
-        );
+        count.setText(query.isEmpty()
+                ? "Đã tải " + topics.size() + "/" + total + " chủ đề · Chạm để làm mới"
+                : matches + " kết quả trong " + topics.size() + " chủ đề đã tải · Chạm để làm mới");
     }
 
-    private void showDetails(int index) {
-        if (!canOpenDialog()) {
-            return;
-        }
-
-        hideKeyboard(requireView());
-
-        AlertDialog dialog =
-                new MaterialAlertDialogBuilder(requireContext())
-                        .setTitle(NAMES[index])
-                        .setMessage(
-                                "Mô tả:\n" + DESCRIPTIONS[index]
-                                        + "\n\nTrình độ gợi ý: "
-                                        + LEVELS[index]
-                                        + "\n\nCâu mở đầu:\n"
-                                        + OPENINGS[index]
-                                        + "\n\nHướng dẫn tình huống:\n"
-                                        + INSTRUCTIONS[index]
-                                        + "\n\nNội dung minh họa, "
-                                        + "chưa lấy từ máy chủ."
-                        )
-                        .setPositiveButton("Đóng", null)
-                        .create();
-
-        showDialog(dialog);
+    private void showPageStatus() {
+        showStatus(topics.isEmpty() ? "Chưa có chủ đề. Hãy thêm chủ đề đầu tiên."
+                        : nextPage <= totalPages ? "Chạm để tải thêm chủ đề"
+                        : "Đã tải hết chủ đề. Tìm kiếm áp dụng trên danh sách đã tải.",
+                nextPage <= totalPages ? v -> loadTopics(nextPage) : null);
     }
 
-    private void confirmToggleVisibility(int index) {
-        if (!canOpenDialog()) {
-            return;
-        }
+    private void showStatus(String message, @Nullable View.OnClickListener action) {
+        if (getView() == null) return;
+        TextView status = requireView().findViewById(R.id.tvAdminTopicsStatus);
+        status.setText(message);
+        status.setOnClickListener(action);
+    }
 
+    private void showDetails(JSONObject topic) {
+        if (!canOpenDialog()) return;
         hideKeyboard(requireView());
+        showDialog(new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(topic.optString("name"))
+                .setMessage("Mô tả:\n" + topic.optString("description")
+                        + "\n\nTrình độ gợi ý: " + topic.optString("level")
+                        + "\n\nTình huống cho AI:\n" + topic.optString("scenario"))
+                .setPositiveButton("Đóng", null)
+                .create());
+    }
 
-        boolean willShow = !visible[index];
+    private void confirmToggleVisibility(JSONObject topic) {
+        if (!canOpenDialog()) return;
+        hideKeyboard(requireView());
+        boolean active = !topic.optBoolean("active");
+        showDialog(new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(active ? "Hiện chủ đề?" : "Ẩn chủ đề?")
+                .setMessage("Cập nhật chủ đề “" + topic.optString("name")
+                        + "” trên máy chủ. Chủ đề ẩn sẽ không còn trong danh sách chọn bài luyện mới.")
+                .setNegativeButton("Hủy", null)
+                .setPositiveButton(active ? "Hiện" : "Ẩn", (dialog, which) -> setActive(topic, active))
+                .create());
+    }
 
-        AlertDialog dialog =
-                new MaterialAlertDialogBuilder(requireContext())
-                        .setTitle(
-                                willShow
-                                        ? "Hiện chủ đề mẫu?"
-                                        : "Ẩn chủ đề mẫu?"
-                        )
-                        .setMessage(
-                                "Thay đổi trạng thái của “"
-                                        + NAMES[index]
-                                        + "” để kiểm tra giao diện. "
-                                        + "Thao tác chưa cập nhật "
-                                        + "dữ liệu trên máy chủ."
-                        )
-                        .setNegativeButton("Hủy", null)
-                        .setPositiveButton(
-                                willShow ? "Hiện" : "Ẩn",
-                                (ignored, which) -> {
-                                    visible[index] = willShow;
-                                    renderTopics();
-                                }
-                        )
-                        .create();
-
-        showDialog(dialog);
+    private void setActive(JSONObject topic, boolean active) {
+        if (loading || mutating || getView() == null) return;
+        mutating = true;
+        renderTopics();
+        showStatus("Đang lưu trạng thái chủ đề…", null);
+        long id = topic.optLong("id");
+        call(() -> {
+            JSONObject updated = adminApi.setActive(id, active);
+            if (updated.optLong("id") != id || !updated.has("active")
+                    || updated.optBoolean("active") != active) {
+                throw new AuthApi.ApiException(0, "INVALID_RESPONSE", "Chưa xác nhận được trạng thái đã lưu.");
+            }
+            return updated;
+        }, updated -> {
+            mutating = false;
+            for (int i = 0; i < topics.size(); i++) {
+                if (topics.get(i).optLong("id") == id) topics.set(i, updated);
+            }
+            renderTopics();
+            showPageStatus();
+        }, error -> {
+            mutating = false;
+            renderTopics();
+            showStatus(error.getMessage() + " Chạm để tải lại trạng thái.", v -> loadTopics(1));
+            showAdminError(error);
+        });
     }
 
     private boolean canOpenDialog() {
-        return isAdded()
-                && isResumed()
-                && getView() != null
-                && activeDialog == null
-                && !openingForm
+        return isAdded() && isResumed() && getView() != null
+                && activeDialog == null && !openingForm && !loading && !mutating
                 && !getParentFragmentManager().isStateSaved();
     }
 
-    private void showDialog(@NonNull AlertDialog dialog) {
+    private void showDialog(AlertDialog dialog) {
         activeDialog = dialog;
-
         dialog.setOnDismissListener(ignored -> {
-            if (activeDialog == dialog) {
-                activeDialog = null;
-            }
+            if (activeDialog == dialog) activeDialog = null;
         });
-
         dialog.show();
     }
 
-    private void openForm() {
-        if (!canOpenDialog()) {
-            return;
-        }
-
+    private void openForm(@Nullable JSONObject topic) {
+        if (!canOpenDialog()) return;
         hideKeyboard(requireView());
         openingForm = true;
-
-        getParentFragmentManager()
-                .beginTransaction()
-                .setReorderingAllowed(true)
-                .replace(
-                        R.id.fragmentContainer,
-                        new AdminTopicFormFragment()
-                )
-                .addToBackStack("admin_topic_form")
-                .commit();
-    }
-
-    private void openEditForm(int index) {
-        if (!canOpenDialog()
-                || index < 0
-                || index >= NAMES.length) {
-            return;
-        }
-
-        hideKeyboard(requireView());
-        openingForm = true;
-
-        AdminTopicFormFragment form =
-                AdminTopicFormFragment.newEditInstance(
-                        NAMES[index],
-                        DESCRIPTIONS[index],
-                        LEVELS[index],
-                        OPENINGS[index],
-                        INSTRUCTIONS[index]
-                );
-
-        getParentFragmentManager()
-                .beginTransaction()
-                .setReorderingAllowed(true)
-                .replace(
-                        R.id.fragmentContainer,
-                        form
-                )
-                .addToBackStack("admin_edit_topic")
-                .commit();
+        getParentFragmentManager().beginTransaction().setReorderingAllowed(true)
+                .replace(R.id.fragmentContainer, topic == null
+                        ? new AdminTopicFormFragment() : AdminTopicFormFragment.edit(topic))
+                .addToBackStack("admin_topic_form").commit();
     }
 
     private void returnToDashboard() {
-        if (!isAdded()
-                || !isResumed()
-                || openingForm
-                || getParentFragmentManager().isStateSaved()) {
-            return;
-        }
-
-        View view = getView();
-
-        if (view != null) {
-            hideKeyboard(view);
-        }
-
+        if (!isAdded() || !isResumed() || openingForm || getParentFragmentManager().isStateSaved()) return;
+        if (getView() != null) hideKeyboard(requireView());
         getParentFragmentManager().popBackStack();
     }
 
-    private String normalize(@NonNull String text) {
+    private String normalize(String text) {
         return text.trim().toLowerCase(Locale.ROOT);
     }
 
-    private void hideKeyboard(@NonNull View view) {
-        WindowCompat.getInsetsController(
-                requireActivity().getWindow(),
-                view
-        ).hide(WindowInsetsCompat.Type.ime());
-    }
-
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        outState.putBooleanArray(STATE_VISIBLE, visible.clone());
-        super.onSaveInstanceState(outState);
+    private void hideKeyboard(View view) {
+        WindowCompat.getInsetsController(requireActivity().getWindow(), view)
+                .hide(WindowInsetsCompat.Type.ime());
     }
 
     @Override
     public void onDestroyView() {
-        if (searchInput != null && searchWatcher != null) {
-            searchInput.removeTextChangedListener(searchWatcher);
-        }
-
+        requestVersion++;
+        loading = false;
+        mutating = false;
+        if (searchInput != null && searchWatcher != null) searchInput.removeTextChangedListener(searchWatcher);
         if (activeDialog != null) {
             activeDialog.setOnDismissListener(null);
             activeDialog.dismiss();
             activeDialog = null;
         }
-
         searchInput = null;
         searchWatcher = null;
-
+        adminApi = null;
         super.onDestroyView();
     }
 }

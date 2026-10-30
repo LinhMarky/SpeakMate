@@ -25,7 +25,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
             android:lineSpacingExtra="4dp"
-            android:text="Quản lý người dùng và nội dung học."
+            android:text="Quản lý chủ đề luyện nói của SpeakMate."
             android:textColor="@color/sm_text_secondary"
             android:textSize="15sp" />
 

@@ -41,4 +41,8 @@ public final class AuthSession {
     public boolean isGoogleLinked() {
         return user.optBoolean("googleLinked");
     }
+
+    public boolean isAdmin() {
+        return "ADMIN".equals(user.optString("role"));
+    }
 }

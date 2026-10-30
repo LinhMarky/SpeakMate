@@ -47,6 +47,9 @@ public class FlashcardsFragment extends NetworkFragment {
 
         openingDeck = false;
 
+        view.findViewById(R.id.btnSystemDecks).setOnClickListener(button ->
+                openScreen(AdminDecksFragment.catalog(), "system_decks"));
+
         search = view.findViewById(R.id.etSearchDeck);
         container = view.findViewById(R.id.deckContainer);
         countText = view.findViewById(R.id.tvDeckCount);
@@ -165,22 +168,22 @@ public class FlashcardsFragment extends NetworkFragment {
 
         if (loading) return;
         loading = true;
+        try {
+            decks = FlashcardLibrary.decks(requireContext(), java.util.Collections.emptyList());
+        } catch (IllegalStateException error) {
+            decks = new ArrayList<>();
+        }
         serverStatus = "Đang tải Từ của tôi…";
         countText.setOnClickListener(v -> refreshDecks());
         showDecks(search.getText());
         call(() -> api.savedCards(), cards -> {
             loading = false;
-            decks = new ArrayList<>();
-            int mastered = 0;
-            for (Flashcard card : cards) if ("MASTERED".equals(card.getStatus())) mastered++;
-            decks.add(new FlashcardDeck(FlashcardDeck.SAVED_WORDS_ID, "Từ của tôi", "Đồng bộ tài khoản",
-                    cards.size(), mastered));
             try {
-                decks.addAll(new LocalDeckStore(requireContext()).getDecks());
+                decks = FlashcardLibrary.decks(requireContext(), cards);
             } catch (IllegalStateException error) {
                 serverStatus = "Chưa đọc được bộ thẻ trên thiết bị.";
             }
-            if (serverStatus.startsWith("Đang tải")) serverStatus = cards.isEmpty()
+            if (serverStatus.startsWith("Đang tải")) serverStatus = decks.isEmpty()
                     ? "Chưa có từ đã lưu. Chọn Tạo bộ thẻ bằng AI hoặc Từ trong bài luyện." : "";
             showDecks(search.getText());
         }, error -> {

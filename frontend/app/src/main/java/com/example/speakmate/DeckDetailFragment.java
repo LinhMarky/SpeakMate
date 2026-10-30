@@ -88,6 +88,8 @@ public class DeckDetailFragment extends NetworkFragment {
         openingMode = false;
         loadingServerWords = false;
 
+        view.findViewById(R.id.tvDetailDeckInfo).setOnClickListener(button -> refreshDeck());
+
         view.findViewById(R.id.btnBackDeck)
                 .setOnClickListener(v -> closeDetail());
 
@@ -184,7 +186,24 @@ public class DeckDetailFragment extends NetworkFragment {
         }
 
         try {
-            renderDeck(view);
+            List<Flashcard> localCards = new LocalDeckStore(requireContext()).getCards(getDeckId());
+            boolean linked = localCards.stream().anyMatch(card -> card.getSavedWordId() > 0);
+            if (linked) {
+                if (loadingServerWords) return;
+                loadingServerWords = true;
+                setModeButtonsEnabled(false);
+                ((TextView) view.findViewById(R.id.tvDetailDeckInfo)).setText("Đang tải tiến độ…");
+                call(() -> api.savedCards(), cards -> {
+                    loadingServerWords = false;
+                    renderDeck(view, cards);
+                }, error -> {
+                    loadingServerWords = false;
+                    ((TextView) view.findViewById(R.id.tvDetailDeckInfo))
+                            .setText(error.getMessage() + " Chạm để tải lại.");
+                });
+            } else {
+                renderDeck(view, java.util.Collections.emptyList());
+            }
         } catch (IllegalStateException exception) {
             setModeButtonsEnabled(false);
 
@@ -195,13 +214,22 @@ public class DeckDetailFragment extends NetworkFragment {
         }
     }
 
-    private void renderDeck(View view) {
+    private void renderDeck(View view, List<Flashcard> savedCards) {
         DemoFlashcardRepository repository = repository();
 
         String deckId = getDeckId();
 
         FlashcardDeck deck =
                 repository.getDeckById(deckId);
+
+        if (deckId.startsWith("local_")) {
+            for (FlashcardDeck current : FlashcardLibrary.decks(requireContext(), savedCards)) {
+                if (deckId.equals(current.getId())) {
+                    deck = current;
+                    break;
+                }
+            }
+        }
 
         TextView title =
                 view.findViewById(R.id.tvDetailDeckName);

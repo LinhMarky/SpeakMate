@@ -16,12 +16,21 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.fragment.app.Fragment;
+import com.example.speakmate.auth.AuthSession;
+import com.example.speakmate.auth.SessionManager;
+import com.example.speakmate.ui.NetworkFragment;
 
 import java.util.List;
 import java.util.Locale;
 
-public class ProfileFragment extends Fragment {
+public class ProfileFragment extends NetworkFragment {
+
+    private int statisticsRequest;
+
+    @Override
+    protected boolean requiresAuthentication() {
+        return false;
+    }
 
     private static final String PREFS_NAME = "speakmate_profile";
 
@@ -253,49 +262,45 @@ public class ProfileFragment extends Fragment {
     }
 
     private void renderStats(@NonNull View view) {
-        TextView stats =
-                view.findViewById(R.id.tvProfileStats);
-
-        try {
-            List<FlashcardDeck> decks =
-                    new DemoFlashcardRepository(
-                            requireContext()
-                    ).getDecks();
-
-            long totalWords = 0;
-            long rememberedWords = 0;
-
-            for (FlashcardDeck deck : decks) {
-                int total = Math.max(
-                        0,
-                        deck.getTotalCards()
-                );
-
-                int remembered = Math.max(
-                        0,
-                        Math.min(
-                                total,
-                                deck.getLearnedCards()
-                        )
-                );
-
-                totalWords += total;
-                rememberedWords += remembered;
-            }
-
-            stats.setText(
-                    "Bộ thẻ: " + decks.size()
-                            + "\nTổng số từ trong các bộ: " + totalWords
-                            + "\nTừ đã nhớ: " + rememberedWords
-                            + "\nTừ chưa nhớ: "
-                            + (totalWords - rememberedWords)
-            );
-
-        } catch (IllegalStateException exception) {
-            stats.setText(
-                    "Chưa đọc được dữ liệu bộ thẻ trên thiết bị."
-            );
+        TextView stats = view.findViewById(R.id.tvProfileStats);
+        int request = ++statisticsRequest;
+        AuthSession session = SessionManager.get(requireContext()).load();
+        if (session == null) {
+            showStats(stats, java.util.Collections.emptyList());
+            return;
         }
+        long userId = session.user.optLong("id");
+        stats.setText("Đang tải tiến độ học…");
+        stats.setOnClickListener(null);
+        call(() -> api.savedCards(), cards -> {
+            AuthSession current = SessionManager.get(requireContext()).load();
+            if (request != statisticsRequest || current == null || current.user.optLong("id") != userId) return;
+            showStats(stats, cards);
+        }, error -> {
+            if (request != statisticsRequest) return;
+            stats.setText(error.getMessage() + " Chạm để tải lại số liệu.");
+            stats.setOnClickListener(v -> renderStats(view));
+        });
+    }
+
+    private void showStats(TextView view, List<Flashcard> savedCards) {
+        try {
+            FlashcardLibrary.Statistics stats = FlashcardLibrary.statistics(requireContext(), savedCards);
+            view.setText("Bộ thẻ: " + stats.deckCount
+                    + "\nBộ đã thuộc: " + stats.completedDeckCount + "/" + stats.deckCount
+                    + "\nTổng số từ: " + stats.totalWords
+                    + "\nTừ đã nhớ: " + stats.rememberedWords
+                    + "\nTừ chưa nhớ: " + (stats.totalWords - stats.rememberedWords));
+            view.setOnClickListener(null);
+        } catch (IllegalStateException error) {
+            view.setText("Chưa đọc được dữ liệu bộ thẻ trên thiết bị.");
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        statisticsRequest++;
+        super.onDestroyView();
     }
 
     private void saveProfile(@NonNull View view) {

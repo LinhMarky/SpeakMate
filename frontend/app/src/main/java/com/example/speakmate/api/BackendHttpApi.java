@@ -20,6 +20,11 @@ public interface BackendHttpApi {
 
     @Streaming
     @Headers("Accept: application/json")
+    @PUT
+    Call<ResponseBody> put(@Url String path, @Header("Authorization") String authorization, @Body RequestBody body);
+
+    @Streaming
+    @Headers("Accept: application/json")
     @PATCH
     Call<ResponseBody> patch(@Url String path, @Header("Authorization") String authorization, @Body RequestBody body);
 }

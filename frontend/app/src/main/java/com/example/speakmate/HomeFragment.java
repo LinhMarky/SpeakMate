@@ -7,14 +7,23 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
+import com.example.speakmate.auth.AuthSession;
+import com.example.speakmate.auth.SessionManager;
+import com.example.speakmate.ui.NetworkFragment;
 
 import java.util.List;
 
-public class HomeFragment extends Fragment {
+public class HomeFragment extends NetworkFragment {
+
+    private int statisticsRequest;
 
     public HomeFragment() {
         super(R.layout.fragment_home);
+    }
+
+    @Override
+    protected boolean requiresAuthentication() {
+        return false;
     }
 
     @Override
@@ -77,131 +86,106 @@ public class HomeFragment extends Fragment {
 
     private void refreshStatistics() {
         View view = getView();
+        if (view == null) return;
 
-        if (view == null) {
+        int request = ++statisticsRequest;
+        SessionManager sessions = SessionManager.get(requireContext());
+        AuthSession session = sessions.load();
+        if (session == null) {
+            showStatistics(java.util.Collections.emptyList());
             return;
         }
 
-        TextView deckCountText =
-                view.findViewById(R.id.tvHomeDeckCount);
+        long userId = session.user.optLong("id");
+        showStatisticsUnavailable("Đang tải tiến độ…", "Đang đồng bộ từ đã lưu.");
+        call(() -> api.savedCards(), cards -> {
+            if (!isCurrentStatisticsRequest(request, userId)) return;
+            showStatistics(cards);
+        }, error -> {
+            if (!isCurrentStatisticsRequest(request, userId)) return;
+            showStatisticsUnavailable("Chưa tải được tiến độ",
+                    error.getMessage() + " Chạm để tải lại.");
+        });
+    }
 
-        TextView totalWordText =
-                view.findViewById(R.id.tvHomeTotalWordCount);
+    private boolean isCurrentStatisticsRequest(int request, long userId) {
+        AuthSession current = SessionManager.get(requireContext()).load();
+        return statisticsRequest == request
+                && current != null
+                && current.user.optLong("id") == userId;
+    }
 
-        TextView learnedWordText =
-                view.findViewById(R.id.tvLearnedWordCount);
-
-        TextView remainingWordText =
-                view.findViewById(R.id.tvHomeRemainingWordCount);
-
-        TextView percentageText =
-                view.findViewById(R.id.tvHomeProgressPercent);
-
-        TextView progressDetailText =
-                view.findViewById(R.id.tvHomeProgressDetail);
-
-        TextView suggestionText =
-                view.findViewById(R.id.tvHomeSuggestion);
-
-        ProgressBar progress =
-                view.findViewById(R.id.progressHomeVocabulary);
+    private void showStatistics(List<Flashcard> savedCards) {
+        View view = getView();
+        if (view == null) return;
 
         try {
-            DemoFlashcardRepository repository =
-                    new DemoFlashcardRepository(requireContext());
-
-            List<FlashcardDeck> decks = repository.getDecks();
-
-            long totalWords = 0;
-            long learnedWords = 0;
-
-            for (FlashcardDeck deck : decks) {
-                int total = Math.max(0, deck.getTotalCards());
-
-                int learned = Math.max(
-                        0,
-                        Math.min(deck.getLearnedCards(), total)
-                );
-
-                totalWords += total;
-                learnedWords += learned;
-            }
-
+            FlashcardLibrary.Statistics statistics =
+                    FlashcardLibrary.statistics(requireContext(), savedCards);
+            long totalWords = statistics.totalWords;
+            long learnedWords = statistics.rememberedWords;
             long remainingWords = totalWords - learnedWords;
-
             int percentage = totalWords == 0
-                    ? 0
-                    : (int) Math.round(
-                    learnedWords * 100.0 / totalWords
-            );
+                    ? 0 : (int) Math.round(learnedWords * 100.0 / totalWords);
 
-            deckCountText.setText(
-                    String.valueOf(decks.size())
-            );
+            ((TextView) view.findViewById(R.id.tvHomeDeckCount))
+                    .setText(String.valueOf(statistics.deckCount));
+            ((TextView) view.findViewById(R.id.tvHomeTotalWordCount))
+                    .setText(String.valueOf(totalWords));
+            ((TextView) view.findViewById(R.id.tvLearnedWordCount))
+                    .setText(String.valueOf(learnedWords));
+            ((TextView) view.findViewById(R.id.tvHomeRemainingWordCount))
+                    .setText(String.valueOf(remainingWords));
+            ((TextView) view.findViewById(R.id.tvHomeProgressPercent))
+                    .setText(percentage + "%");
+            ((TextView) view.findViewById(R.id.tvHomeProgressDetail)).setText(
+                    learnedWords + " / " + totalWords + " từ đã nhớ · "
+                            + statistics.completedDeckCount + "/"
+                            + statistics.deckCount + " bộ đã thuộc");
 
-            totalWordText.setText(
-                    String.valueOf(totalWords)
-            );
-
-            learnedWordText.setText(
-                    String.valueOf(learnedWords)
-            );
-
-            remainingWordText.setText(
-                    String.valueOf(remainingWords)
-            );
-
-            percentageText.setText(percentage + "%");
-
+            ProgressBar progress = view.findViewById(R.id.progressHomeVocabulary);
             progress.setMax(100);
             progress.setProgress(percentage);
 
-            progressDetailText.setText(
-                    learnedWords
-                            + " / "
-                            + totalWords
-                            + " từ đã nhớ"
-            );
-
+            TextView suggestion = view.findViewById(R.id.tvHomeSuggestion);
+            suggestion.setOnClickListener(null);
             if (totalWords == 0) {
-                suggestionText.setText(
-                        "Thêm bộ thẻ đầu tiên để bắt đầu "
-                                + "hành trình học từ vựng."
-                );
+                suggestion.setText("Thêm bộ thẻ đầu tiên để bắt đầu hành trình học từ vựng.");
             } else if (remainingWords == 0) {
-                suggestionText.setText(
-                        "Bạn đã đánh dấu nhớ toàn bộ từ vựng! "
-                                + "Hãy ôn lại hoặc thêm một bộ thẻ mới."
-                );
+                suggestion.setText("Bạn đã đánh dấu nhớ toàn bộ từ vựng! "
+                        + "Hãy ôn lại hoặc thêm một bộ thẻ mới.");
             } else {
-                suggestionText.setText(
-                        "Còn " + remainingWords
-                                + " từ chưa được đánh dấu đã nhớ. "
-                                + "Chọn một bộ thẻ để tiếp tục học nhé."
-                );
+                suggestion.setText("Còn " + remainingWords
+                        + " từ chưa được đánh dấu đã nhớ. "
+                        + "Chọn một bộ thẻ để tiếp tục học nhé.");
             }
-
-        } catch (IllegalStateException exception) {
-            /*
-             * Không hiển thị số 0 giả khi đọc dữ liệu thất bại.
-             */
-            deckCountText.setText("—");
-            totalWordText.setText("—");
-            learnedWordText.setText("—");
-            remainingWordText.setText("—");
-
-            percentageText.setText("—");
-            progress.setProgress(0);
-
-            progressDetailText.setText(
-                    "Chưa đọc được tiến độ"
-            );
-
-            suggestionText.setText(
-                    "Không đọc được dữ liệu bộ thẻ. "
-                            + "Vui lòng kiểm tra lại dữ liệu đã lưu."
-            );
+        } catch (IllegalStateException error) {
+            showStatisticsUnavailable("Chưa đọc được tiến độ",
+                    "Không đọc được dữ liệu bộ thẻ. Chạm để tải lại.");
         }
+    }
+
+    private void showStatisticsUnavailable(String detail, String message) {
+        View view = getView();
+        if (view == null) return;
+
+        int[] counterIds = { R.id.tvHomeDeckCount, R.id.tvHomeTotalWordCount,
+                R.id.tvLearnedWordCount, R.id.tvHomeRemainingWordCount,
+                R.id.tvHomeProgressPercent };
+        for (int id : counterIds) {
+            ((TextView) view.findViewById(id)).setText("—");
+        }
+        ((ProgressBar) view.findViewById(R.id.progressHomeVocabulary)).setProgress(0);
+        ((TextView) view.findViewById(R.id.tvHomeProgressDetail)).setText(detail);
+        TextView suggestion = view.findViewById(R.id.tvHomeSuggestion);
+        suggestion.setText(message);
+        suggestion.setOnClickListener(v -> refreshStatistics());
+    }
+
+    @Override
+    public void onDestroyView() {
+        statisticsRequest++;
+        super.onDestroyView();
     }
 
     private void refreshLearningPlan() {

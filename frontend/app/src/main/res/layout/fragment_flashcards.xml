@@ -118,6 +118,17 @@
         android:textColor="@color/sm_primary"
         android:textSize="15sp" />
 
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnSystemDecks"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/bg_home_button_secondary"
+        android:backgroundTint="@null"
+        android:text="Bộ thẻ hệ thống"
+        android:textAllCaps="false"
+        android:textColor="@color/sm_primary" />
+
     <TextView
         android:id="@+id/tvDeckCount"
         android:layout_width="match_parent"
