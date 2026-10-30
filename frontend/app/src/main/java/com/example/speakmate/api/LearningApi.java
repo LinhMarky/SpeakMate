@@ -42,6 +42,38 @@ public final class LearningApi {
         return post("saved-words/from-suggestions", new JSONObject().put("suggestionIds", ids), 15_000);
     }
 
+    public List<Flashcard> generateVocabulary(String topic, String level, int count) throws Exception {
+        JSONObject body = new JSONObject()
+                .put("topic", topic)
+                .put("level", level)
+                .put("count", count);
+        JSONObject response = sessions.request("POST", "saved-words/generate", body, 45_000);
+        JSONArray items = response.getJSONArray("data");
+        List<Flashcard> list = new ArrayList<>();
+        for (int i = 0; i < items.length(); i++) {
+            JSONObject item = items.getJSONObject(i);
+            list.add(new Flashcard(
+                    item.getString("word"),
+                    item.getString("meaning"),
+                    item.optString("example", "")
+            ));
+        }
+        return list;
+    }
+
+    public JSONObject saveGeneratedWords(List<Flashcard> cards) throws Exception {
+        JSONArray array = new JSONArray();
+        for (Flashcard card : cards) {
+            JSONObject item = new JSONObject();
+            item.put("word", card.getWord());
+            item.put("meaning", card.getMeaning());
+            item.put("example", card.getExample() == null ? "" : card.getExample());
+            array.put(item);
+        }
+        JSONObject body = new JSONObject().put("words", array);
+        return post("saved-words/from-generated", body, 20_000);
+    }
+
     public JSONObject reviewWord(long id, String status) throws Exception {
         return sessions
                 .request("PATCH", "saved-words/" + id + "/review", new JSONObject().put("status", status), 15_000)

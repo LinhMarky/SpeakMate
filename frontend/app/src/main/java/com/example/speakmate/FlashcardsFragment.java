@@ -65,8 +65,8 @@ public class FlashcardsFragment extends NetworkFragment {
             public void onTextChanged(
                     CharSequence s,
                     int start,
-                    int before,
-                    int count
+                    int count,
+                    int after
             ) {
                 showDecks(s);
             }
@@ -97,15 +97,25 @@ public class FlashcardsFragment extends NetworkFragment {
                 }
         );
 
-        // Mỗi nút chỉ được gắn một sự kiện.
-        ((TextView) view.findViewById(R.id.btnCreateDeckAi)).setText("Từ AI trong bài luyện");
+        // Nút Tạo bộ thẻ bằng AI theo chủ đề
         view.findViewById(R.id.btnCreateDeckAi)
                 .setOnClickListener(button ->
                         openScreen(
-                                SpeakingHistoryFragment.forVocabulary(),
-                                "vocabulary_history"
+                                new GenerateDeckFragment(),
+                                "generate_deck"
                         )
                 );
+
+        // Nút Xem từ gợi ý AI sau bài hội thoại đã kết thúc
+        View historyVocabularyBtn = view.findViewById(R.id.btnHistoryVocabulary);
+        if (historyVocabularyBtn != null) {
+            historyVocabularyBtn.setOnClickListener(button ->
+                    openScreen(
+                            SpeakingHistoryFragment.forVocabulary(),
+                            "vocabulary_history"
+                    )
+            );
+        }
 
         view.findViewById(R.id.btnCreateDeckManual)
                 .setOnClickListener(button ->
@@ -133,6 +143,11 @@ public class FlashcardsFragment extends NetworkFragment {
 
         view.findViewById(R.id.btnCreateDeckAi)
                 .setEnabled(true);
+
+        View historyVocabularyBtn = view.findViewById(R.id.btnHistoryVocabulary);
+        if (historyVocabularyBtn != null) {
+            historyVocabularyBtn.setEnabled(true);
+        }
 
         view.findViewById(R.id.btnCreateDeckManual)
                 .setEnabled(true);
@@ -166,7 +181,7 @@ public class FlashcardsFragment extends NetworkFragment {
                 serverStatus = "Chưa đọc được bộ thẻ trên thiết bị.";
             }
             if (serverStatus.startsWith("Đang tải")) serverStatus = cards.isEmpty()
-                    ? "Chưa có từ đã lưu. Chọn Tạo bằng AI để lấy từ từ bài luyện." : "";
+                    ? "Chưa có từ đã lưu. Chọn Tạo bộ thẻ bằng AI hoặc Từ trong bài luyện." : "";
             showDecks(search.getText());
         }, error -> {
             loading = false;

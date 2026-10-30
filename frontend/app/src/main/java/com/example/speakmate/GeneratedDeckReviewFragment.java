@@ -12,15 +12,18 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.fragment.app.Fragment;
+
+import com.example.speakmate.ui.NetworkFragment;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
-public class GeneratedDeckReviewFragment extends Fragment {
+public class GeneratedDeckReviewFragment extends NetworkFragment {
 
     private static final String ARG_CARDS = "cards";
     private static final String ARG_NAME = "name";
@@ -31,6 +34,7 @@ public class GeneratedDeckReviewFragment extends Fragment {
     private static final String STATE_SELECTED = "draft_selected";
     private static final String STATE_NAME = "draft_name";
     private static final String STATE_CREATED_ID = "created_id";
+    private static final String STATE_SAVED_MSG = "saved_msg";
 
     private final ArrayList<Flashcard> cards = new ArrayList<>();
     private final ArrayList<WordRow> rows = new ArrayList<>();
@@ -39,9 +43,11 @@ public class GeneratedDeckReviewFragment extends Fragment {
     private String draftName = "";
     private String level = "A2";
     private String createdDeckId;
+    private String saveStatusMessage;
 
     private boolean sample;
     private boolean openingDeck;
+    private boolean saving;
 
     private androidx.appcompat.app.AlertDialog leaveDialog;
 
@@ -108,6 +114,8 @@ public class GeneratedDeckReviewFragment extends Fragment {
 
             createdDeckId =
                     savedInstanceState.getString(STATE_CREATED_ID);
+            saveStatusMessage =
+                    savedInstanceState.getString(STATE_SAVED_MSG);
         }
     }
 
@@ -120,6 +128,7 @@ public class GeneratedDeckReviewFragment extends Fragment {
 
         rows.clear();
         openingDeck = false;
+        saving = false;
 
         EditText nameInput =
                 view.findViewById(R.id.etGeneratedDeckName);
@@ -134,7 +143,7 @@ public class GeneratedDeckReviewFragment extends Fragment {
                 sample
                         ? "KẾT QUẢ MẪU · Đây là từ vựng minh họa, "
                           + "không phải kết quả AI. Bạn có thể sửa và "
-                          + "lưu bộ thẻ mẫu trên thiết bị để thử luồng."
+                          + "lưu bộ thẻ vào tài khoản và trên thiết bị."
                         : "Kiểm tra và chỉnh nội dung trước khi lưu. "
                           + "Bỏ chọn những từ bạn không muốn giữ."
         );
@@ -201,7 +210,7 @@ public class GeneratedDeckReviewFragment extends Fragment {
         openingDeck = false;
 
         // Bộ thẻ có thể đã bị xóa khi người dùng mở trang chi tiết.
-        if (createdDeckId != null) {
+        if (createdDeckId != null && !"synced".equals(createdDeckId)) {
             try {
                 if (new DemoFlashcardRepository(requireContext())
                         .getDeckById(createdDeckId) == null) {
@@ -232,10 +241,10 @@ public class GeneratedDeckReviewFragment extends Fragment {
                 count++;
             }
 
-            row.selected.setEnabled(!saved);
-            row.word.setEnabled(!saved && keep);
-            row.meaning.setEnabled(!saved && keep);
-            row.example.setEnabled(!saved && keep);
+            row.selected.setEnabled(!saved && !saving);
+            row.word.setEnabled(!saved && !saving && keep);
+            row.meaning.setEnabled(!saved && !saving && keep);
+            row.example.setEnabled(!saved && !saving && keep);
         }
 
         TextView countText =
@@ -246,10 +255,10 @@ public class GeneratedDeckReviewFragment extends Fragment {
         );
 
         view.findViewById(R.id.etGeneratedDeckName)
-                .setEnabled(!saved);
+                .setEnabled(!saved && !saving);
 
         view.findViewById(R.id.btnSaveGeneratedDeck)
-                .setEnabled(!saved && count > 0);
+                .setEnabled(!saved && !saving && count > 0);
 
         View openButton =
                 view.findViewById(R.id.btnOpenGeneratedDeck);
@@ -263,7 +272,7 @@ public class GeneratedDeckReviewFragment extends Fragment {
         status.setVisibility(saved ? View.VISIBLE : View.GONE);
 
         if (saved) {
-            status.setText("Đã lưu bộ thẻ trên thiết bị.");
+            status.setText(saveStatusMessage != null ? saveStatusMessage : "Đã lưu bộ thẻ vào tài khoản.");
         }
     }
 
@@ -272,7 +281,8 @@ public class GeneratedDeckReviewFragment extends Fragment {
 
         if (view == null
                 || !isResumed()
-                || createdDeckId != null) {
+                || createdDeckId != null
+                || saving) {
             return;
         }
 
@@ -333,18 +343,93 @@ public class GeneratedDeckReviewFragment extends Fragment {
             return;
         }
 
-        try {
-            createdDeckId = new LocalDeckStore(requireContext())
-                    .createDeck(name, level, chosenCards);
+        saving = true;
+        updateControls();
+        showStatus("Đang lưu " + chosenCards.size() + " từ vào tài khoản…");
 
+        call(() -> api.saveGeneratedWords(chosenCards), response -> {
+            saving = false;
+
+            Map<String, ServerWordInfo> serverWords = new HashMap<>();
+            int createdCount = 0;
+            int existingCount = 0;
+
+            if (response != null) {
+                org.json.JSONArray createdArr = response.optJSONArray("created");
+                org.json.JSONArray existingArr = response.optJSONArray("existing");
+
+                if (createdArr != null) {
+                    createdCount = createdArr.length();
+                    collectServerWords(serverWords, createdArr);
+                }
+                if (existingArr != null) {
+                    existingCount = existingArr.length();
+                    collectServerWords(serverWords, existingArr);
+                }
+            }
+
+            ArrayList<Flashcard> mappedCards = new ArrayList<>();
+            for (Flashcard card : chosenCards) {
+                String key = DeckSessionData.normalize(card.getWord());
+                ServerWordInfo info = serverWords.get(key);
+                long serverId = (info != null && info.id > 0) ? info.id : card.getSavedWordId();
+                String serverStatus = (info != null && info.status != null && !info.status.isEmpty())
+                        ? info.status : card.getStatus();
+                mappedCards.add(new Flashcard(
+                        serverId,
+                        card.getWord(),
+                        card.getMeaning(),
+                        card.getExample(),
+                        serverStatus
+                ));
+            }
+
+            try {
+                createdDeckId = new LocalDeckStore(requireContext())
+                        .createDeck(name, level, mappedCards);
+            } catch (Exception ignored) {
+                createdDeckId = "synced";
+            }
             draftName = name;
             hideKeyboard(view);
             nameInput.clearFocus();
 
-            updateControls();
+            cards.clear();
+            cards.addAll(mappedCards);
 
-        } catch (IllegalArgumentException | IllegalStateException exception) {
-            showStatus("Chưa lưu được bộ thẻ. Vui lòng thử lại.");
+            saveStatusMessage = "Đã lưu " + createdCount + " từ mới vào \"Từ của tôi\""
+                    + (existingCount > 0 ? " (" + existingCount + " từ đã có sẵn)" : "")
+                    + " và đồng bộ vào tài khoản.";
+            updateControls();
+        }, error -> {
+            saving = false;
+            updateControls();
+            showStatus("Chưa lưu được từ vựng lên máy chủ: " + error.getMessage() + "\nVui lòng thử lại.");
+        });
+    }
+
+    private void collectServerWords(Map<String, ServerWordInfo> map, org.json.JSONArray array) {
+        if (array == null) return;
+        for (int i = 0; i < array.length(); i++) {
+            org.json.JSONObject obj = array.optJSONObject(i);
+            if (obj != null) {
+                long id = obj.optLong("id", 0);
+                String word = obj.optString("word", "");
+                String status = obj.optString("status", "NEW");
+                if (id > 0 && !word.isEmpty()) {
+                    map.put(DeckSessionData.normalize(word), new ServerWordInfo(id, status));
+                }
+            }
+        }
+    }
+
+    private static class ServerWordInfo {
+        final long id;
+        final String status;
+
+        ServerWordInfo(long id, String status) {
+            this.id = id;
+            this.status = status;
         }
     }
 
@@ -520,6 +605,7 @@ public class GeneratedDeckReviewFragment extends Fragment {
                 selected.clone()
         );
         outState.putString(STATE_CREATED_ID, createdDeckId);
+        outState.putString(STATE_SAVED_MSG, saveStatusMessage);
 
         super.onSaveInstanceState(outState);
     }

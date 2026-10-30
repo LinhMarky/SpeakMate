@@ -1,5 +1,6 @@
 package vn.tailinh.speakmate.controller;
 
+import java.util.List;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +26,17 @@ public class SavedWordController {
     @PostMapping("/from-suggestions")
     public RestResponse<SaveSuggestionsResponse> save(@Valid @RequestBody SaveSuggestionsRequest request) {
         return RestResponse.success(200, "Đã lưu các từ được chọn", words.save(request));
+    }
+
+    @PostMapping("/generate")
+    public RestResponse<List<GeneratedWordResponse>> generate(@Valid @RequestBody GenerateVocabularyRequest request) {
+        return RestResponse.success(200, "Từ vựng AI đã tạo", words.generate(request));
+    }
+
+    @PostMapping("/from-generated")
+    public RestResponse<SaveGeneratedWordsResponse> saveGenerated(
+            @Valid @RequestBody SaveGeneratedWordsRequest request) {
+        return RestResponse.success(200, "Đã lưu các từ được chọn", words.saveGenerated(request));
     }
 
     @PatchMapping("/{id}/review")

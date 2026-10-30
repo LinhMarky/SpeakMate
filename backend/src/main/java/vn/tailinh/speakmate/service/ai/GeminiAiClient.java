@@ -67,6 +67,15 @@ public class GeminiAiClient implements AiClient {
         }
     }
 
+    @Override
+    public String generateVocabulary(String topic, String level, int count) {
+        String system = prompts.generateVocabulary(topic, level, count);
+        var contents = List.of(Map.of("role", "user", "parts",
+                List.of(Map.of("text", "Generate vocabulary for topic: " + topic))));
+        return generate(system, contents,
+                Map.of("maxOutputTokens", 4096, "responseMimeType", "application/json"), 30);
+    }
+
     String generate(String system, Object contents, Map<String, Object> config, int timeoutSeconds) {
         if (properties.getApiKey() == null || properties.getApiKey().isBlank()) {
             throw new BusinessException(HttpStatus.SERVICE_UNAVAILABLE, "AI_NOT_CONFIGURED",

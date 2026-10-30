@@ -2,6 +2,7 @@ package vn.tailinh.speakmate.service;
 
 import java.time.Clock;
 import java.util.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -13,6 +14,8 @@ import vn.tailinh.speakmate.dto.response.word.*;
 import vn.tailinh.speakmate.entity.*;
 import vn.tailinh.speakmate.exception.BusinessException;
 import vn.tailinh.speakmate.repository.*;
+import vn.tailinh.speakmate.service.ai.AiClient;
+import vn.tailinh.speakmate.service.ai.AiFailure;
 import vn.tailinh.speakmate.util.constant.*;
 import vn.tailinh.speakmate.util.mapper.SavedWordMapper;
 
@@ -27,6 +30,10 @@ public class SavedWordService {
     private final UserService users;
 
     private final Clock clock;
+
+    private final AiClient ai;
+
+    private final ObjectMapper json;
 
     @Transactional(readOnly = true)
     public PageResponse<SavedWordResponse> list(int page, int size, SavedWordStatus status) {
@@ -87,6 +94,85 @@ public class SavedWordService {
         word.setStatus(request.status());
         word.setLastReviewedAt(clock.instant());
         return SavedWordMapper.toResponse(word);
+    }
+
+    public List<GeneratedWordResponse> generate(GenerateVocabularyRequest request) {
+        String output = ai.generateVocabulary(
+                request.topic().trim(), request.level(), request.count());
+        try {
+            List<GeneratedWordResponse> parsed = json.readerForListOf(GeneratedWordResponse.class)
+                    .readValue(output);
+            if (parsed == null || parsed.isEmpty()) {
+                throw AiFailure.invalid();
+            }
+            List<GeneratedWordResponse> validated = new ArrayList<>();
+            Set<String> seen = new HashSet<>();
+            for (GeneratedWordResponse w : parsed) {
+                if (validated.size() >= request.count()) {
+                    break;
+                }
+                if (w.word() == null || w.word().isBlank()
+                        || w.meaning() == null || w.meaning().isBlank()) {
+                    continue;
+                }
+                String trimmedWord = w.word().trim();
+                if (trimmedWord.length() > 100) {
+                    continue;
+                }
+                String key = trimmedWord.toLowerCase(Locale.ROOT);
+                if (!seen.add(key)) {
+                    continue;
+                }
+                String trimmedMeaning = w.meaning().trim();
+                if (trimmedMeaning.length() > 255) {
+                    trimmedMeaning = trimmedMeaning.substring(0, 255);
+                }
+                String trimmedExample = w.example() == null ? null : w.example().trim();
+                if (trimmedExample != null && trimmedExample.length() > 1000) {
+                    trimmedExample = trimmedExample.substring(0, 1000);
+                }
+                if (trimmedExample != null && trimmedExample.isEmpty()) {
+                    trimmedExample = null;
+                }
+                validated.add(new GeneratedWordResponse(trimmedWord, trimmedMeaning, trimmedExample));
+            }
+            if (validated.isEmpty()) {
+                throw AiFailure.invalid();
+            }
+            return validated;
+        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+            throw AiFailure.invalid();
+        }
+    }
+
+    @Transactional
+    public SaveGeneratedWordsResponse saveGenerated(SaveGeneratedWordsRequest request) {
+        User user = users.lockCurrentUser();
+        Set<String> seen = new HashSet<>();
+        for (SaveGeneratedWordsRequest.WordItem item : request.words()) {
+            String key = item.word().trim().replaceAll("\\s+", " ").toLowerCase(Locale.ROOT);
+            if (!seen.add(key)) {
+                throw invalid("Danh sách từ không được trùng");
+            }
+        }
+        List<SavedWordResponse> created = new ArrayList<>();
+        List<SavedWordResponse> existing = new ArrayList<>();
+        for (SaveGeneratedWordsRequest.WordItem item : request.words()) {
+            String trimmedWord = item.word().trim();
+            SavedWord old = words.findByUserIdAndWord(user.getId(), trimmedWord).orElse(null);
+            if (old != null) {
+                existing.add(SavedWordMapper.toResponse(old));
+            } else {
+                SavedWord word = new SavedWord();
+                word.setUser(user);
+                word.setWord(trimmedWord);
+                word.setMeaning(item.meaning().trim());
+                word.setExample(item.example() == null || item.example().isBlank() ? null : item.example().trim());
+                words.saveAndFlush(word);
+                created.add(SavedWordMapper.toResponse(word));
+            }
+        }
+        return new SaveGeneratedWordsResponse(created, existing);
     }
 
     private BusinessException invalid(String message) {

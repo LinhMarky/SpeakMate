@@ -16,9 +16,10 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.fragment.app.Fragment;
 
-public class GenerateDeckFragment extends Fragment {
+import com.example.speakmate.ui.NetworkFragment;
+
+public class GenerateDeckFragment extends NetworkFragment {
 
     private static final String[] LEVELS = {
             "A1", "A2", "B1", "B2", "C1", "C2"
@@ -27,6 +28,8 @@ public class GenerateDeckFragment extends Fragment {
     private static final String[] COUNT_LABELS = {
             "5 từ", "10 từ", "15 từ", "20 từ"
     };
+
+    private boolean generating;
 
     public GenerateDeckFragment() {
         super(R.layout.fragment_generate_deck);
@@ -38,6 +41,8 @@ public class GenerateDeckFragment extends Fragment {
             @Nullable Bundle savedInstanceState
     ) {
         super.onViewCreated(view, savedInstanceState);
+
+        generating = false;
 
         EditText topicInput =
                 view.findViewById(R.id.etGenerateDeckTopic);
@@ -162,11 +167,15 @@ public class GenerateDeckFragment extends Fragment {
         if (view != null) {
             view.findViewById(R.id.btnPreviewGeneratedDeck)
                     .setEnabled(true);
+            if (!generating) {
+                view.findViewById(R.id.btnGenerateDeck)
+                        .setEnabled(true);
+            }
         }
     }
 
     private void generate(@NonNull View view) {
-        if (!isAdded() || !isResumed()) {
+        if (!isAdded() || !isResumed() || generating) {
             return;
         }
 
@@ -175,6 +184,18 @@ public class GenerateDeckFragment extends Fragment {
 
         TextView status =
                 view.findViewById(R.id.tvGenerateDeckStatus);
+
+        View generateButton =
+                view.findViewById(R.id.btnGenerateDeck);
+
+        View previewButton =
+                view.findViewById(R.id.btnPreviewGeneratedDeck);
+
+        Spinner levelSpinner =
+                view.findViewById(R.id.spGenerateDeckLevel);
+
+        Spinner countSpinner =
+                view.findViewById(R.id.spGenerateDeckCount);
 
         status.setVisibility(View.GONE);
 
@@ -193,12 +214,64 @@ public class GenerateDeckFragment extends Fragment {
         hideKeyboard(view);
         topicInput.clearFocus();
 
-        status.setText(
-                "Chức năng tạo từ vựng bằng AI chưa kết nối "
-                        + "máy chủ. Chưa có bộ thẻ nào được tạo."
-        );
+        String level = String.valueOf(levelSpinner.getSelectedItem());
+        String countStr = String.valueOf(countSpinner.getSelectedItem());
+        int count = 10;
+        try {
+            count = Integer.parseInt(countStr.replaceAll("\\D+", ""));
+        } catch (NumberFormatException ignored) {
+        }
 
+        generating = true;
+        generateButton.setEnabled(false);
+        if (previewButton != null) {
+            previewButton.setEnabled(false);
+        }
+
+        status.setTextColor(ContextCompat.getColor(requireContext(), R.color.sm_text_secondary));
+        status.setText("Đang kết nối AI tạo từ vựng cho chủ đề \"" + topic + "\" (" + level + ", " + count + " từ)…\nVui lòng chờ trong giây lát.");
         status.setVisibility(View.VISIBLE);
+
+        final int finalCount = count;
+        call(() -> api.generateVocabulary(topic, level, finalCount), cards -> {
+            generating = false;
+            generateButton.setEnabled(true);
+            if (previewButton != null) {
+                previewButton.setEnabled(true);
+            }
+            status.setVisibility(View.GONE);
+
+            if (cards.isEmpty()) {
+                status.setTextColor(ContextCompat.getColor(requireContext(), R.color.sm_warning));
+                status.setText("AI không tạo được từ vựng nào phù hợp. Vui lòng thử lại với chủ đề khác.");
+                status.setVisibility(View.VISIBLE);
+                return;
+            }
+
+            getParentFragmentManager()
+                    .beginTransaction()
+                    .setReorderingAllowed(true)
+                    .replace(
+                            R.id.fragmentContainer,
+                            GeneratedDeckReviewFragment.newInstance(
+                                    "Chủ đề " + topic,
+                                    level,
+                                    cards,
+                                    false
+                            )
+                    )
+                    .addToBackStack("generated_deck_review")
+                    .commit();
+        }, error -> {
+            generating = false;
+            generateButton.setEnabled(true);
+            if (previewButton != null) {
+                previewButton.setEnabled(true);
+            }
+            status.setTextColor(ContextCompat.getColor(requireContext(), R.color.sm_warning));
+            status.setText("Chưa thể tạo từ vựng: " + error.getMessage() + "\nVui lòng kiểm tra và thử lại.");
+            status.setVisibility(View.VISIBLE);
+        });
     }
 
     private ArrayAdapter<String> createAdapter(String[] values) {
@@ -210,9 +283,9 @@ public class GenerateDeckFragment extends Fragment {
             @NonNull
             @Override
             public View getView(
-                    int position,
-                    @Nullable View convertView,
-                    @NonNull ViewGroup parent
+                int position,
+                @Nullable View convertView,
+                @NonNull ViewGroup parent
             ) {
                 View item = super.getView(
                         position,
@@ -226,9 +299,9 @@ public class GenerateDeckFragment extends Fragment {
 
             @Override
             public View getDropDownView(
-                    int position,
-                    @Nullable View convertView,
-                    @NonNull ViewGroup parent
+                int position,
+                @Nullable View convertView,
+                @NonNull ViewGroup parent
             ) {
                 View item = super.getDropDownView(
                         position,

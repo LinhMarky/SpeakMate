@@ -101,10 +101,15 @@ public class LocalDeckStore {
                 JSONObject card = cards.optJSONObject(j);
 
                 if (card != null) {
+                    long savedWordId = card.optLong("savedWordId", 0);
+                    String status = card.optString("status", "LOCAL");
+
                     result.add(new Flashcard(
+                            savedWordId,
                             card.optString("word"),
                             card.optString("meaning"),
-                            card.optString("example")
+                            card.optString("example"),
+                            status
                     ));
                 }
             }
@@ -266,6 +271,14 @@ public class LocalDeckStore {
                                 ? ""
                                 : card.getExample().trim()
                 );
+
+                if (card.getSavedWordId() > 0) {
+                    item.put("savedWordId", card.getSavedWordId());
+                }
+
+                if (card.getStatus() != null && !card.getStatus().isEmpty()) {
+                    item.put("status", card.getStatus());
+                }
 
                 cardArray.put(item);
             }

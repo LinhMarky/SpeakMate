@@ -6,4 +6,6 @@ public interface AiClient {
     String reply(AiConversation conversation);
 
     AiReview review(AiConversation conversation);
+
+    String generateVocabulary(String topic, String level, int count);
 }

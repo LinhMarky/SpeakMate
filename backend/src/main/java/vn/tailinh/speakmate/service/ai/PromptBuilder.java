@@ -70,4 +70,16 @@ public class PromptBuilder {
                 Role and scenario: %s
                 """.formatted(input.practiceLevel(), input.topicName(), input.scenario());
     }
+
+    public String generateVocabulary(String topic, String level, int count) {
+        return """
+                You are an English vocabulary generator for language learners.
+                Generate %d vocabulary words about the topic "%s" appropriate for CEFR level %s.
+                Return a JSON array of objects with fields: word, meaning, example.
+                Meanings must be in Vietnamese. Examples must be in English.
+                Words must be unique, relevant to the topic, and trimmed.
+                word max 100 characters, meaning max 255 characters, example max 1000 characters.
+                Return ONLY the JSON array, no markdown or extra text.
+                """.formatted(count, topic, level);
+    }
 }
