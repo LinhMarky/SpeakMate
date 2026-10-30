@@ -270,6 +270,10 @@ public class SpeakingFragment extends NetworkFragment {
                 return R.id.rbB1;
             case "B2":
                 return R.id.rbB2;
+            case "C1":
+                return R.id.rbC1;
+            case "C2":
+                return R.id.rbC2;
             default:
                 return R.id.rbA2;
         }
@@ -285,6 +289,10 @@ public class SpeakingFragment extends NetworkFragment {
             return "B1";
         } else if (checkedId == R.id.rbB2) {
             return "B2";
+        } else if (checkedId == R.id.rbC1) {
+            return "C1";
+        } else if (checkedId == R.id.rbC2) {
+            return "C2";
         }
 
         return null;
@@ -307,6 +315,10 @@ public class SpeakingFragment extends NetworkFragment {
             text = "B1 · Kể trải nghiệm và giải thích ý kiến của bạn.";
         } else if (checkedId == R.id.rbB2) {
             text = "B2 · Thảo luận, so sánh và trình bày lập luận.";
+        } else if (checkedId == R.id.rbC1) {
+            text = "C1 · Diễn đạt chính xác, linh hoạt và trao đổi ý nghĩa hàm ẩn.";
+        } else if (checkedId == R.id.rbC2) {
+            text = "C2 · Lập luận sâu, diễn đạt sắc thái và ngôn ngữ tự nhiên.";
         } else {
             text = "Chọn trình độ bạn muốn luyện.";
         }

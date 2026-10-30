@@ -1,6 +1,6 @@
 # Tài liệu hiện hành của SpeakMate
 
-Cập nhật: **30/10/2026**, giờ Việt Nam. Thành viên mới chạy từ **[README chính](../README.md)**; kết quả Docker hiện tại và trạng thái dữ liệu dùng chung ở [bàn giao nhóm](Contract/15-docker-va-ban-giao-nhom.md).
+Cập nhật: **30/10/2026**, giờ Việt Nam. Thành viên mới chạy từ **[README chính](../README.md)**; ba luồng học vừa hoàn thiện và migration C1/C2 ở [file 16](Contract/16-hoan-thien-tu-ai-cap-do-va-lich-su.md). Docker/dữ liệu dùng chung ở [bàn giao nhóm](Contract/15-docker-va-ban-giao-nhom.md).
 
 **FE và BE làm việc từ [bộ tài liệu chung FE–BE](Contract/README.md).** Bộ này chốt phạm vi, màn hình, OpenAPI, ví dụ JSON, phân công **1 FE + 1 BE** và deadline **3 ngày từ T0**. Các tài liệu bên dưới giải thích chuyên sâu; kế hoạch thời gian và API của đợt ba ngày theo bộ chung.
 
@@ -31,7 +31,7 @@ SpeakMate dùng một backend Spring Boot và một MySQL. Người học nói c
 
 ## Bước hiện tại
 
-Backend trong `backend/` dùng Java 21, Gradle Wrapper, Spring Boot và package `vn.tailinh.speakmate`. Đã có 24 operation P0 và schema v3 7 bảng/8 FK, `ddl-auto=validate`. Docker/MySQL và một lời đáp Gemini thật đã được kiểm qua HTTP và SQL. Vòng học đầy đủ trên FE sau pull, Google/email/âm thanh và demo nhiều thiết bị vẫn cần nghiệm thu riêng. Test MySQL với AI stub, Android HTTP fixture và kiểm dịch vụ thật là các bằng chứng khác nhau; đọc file 15 trước các báo cáo lịch sử.
+Backend trong `backend/` dùng Java 21, Gradle Wrapper, Spring Boot và package `vn.tailinh.speakmate`. Đã có 24 operation P0, 7 bảng/8 FK, `ddl-auto=validate`; V4 mở rộng CHECK cho C1/C2. Vòng học text trên FE hiện tại đã PASS qua UI với Gemini/MySQL và đối chiếu JDBC (file 16). Google/email/âm thanh và demo nhiều thiết bị cần nghiệm thu riêng. Test MySQL với AI stub, Android HTTP fixture và kiểm dịch vụ thật là các bằng chứng khác nhau.
 
 SQL và tài liệu CSDL là nguồn thống nhất về dữ liệu. Tài liệu vòng đời là thiết kế chức năng cần làm, không phải bằng chứng chức năng đã hoạt động. Phiên bản build, lệnh chạy và kết quả kiểm chứng bước nền được ghi trong README backend.
 

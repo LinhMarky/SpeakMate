@@ -4,7 +4,7 @@
 
 **Bắt đầu bằng Docker bên dưới.** Đây là hướng dẫn chính cho nhóm 1 FE + 1 BE. Hợp đồng request/response ở [bộ tài liệu FE–BE](Docs/Contract/README.md); không dùng dữ liệu mẫu làm bằng chứng API thật.
 
-> Kiểm chứng gần nhất, 30/10/2026: image đã build; backend Docker kết nối MySQL, đăng ký/đăng nhập/chủ đề/tạo bài hoạt động. Một tin nhắn nhận Gemini thật HTTP 200, lời đáp lưu đúng SQL và đọc lại được. Máy tác giả đang dùng host **8082**, container vẫn **8081**. Chưa nghiệm thu lại toàn bộ vòng học Android sau lần pull FE, và chưa có địa chỉ backend demo chung được xác nhận. Xem [báo cáo bàn giao](Docs/Contract/15-docker-va-ban-giao-nhom.md).
+> Kiểm chứng gần nhất, 30/10/2026: đã hoàn thiện từ AI → lưu/ôn flashcard, C1/C2 và lịch sử server. Một vòng UI thật chọn C2, 3 reply + review Gemini, lưu/ôn từ và mở lại lịch sử đã PASS, dữ liệu khớp MySQL. Backend local **8081**, Docker host **8082**; chưa xác nhận âm thanh/Google/SMTP hoặc máy chủ demo chung. Xem [kết quả và hướng dẫn migration C1/C2](Docs/Contract/16-hoan-thien-tu-ai-cap-do-va-lich-su.md).
 
 ## 1. Môi trường cần có
 
@@ -32,7 +32,7 @@ git status --short --branch
 git branch --show-current
 ```
 
-Chỉ chạy `git pull --ff-only` khi đang ở `dev`, working tree sạch và đã bảo toàn công việc local. Nếu có thay đổi, lưu bằng commit trên nhánh riêng hoặc bản sao được kiểm tra; file untracked cũng cần bảo toàn. Không reset/clean để ép pull. Đợt bàn giao này không tự commit/push, nên tác giả cần đưa đầy đủ source/backend/Docker/SQL lên `dev` trước khi đồng đội clone bản mới.
+Chỉ chạy `git pull --ff-only` khi đang ở `dev`, working tree sạch và đã bảo toàn công việc local. Nếu có thay đổi, lưu bằng commit trên nhánh riêng hoặc bản sao được kiểm tra; file untracked cũng cần bảo toàn. Không reset/clean để ép pull. Khi bàn giao phải đưa đầy đủ source/backend/Docker/SQL lên `dev`; chỉ push Compose sẽ không đủ để đồng đội build.
 
 ## 3. Tạo và điền .env
 
@@ -235,4 +235,4 @@ $env:JAVA_HOME = 'C:\Program Files\Java\jdk-21' # Sửa theo vị trí JDK 21 th
 - [Bản đồ code](Docs/Contract/04-kien-truc-va-ban-do-code.md), [vòng đời AI](Docs/SpeakMate-vong-doi-hoi-thoai-AI.md), [thiết kế CSDL](Docs/SpeakMate-thiet-ke-co-so-du-lieu.md)
 - [Toàn bộ tài liệu](Docs/README.md)
 
-Trước commit, xem cả tracked diff **và file untracked**. Backend/Docker/Docs hiện còn nhiều file untracked; chỉ push Compose sẽ không đủ để đồng đội build. Không stage `.env`, file local, `.recovery`, backup/ZIP, cache/build/log. Không dùng `git add .` thay cho review từng nhóm. Đợt này không commit, push hoặc đổi branch.
+Trước commit, xem cả tracked diff **và file untracked**, kiểm đủ backend/Docker/Docs thay vì chỉ thêm Compose. Không stage `.env`, file local, `.recovery`, backup/ZIP, cache/build/log. Không dùng `git add .` thay cho review từng nhóm. Công cụ hỗ trợ không tự commit, push hoặc đổi branch trong đợt cleanup này.

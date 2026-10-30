@@ -226,7 +226,9 @@ public class HomeFragment extends Fragment {
         if (!"A1".equals(level)
                 && !"A2".equals(level)
                 && !"B1".equals(level)
-                && !"B2".equals(level)) {
+                && !"B2".equals(level)
+                && !"C1".equals(level)
+                && !"C2".equals(level)) {
             level = "A2";
         }
 

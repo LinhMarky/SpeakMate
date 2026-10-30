@@ -8,20 +8,34 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
-import androidx.fragment.app.Fragment;
+import com.example.speakmate.ui.NetworkFragment;
 
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import org.json.JSONObject;
+import org.json.JSONArray;
 
-import java.text.DateFormat;
-import java.util.Date;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class SpeakingHistoryFragment extends Fragment {
+public class SpeakingHistoryFragment extends NetworkFragment {
 
     private boolean openingSession;
-    private AlertDialog deleteDialog;
+    private boolean loading;
+    private int nextPage = 1;
+    private int totalPages;
+    private int requestVersion;
+    private final List<JSONObject> sessions = new ArrayList<>();
+
+    public static SpeakingHistoryFragment forVocabulary() {
+        SpeakingHistoryFragment fragment = new SpeakingHistoryFragment();
+        Bundle args = new Bundle();
+        args.putBoolean("forVocabulary", true);
+        fragment.setArguments(args);
+        return fragment;
+    }
 
     public SpeakingHistoryFragment() {
         super(R.layout.fragment_speaking_history);
@@ -43,178 +57,87 @@ public class SpeakingHistoryFragment extends Fragment {
         super.onResume();
 
         openingSession = false;
-        renderHistory();
+        loading = false;
+        loadHistory(1);
+    }
+
+    private void loadHistory(int page) {
+        if (loading || getView() == null) return;
+        loading = true;
+        int expected = ++requestVersion;
+        TextView status = requireView().findViewById(R.id.tvSpeakingHistoryStatus);
+        status.setVisibility(View.VISIBLE);
+        status.setText("Đang tải lịch sử tài khoản…");
+        status.setOnClickListener(null);
+        call(() -> api.get("conversations?page=" + page + "&size=20"), data -> {
+            if (expected != requestVersion) return;
+            loading = false;
+            if (page == 1) sessions.clear();
+            JSONArray rows = data.optJSONArray("result");
+            if (rows != null) for (int i = 0; i < rows.length(); i++) {
+                JSONObject row = rows.optJSONObject(i);
+                if (row != null && row.optLong("id") > 0) sessions.add(row);
+            }
+            JSONObject meta = data.optJSONObject("meta");
+            totalPages = meta == null ? page : meta.optInt("pages", page);
+            nextPage = page + 1;
+            renderHistory();
+        }, error -> {
+            if (expected != requestVersion) return;
+            loading = false;
+            status.setText(error.getMessage() + " Chạm để tải lại.");
+            status.setOnClickListener(v -> loadHistory(page));
+        });
     }
 
     private void renderHistory() {
-        View view = getView();
-
-        if (view == null) {
-            return;
-        }
-
-        LinearLayout container =
-                view.findViewById(R.id.speakingHistoryContainer);
-
-        TextView countText =
-                view.findViewById(R.id.tvSpeakingHistoryCount);
-
-        TextView status =
-                view.findViewById(R.id.tvSpeakingHistoryStatus);
-
+        LinearLayout container = requireView().findViewById(R.id.speakingHistoryContainer);
+        TextView count = requireView().findViewById(R.id.tvSpeakingHistoryCount);
+        TextView status = requireView().findViewById(R.id.tvSpeakingHistoryStatus);
         container.removeAllViews();
-        status.setVisibility(View.GONE);
-
-        List<SpeakingSession> sessions;
-
-        try {
-            sessions = new SpeakingHistoryStore(requireContext())
-                    .getSessions();
-
-        } catch (IllegalStateException exception) {
-            countText.setText("Chưa tải được lịch sử");
-
-            status.setText(
-                    "Không đọc được lịch sử trên thiết bị. "
-                            + "Dữ liệu đã lưu chưa bị xóa."
-            );
-
-            status.setVisibility(View.VISIBLE);
-            return;
-        }
-
-        countText.setText(sessions.size() + " phiên đã lưu");
-
-        if (sessions.isEmpty()) {
-            status.setText(
-                    "Chưa có phiên luyện nào được lưu."
-                            + "\n\nHãy bắt đầu một phiên luyện nói "
-                            + "và chọn Xem tổng kết khi kết thúc."
-            );
-
-            status.setVisibility(View.VISIBLE);
-            return;
-        }
-
-        DateFormat dateFormat = DateFormat.getDateTimeInstance(
-                DateFormat.MEDIUM,
-                DateFormat.SHORT,
-                Locale.getDefault()
-        );
-
-        for (SpeakingSession session : sessions) {
-            View item = getLayoutInflater().inflate(
-                    R.layout.item_speaking_history,
-                    container,
-                    false
-            );
-
-            TextView topic =
-                    item.findViewById(R.id.tvHistoryTopic);
-
-            TextView date =
-                    item.findViewById(R.id.tvHistoryDate);
-
-            TextView details =
-                    item.findViewById(R.id.tvHistoryDetails);
-
-            topic.setText(session.getTopic());
-
-            date.setText(
-                    dateFormat.format(
-                            new Date(session.getFinishedAt())
-                    )
-            );
-
-            details.setText(
-                    "Mức bài luyện: " + session.getLevel()
-                            + " · " + session.getUserTurnCount()
-                            + " lượt trả lời"
-            );
-
-            item.findViewById(R.id.btnOpenHistorySession)
-                    .setOnClickListener(
-                            button -> openSession(session.getId())
-                    );
-
-            item.findViewById(R.id.btnDeleteHistorySession)
-                    .setOnClickListener(
-                            button -> confirmDelete(session)
-                    );
-
+        count.setText("Đã tải " + sessions.size() + " bài luyện · Chạm để làm mới");
+        count.setOnClickListener(v -> loadHistory(1));
+        boolean vocabulary = getArguments() != null && getArguments().getBoolean("forVocabulary");
+        status.setVisibility(View.VISIBLE);
+        status.setText(sessions.isEmpty() ? "Chưa có bài luyện. Hãy bắt đầu nói chuyện với AI."
+                : nextPage <= totalPages ? "Tải thêm bài luyện"
+                : vocabulary ? "Chọn bài đã kết thúc để xem và lưu từ AI đề xuất."
+                : "Đã tải hết lịch sử tài khoản.");
+        status.setOnClickListener(nextPage <= totalPages ? v -> loadHistory(nextPage) : null);
+        DateTimeFormatter date = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm", Locale.getDefault())
+                .withZone(ZoneId.systemDefault());
+        for (JSONObject session : sessions) {
+            View item = getLayoutInflater().inflate(R.layout.item_speaking_history, container, false);
+            ((TextView) item.findViewById(R.id.tvHistoryTopic)).setText(session.optString("topicName"));
+            String created = session.optString("createdAt");
+            try { created = date.format(Instant.parse(created)); }
+            catch (java.time.DateTimeException ignored) { created = "Chưa rõ thời gian"; }
+            ((TextView) item.findViewById(R.id.tvHistoryDate)).setText(created);
+            boolean open = "OPEN".equals(session.optString("status"));
+            String review = session.optString("reviewStatus");
+            String reviewText = "COMPLETED".equals(review) ? "Đã có nhận xét"
+                    : "PROCESSING".equals(review) ? "Đang tạo nhận xét"
+                    : "FAILED".equals(review) ? "Có thể thử lại nhận xét"
+                    : "INSUFFICIENT_DATA".equals(review) ? "Chưa đủ dữ liệu nhận xét" : "Chưa có nhận xét";
+            ((TextView) item.findViewById(R.id.tvHistoryDetails)).setText(
+                    session.optString("level") + " · " + (open ? "Đang luyện" : "Đã kết thúc") + " · " + reviewText);
+            TextView button = item.findViewById(R.id.btnOpenHistorySession);
+            button.setText(open ? "Tiếp tục bài luyện" : "Xem tổng kết và từ mới");
+            button.setOnClickListener(v -> openSession(session.optLong("id"), open));
+            // Contract không có API xóa hội thoại.
+            item.findViewById(R.id.btnDeleteHistorySession).setVisibility(View.GONE);
             container.addView(item);
         }
     }
 
-    private void openSession(String sessionId) {
-        if (!canAct() || deleteDialog != null) {
-            return;
-        }
-
-        View currentView = requireView();
+    private void openSession(long id, boolean open) {
+        if (!canAct()) return;
         openingSession = true;
-
-        ((MainActivity) requireActivity())
-                .openSavedSpeakingSession(sessionId);
-
-        // Nếu mở thất bại và vẫn ở màn lịch sử,
-        // cho phép người dùng thử lại.
-        currentView.post(() -> {
-            if (getView() == currentView && isResumed()) {
-                openingSession = false;
-            }
-        });
-    }
-
-    private void confirmDelete(@NonNull SpeakingSession session) {
-        if (!canAct() || deleteDialog != null) {
-            return;
-        }
-
-        AlertDialog dialog =
-                new MaterialAlertDialogBuilder(requireContext())
-                        .setTitle("Xóa phiên luyện?")
-                        .setMessage(
-                                "Xóa “" + session.getTopic()
-                                        + "” khỏi lịch sử trên thiết bị?"
-                                        + "\n\nBộ flashcard đã tạo từ "
-                                        + "phiên này vẫn được giữ lại."
-                        )
-                        .setNegativeButton("Hủy", null)
-                        .setPositiveButton(
-                                "Xóa",
-                                (ignored, which) -> {
-                                    if (!isAdded()) {
-                                        return;
-                                    }
-
-                                    try {
-                                        new SpeakingHistoryStore(
-                                                requireContext()
-                                        ).deleteSession(session.getId());
-
-                                        renderHistory();
-
-                                    } catch (IllegalStateException exception) {
-                                        Toast.makeText(
-                                                requireContext(),
-                                                "Chưa xóa được phiên luyện.",
-                                                Toast.LENGTH_LONG
-                                        ).show();
-                                    }
-                                }
-                        )
-                        .create();
-
-        deleteDialog = dialog;
-
-        dialog.setOnDismissListener(ignored -> {
-            if (deleteDialog == dialog) {
-                deleteDialog = null;
-            }
-        });
-
-        dialog.show();
+        androidx.fragment.app.Fragment destination = open ? ChatFragment.newInstance(id)
+                : SpeakingResultFragment.newInstance(id);
+        if (!open) destination.requireArguments().putBoolean("fromHistory", true);
+        getParentFragmentManager().beginTransaction().setReorderingAllowed(true)
+                .replace(R.id.fragmentContainer, destination).addToBackStack("server_history_detail").commit();
     }
 
     private boolean canAct() {
@@ -226,7 +149,7 @@ public class SpeakingHistoryFragment extends Fragment {
     }
 
     private void goBack() {
-        if (!canAct() || deleteDialog != null) {
+        if (!canAct()) {
             return;
         }
 
@@ -241,12 +164,7 @@ public class SpeakingHistoryFragment extends Fragment {
 
     @Override
     public void onDestroyView() {
-        if (deleteDialog != null) {
-            deleteDialog.setOnDismissListener(null);
-            deleteDialog.dismiss();
-            deleteDialog = null;
-        }
-
+        loading = false;
         super.onDestroyView();
     }
 }

@@ -18,11 +18,12 @@ import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import com.example.speakmate.ui.NetworkFragment;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DeckDetailFragment extends Fragment {
+public class DeckDetailFragment extends NetworkFragment {
 
     private static final String ARG_DECK_ID = "deckId";
 
@@ -41,6 +42,7 @@ public class DeckDetailFragment extends Fragment {
     private int previewIndex;
     private boolean previewFlipped;
     private boolean openingMode;
+    private boolean loadingServerWords;
 
     private AlertDialog activeDialog;
 
@@ -84,6 +86,7 @@ public class DeckDetailFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         openingMode = false;
+        loadingServerWords = false;
 
         view.findViewById(R.id.btnBackDeck)
                 .setOnClickListener(v -> closeDetail());
@@ -145,6 +148,7 @@ public class DeckDetailFragment extends Fragment {
                 && isResumed()
                 && getView() != null
                 && !openingMode
+                && !loadingServerWords
                 && !getParentFragmentManager().isStateSaved();
     }
 
@@ -171,6 +175,11 @@ public class DeckDetailFragment extends Fragment {
         View view = getView();
 
         if (view == null) {
+            return;
+        }
+
+        if (FlashcardDeck.SAVED_WORDS_ID.equals(getDeckId())) {
+            loadServerWords(view);
             return;
         }
 
@@ -286,6 +295,43 @@ public class DeckDetailFragment extends Fragment {
                 addCardActions(container, index);
             }
         }
+    }
+
+    private void loadServerWords(View view) {
+        if (loadingServerWords) return;
+        loadingServerWords = true;
+        TextView info = view.findViewById(R.id.tvDetailDeckInfo);
+        ((TextView) view.findViewById(R.id.tvDetailDeckName)).setText("Từ của tôi");
+        info.setText("Đang tải từ đã lưu…");
+        info.setOnClickListener(v -> refreshDeck());
+        view.findViewById(R.id.btnManageDeck).setVisibility(View.GONE);
+        view.findViewById(R.id.btnLearnDeck).setVisibility(View.GONE);
+        view.findViewById(R.id.btnMatchDeck).setVisibility(View.GONE);
+        setModeButtonsEnabled(false);
+        call(() -> api.savedCards(), cards -> {
+            loadingServerWords = false;
+            previewCards = cards;
+            long mastered = cards.stream().filter(c -> "MASTERED".equals(c.getStatus())).count();
+            info.setText(cards.isEmpty() ? "Chưa có từ đã lưu từ bài luyện."
+                    : cards.size() + " từ · Đã nhớ " + mastered + " · Đồng bộ tài khoản");
+            LinearLayout container = view.findViewById(R.id.cardListContainer);
+            container.removeAllViews();
+            for (Flashcard card : cards) {
+                View item = getLayoutInflater().inflate(R.layout.item_vocabulary, container, false);
+                ((TextView) item.findViewById(R.id.tvVocabularyWord)).setText(card.getWord());
+                ((TextView) item.findViewById(R.id.tvVocabularyMeaning)).setText(card.getMeaning());
+                TextView example = item.findViewById(R.id.tvVocabularyExample);
+                example.setText(card.getExample());
+                example.setVisibility(card.getExample().isEmpty() ? View.GONE : View.VISIBLE);
+                container.addView(item);
+            }
+            setModeButtonsEnabled(!cards.isEmpty());
+            updatePreview();
+        }, error -> {
+            loadingServerWords = false;
+            info.setText(error.getMessage() + " Chạm để tải lại.");
+            setModeButtonsEnabled(false);
+        });
     }
 
     private void setModeButtonsEnabled(boolean enabled) {
@@ -406,7 +452,8 @@ public class DeckDetailFragment extends Fragment {
 
             String deckId = getDeckId();
 
-            if (repository.getDeckById(deckId) == null
+            boolean server = FlashcardDeck.SAVED_WORDS_ID.equals(deckId);
+            if (server ? previewCards.isEmpty() : repository.getDeckById(deckId) == null
                     || repository.getCards(deckId).isEmpty()) {
                 refreshDeck();
                 showMessage("Bộ thẻ chưa có từ vựng để học.");

@@ -1,6 +1,10 @@
 package com.example.speakmate.api;
 
 import com.example.speakmate.auth.*;
+import com.example.speakmate.Flashcard;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import org.json.*;
 
 /** Gom URL, JSON và timeout; màn hình quyết định lúc tạo UUID hoặc hỏi lại trạng thái. */
@@ -42,5 +46,24 @@ public final class LearningApi {
         return sessions
                 .request("PATCH", "saved-words/" + id + "/review", new JSONObject().put("status", status), 15_000)
                 .getJSONObject("data");
+    }
+
+    public List<Flashcard> savedCards() throws Exception {
+        // Giữ ID thật để cập nhật tiến độ; đọc đủ các trang của Từ của tôi.
+        LinkedHashMap<Long, Flashcard> cards = new LinkedHashMap<>();
+        int pages = 1;
+        for (int page = 1; page <= pages; page++) {
+            JSONObject data = get("saved-words?page=" + page + "&size=100");
+            if (page == 1) pages = data.getJSONObject("meta").getInt("pages");
+            JSONArray rows = data.getJSONArray("result");
+            for (int i = 0; i < rows.length(); i++) {
+                JSONObject row = rows.getJSONObject(i);
+                long id = row.getLong("id");
+                if (id <= 0) throw new JSONException("Invalid saved word ID");
+                cards.put(id, new Flashcard(id, row.getString("word"), row.getString("meaning"),
+                        row.isNull("example") ? "" : row.optString("example"), row.getString("status")));
+            }
+        }
+        return new ArrayList<>(cards.values());
     }
 }

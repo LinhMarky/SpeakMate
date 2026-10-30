@@ -14,12 +14,13 @@ import androidx.annotation.Nullable;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
+import com.example.speakmate.ui.NetworkFragment;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class FlashcardsFragment extends Fragment {
+public class FlashcardsFragment extends NetworkFragment {
 
     private List<FlashcardDeck> decks = new ArrayList<>();
 
@@ -30,6 +31,8 @@ public class FlashcardsFragment extends Fragment {
     private TextWatcher searchWatcher;
 
     private boolean openingDeck;
+    private boolean loading;
+    private String serverStatus = "";
 
     public FlashcardsFragment() {
         super(R.layout.fragment_flashcards);
@@ -95,11 +98,12 @@ public class FlashcardsFragment extends Fragment {
         );
 
         // Mỗi nút chỉ được gắn một sự kiện.
+        ((TextView) view.findViewById(R.id.btnCreateDeckAi)).setText("Từ AI trong bài luyện");
         view.findViewById(R.id.btnCreateDeckAi)
                 .setOnClickListener(button ->
                         openScreen(
-                                new GenerateDeckFragment(),
-                                "generate_deck"
+                                SpeakingHistoryFragment.forVocabulary(),
+                                "vocabulary_history"
                         )
                 );
 
@@ -144,23 +148,31 @@ public class FlashcardsFragment extends Fragment {
             return;
         }
 
-        try {
-            DemoFlashcardRepository repository =
-                    new DemoFlashcardRepository(requireContext());
-
-            decks = repository.getDecks();
-
-            showDecks(search.getText());
-
-        } catch (IllegalStateException exception) {
+        if (loading) return;
+        loading = true;
+        serverStatus = "Đang tải Từ của tôi…";
+        countText.setOnClickListener(v -> refreshDecks());
+        showDecks(search.getText());
+        call(() -> api.savedCards(), cards -> {
+            loading = false;
             decks = new ArrayList<>();
-
-            container.removeAllViews();
-
-            countText.setText(
-                    "Chưa đọc được danh sách bộ thẻ trên thiết bị."
-            );
-        }
+            int mastered = 0;
+            for (Flashcard card : cards) if ("MASTERED".equals(card.getStatus())) mastered++;
+            decks.add(new FlashcardDeck(FlashcardDeck.SAVED_WORDS_ID, "Từ của tôi", "Đồng bộ tài khoản",
+                    cards.size(), mastered));
+            try {
+                decks.addAll(new LocalDeckStore(requireContext()).getDecks());
+            } catch (IllegalStateException error) {
+                serverStatus = "Chưa đọc được bộ thẻ trên thiết bị.";
+            }
+            if (serverStatus.startsWith("Đang tải")) serverStatus = cards.isEmpty()
+                    ? "Chưa có từ đã lưu. Chọn Tạo bằng AI để lấy từ từ bài luyện." : "";
+            showDecks(search.getText());
+        }, error -> {
+            loading = false;
+            serverStatus = error.getMessage() + " Chạm để tải lại.";
+            showDecks(search.getText());
+        });
     }
 
     private void showDecks(@Nullable CharSequence keyword) {
@@ -272,6 +284,7 @@ public class FlashcardsFragment extends Fragment {
                     "Không tìm thấy bộ thẻ phù hợp."
             );
         }
+        if (!serverStatus.isEmpty()) countText.setText(serverStatus);
     }
 
     private int getDeckIconResource(@Nullable String deckName) {
@@ -387,6 +400,7 @@ public class FlashcardsFragment extends Fragment {
         countText = null;
 
         openingDeck = false;
+        loading = false;
 
         super.onDestroyView();
     }

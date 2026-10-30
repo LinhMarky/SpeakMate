@@ -2,6 +2,9 @@ package com.example.speakmate;
 
 public class FlashcardDeck {
 
+    // Một danh sách từ tài khoản, không tạo thêm bảng/bộ thẻ trên server.
+    public static final String SAVED_WORDS_ID = "saved-words";
+
     private final String id;
     private final String name;
     private final String level;

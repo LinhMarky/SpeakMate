@@ -880,8 +880,7 @@ public class SpeakingResultFragment extends NetworkFragment {
         deckNameInput.setVisibility(View.GONE);
         ((TextView) createButton).setText("Lưu từ đã chọn");
         ((TextView) openButton).setText("Mở Từ của tôi");
-        // Danh sách từ trên tài khoản chưa nối vào màn bộ thẻ offline.
-        openButton.setVisibility(View.GONE);
+        openButton.setVisibility(View.VISIBLE);
         text(R.id.tvResultSaveTitle, "Ôn từ mới sau buổi luyện");
         text(R.id.tvResultSaveDescription, "Chọn từ muốn lưu vào Từ của tôi. Bạn có thể ôn lại bất cứ lúc nào.");
         text(R.id.tvResultNotice, "Nhận xét do AI tạo dựa trên hội thoại, không thay thế bài kiểm tra trình độ.");
@@ -969,8 +968,10 @@ public class SpeakingResultFragment extends NetworkFragment {
         deckStatusText.setVisibility(View.VISIBLE);
         deckStatusText.setText(complete ? "Đã tải kết quả. Chạm để cập nhật trạng thái từ đã lưu." : description + " Chạm để tải lại.");
         updateServerControls();
-        if ("PROCESSING".equals(status) && isResumed()) reviewPoll.postDelayed(this::loadServerReview,
-                Math.max(2, Math.min(10, serverReview.optInt("pollAfterSeconds", 3))) * 1000L);
+        int pollSeconds = serverReview.optInt("pollAfterSeconds");
+        if ("PROCESSING".equals(status) && pollSeconds > 0 && !serverReview.optBoolean("canRetry") && isResumed()) {
+            reviewPoll.postDelayed(this::loadServerReview, Math.max(1, pollSeconds) * 1000L);
+        }
     }
 
     private void updateServerControls() {
@@ -990,6 +991,7 @@ public class SpeakingResultFragment extends NetworkFragment {
         ((TextView) createButton).setText(retry ? "Thử lại nhận xét" : "Lưu từ đã chọn");
         createButton.setEnabled(!saving && !loadingReview && (retry || !selectedSuggestions.isEmpty()));
         selectedCountText.setText("Đã chọn " + selectedSuggestions.size() + " từ");
+        openButton.setEnabled(!saving && !loadingReview);
     }
 
     private void saveServerWords() {
@@ -1000,13 +1002,39 @@ public class SpeakingResultFragment extends NetworkFragment {
         updateServerControls();
         call(() -> api.saveWords(ids), result -> {
             saving = false;
-            showMessage("Đã lưu từ vào tài khoản.");
-            loadServerReview();
+            JSONArray created = result.optJSONArray("created");
+            JSONArray existing = result.optJSONArray("existing");
+            markSavedSuggestions(created);
+            markSavedSuggestions(existing);
+            renderServerReview();
+            deckStatusText.setText("Đã thêm " + (created == null ? 0 : created.length()) + " từ; "
+                    + (existing == null ? 0 : existing.length()) + " từ đã có trong tài khoản.");
         }, error -> {
             saving = false;
             deckStatusText.setText(error.getMessage() + " Chạm để kiểm tra trạng thái đã lưu.");
             updateServerControls();
         });
+    }
+
+    private void markSavedSuggestions(JSONArray items) {
+        if (items == null || serverReview == null) return;
+        JSONArray suggestions = serverReview.optJSONArray("suggestedWords");
+        if (suggestions == null) return;
+        for (int i = 0; i < items.length(); i++) {
+            JSONObject item = items.optJSONObject(i);
+            if (item == null) continue;
+            long suggestionId = item.optLong("suggestionId");
+            JSONObject savedWord = item.optJSONObject("savedWord");
+            if (savedWord == null || savedWord.optLong("id") <= 0) continue;
+            for (int j = 0; j < suggestions.length(); j++) {
+                JSONObject suggestion = suggestions.optJSONObject(j);
+                if (suggestion != null && suggestion.optLong("id") == suggestionId) {
+                    try { suggestion.put("savedWordId", savedWord.getLong("id")); }
+                    catch (org.json.JSONException ignored) { continue; }
+                    selectedSuggestions.remove(suggestionId);
+                }
+            }
+        }
     }
 
     private void retryServerReview() {

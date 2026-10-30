@@ -2,7 +2,7 @@
 
 Chạy backend/MySQL bằng Docker từ thư mục gốc, không cần Java/MySQL local: **[README chính](../README.md)**; kiểm API thật tại [README Docker](../README-Docker.md).
 
-Cập nhật 30/10/2026. Java 21, Spring Boot 3.5.16, Gradle Wrapper 8.8; Docker dùng MySQL 8.4. Schema v3 giữ 7 bảng; 24 operation P0 backend đã có code. Docker đã có một reply Gemini thật HTTP 200, lưu/đọc lại MySQL đúng. Chưa xác nhận backend demo chung hoặc toàn bộ vòng học Android sau pull FE; các kết quả cũ bên dưới không thay cho lần nghiệm thu mới. Xem [bàn giao Docker](../Docs/Contract/15-docker-va-ban-giao-nhom.md).
+Cập nhật 30/10/2026. Java 21, Spring Boot 3.5.16, Gradle Wrapper 8.8; Docker dùng MySQL 8.4. Giữ 7 bảng/24 operation P0, mở rộng level đến C2 bằng migration V4. Vòng UI chat → review Gemini thật → lưu/ôn từ → lịch sử đã PASS và đối chiếu MySQL; xem [file 16 và cách nâng database cũ](../Docs/Contract/16-hoan-thien-tu-ai-cap-do-va-lich-su.md). Demo chung, Google/SMTP/âm thanh vẫn cần nghiệm thu riêng; số liệu test cũ bên dưới là lịch sử.
 
 ## 1. Chạy trên máy bạn
 

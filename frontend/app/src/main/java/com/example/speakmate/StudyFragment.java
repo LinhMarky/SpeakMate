@@ -15,12 +15,13 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
+import com.example.speakmate.ui.NetworkFragment;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class StudyFragment extends Fragment {
+public class StudyFragment extends NetworkFragment {
 
     private static final String ARG_DECK_ID = "deckId";
 
@@ -49,6 +50,8 @@ public class StudyFragment extends Fragment {
     private boolean animating;
     private boolean dragging;
     private boolean gestureCancelled;
+    private boolean loadingServerWords;
+    private boolean savingAnswer;
 
     private float downX;
     private float downY;
@@ -104,12 +107,12 @@ public class StudyFragment extends Fragment {
 
         cards = new ArrayList<>();
 
+        long[] savedIds = savedInstanceState.getLongArray("savedWordIds");
+        ArrayList<String> statuses = savedInstanceState.getStringArrayList("savedWordStatuses");
         for (int i = 0; i < words.size(); i++) {
-            cards.add(new Flashcard(
-                    words.get(i),
-                    meanings.get(i),
-                    examples.get(i)
-            ));
+            cards.add(new Flashcard(savedIds != null && savedIds.length == words.size() ? savedIds[i] : 0,
+                    words.get(i), meanings.get(i), examples.get(i),
+                    statuses != null && statuses.size() == words.size() ? statuses.get(i) : "LOCAL"));
         }
 
         roundInitialized = true;
@@ -154,6 +157,8 @@ public class StudyFragment extends Fragment {
         animating = false;
         dragging = false;
         gestureCancelled = false;
+        loadingServerWords = false;
+        savingAnswer = false;
 
         touchSlop = ViewConfiguration.get(requireContext())
                 .getScaledTouchSlop();
@@ -263,6 +268,11 @@ public class StudyFragment extends Fragment {
             currentDeckId = "";
         }
 
+        if (FlashcardDeck.SAVED_WORDS_ID.equals(currentDeckId)) {
+            loadServerCards();
+            return;
+        }
+
         DemoFlashcardRepository repository =
                 new DemoFlashcardRepository(requireContext());
 
@@ -301,10 +311,48 @@ public class StudyFragment extends Fragment {
         return rootView.findViewById(id);
     }
 
+    private void loadServerCards() {
+        if (loadingServerWords || rootView == null) return;
+        loadingServerWords = true;
+        text(R.id.tvStudyTitle).setText("Từ của tôi");
+        render();
+        call(() -> api.savedCards(), loaded -> {
+            loadingServerWords = false;
+            allCards = new ArrayList<>(loaded);
+            boolean validSnapshot = roundInitialized && !cards.isEmpty()
+                    && cards.stream().allMatch(c -> c.getSavedWordId() > 0
+                    && loaded.stream().anyMatch(word -> word.getSavedWordId() == c.getSavedWordId()));
+            if (!validSnapshot) {
+                cards = new ArrayList<>(loaded);
+                answers.clear();
+                flipped = false;
+                reviewMode = false;
+                roundInitialized = true;
+            }
+            rootView.findViewById(R.id.btnRestartStudy).setOnClickListener(v -> {
+                if (canInteract() && !allCards.isEmpty()) startRound(allCards, false);
+            });
+            render();
+            speakCurrentWord();
+        }, error -> {
+            loadingServerWords = false;
+            setAnswerButtonsEnabled(false);
+            rootView.findViewById(R.id.studyStage).setVisibility(View.GONE);
+            rootView.findViewById(R.id.studyActions).setVisibility(View.GONE);
+            rootView.findViewById(R.id.studyResult).setVisibility(View.VISIBLE);
+            text(R.id.tvStudyResultTitle).setText("Chưa tải được thẻ");
+            text(R.id.tvStudyResult).setText(error.getMessage());
+            rootView.findViewById(R.id.btnRestartStudy).setEnabled(true);
+            rootView.findViewById(R.id.btnRestartStudy).setOnClickListener(v -> loadServerCards());
+        });
+    }
+
     private boolean canInteract() {
         return rootView != null
                 && isResumed()
                 && !animating
+                && !loadingServerWords
+                && !savingAnswer
                 && !getParentFragmentManager().isStateSaved();
     }
 
@@ -416,11 +464,9 @@ public class StudyFragment extends Fragment {
 
         Flashcard card = cards.get(answers.size());
 
-        progressStore.saveAnswer(
-                currentDeckId,
-                card,
-                remembered
-        );
+        if (card.getSavedWordId() == 0) {
+            progressStore.saveAnswer(currentDeckId, card, remembered);
+        }
 
         answers.add(remembered ? 1 : 0);
         flipped = false;
@@ -428,6 +474,16 @@ public class StudyFragment extends Fragment {
 
     private void render() {
         if (rootView == null || cardView == null) {
+            return;
+        }
+
+        if (loadingServerWords) {
+            rootView.findViewById(R.id.studyStage).setVisibility(View.GONE);
+            rootView.findViewById(R.id.studyActions).setVisibility(View.GONE);
+            rootView.findViewById(R.id.studyResult).setVisibility(View.VISIBLE);
+            text(R.id.tvStudyResultTitle).setText("Đang tải thẻ…");
+            text(R.id.tvStudyResult).setText("Đang đọc Từ của tôi từ tài khoản.");
+            rootView.findViewById(R.id.btnRestartStudy).setEnabled(false);
             return;
         }
 
@@ -529,7 +585,8 @@ public class StudyFragment extends Fragment {
                         "Đã nhớ: " + remembered
                                 + "\nChưa thuộc: " + unknown
                                 + "\nSố thẻ trong lượt: " + total
-                                + "\n\nĐã lưu tiến độ trên thiết bị.";
+                                + (FlashcardDeck.SAVED_WORDS_ID.equals(currentDeckId)
+                                ? "\n\nĐã lưu tiến độ vào tài khoản." : "\n\nĐã lưu tiến độ trên thiết bị.");
 
                 if (unknown == 0) {
                     message +=
@@ -634,6 +691,7 @@ public class StudyFragment extends Fragment {
             return;
         }
 
+        enabled = enabled && !loadingServerWords && !savingAnswer;
         rootView.findViewById(R.id.btnRemembered)
                 .setEnabled(enabled);
 
@@ -642,6 +700,35 @@ public class StudyFragment extends Fragment {
     }
 
     private void dismissCard(boolean remembered) {
+        if (!canInteract() || isFinished()) return;
+        Flashcard card = cards.get(answers.size());
+        if (card.getSavedWordId() == 0) {
+            animateDismissCard(remembered);
+            return;
+        }
+        savingAnswer = true;
+        setAnswerButtonsEnabled(false);
+        text(R.id.tvStudyProgress).setText("Đang lưu tiến độ…");
+        String status = remembered ? "MASTERED" : "LEARNING";
+        // Chỉ chuyển thẻ sau khi server xác nhận đúng từ và trạng thái.
+        call(() -> {
+            org.json.JSONObject result = api.reviewWord(card.getSavedWordId(), status);
+            if (result.getLong("id") != card.getSavedWordId() || !status.equals(result.getString("status"))) {
+                throw new org.json.JSONException("Review acknowledgement differs");
+            }
+            return result;
+        }, result -> {
+            savingAnswer = false;
+            if (isResumed()) animateDismissCard(remembered);
+            else { recordAnswer(remembered); render(); }
+        }, error -> {
+            savingAnswer = false;
+            render();
+            Toast.makeText(requireContext(), error.getMessage(), Toast.LENGTH_LONG).show();
+        });
+    }
+
+    private void animateDismissCard(boolean remembered) {
         if (!canInteract()
                 || cardView == null
                 || isFinished()) {
@@ -758,8 +845,12 @@ public class StudyFragment extends Fragment {
         ArrayList<String> words = new ArrayList<>();
         ArrayList<String> meanings = new ArrayList<>();
         ArrayList<String> examples = new ArrayList<>();
+        long[] ids = new long[cards.size()];
+        ArrayList<String> statuses = new ArrayList<>();
 
         for (Flashcard card : cards) {
+            ids[words.size()] = card.getSavedWordId();
+            statuses.add(card.getStatus());
             words.add(card.getWord());
             meanings.add(card.getMeaning());
             examples.add(card.getExample());
@@ -768,6 +859,8 @@ public class StudyFragment extends Fragment {
         outState.putStringArrayList(STATE_WORDS, words);
         outState.putStringArrayList(STATE_MEANINGS, meanings);
         outState.putStringArrayList(STATE_EXAMPLES, examples);
+        outState.putLongArray("savedWordIds", ids);
+        outState.putStringArrayList("savedWordStatuses", statuses);
     }
 
     @Override

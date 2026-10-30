@@ -11,6 +11,8 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import com.fasterxml.jackson.databind.*;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -75,6 +77,49 @@ class StudyIntegrationTest {
         topicId = jdbc.queryForObject("SELECT id FROM topics WHERE name=?", Long.class, topicName);
         when(ai.reply(any())).thenReturn("That sounds interesting. What would you like to order today?");
         doAnswer(invocation -> report(invocation.getArgument(0))).when(ai).review(any());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"C1", "C2"})
+    void advancedLevelsPersistReviewVocabularyAndOwnedHistory(String level) throws Exception {
+        JsonNode detail = data(postAs(token, "/conversations",
+                Map.of("topicId", topicId, "level", level, "createRequestId", uuid()))
+                .andExpect(status().isCreated()));
+        long id = detail.path("id").asLong();
+        assertThat(detail.path("level").asText()).isEqualTo(level);
+        for (int i = 0; i < 3; i++) {
+            send(id, "I go to the coffee shop yesterday with my friends after school.", uuid())
+                    .andExpect(status().isOk());
+        }
+        doAnswer(invocation -> {
+            AiReview original = report(invocation.getArgument(0));
+            return new AiReview(false, original.summary(), original.strengths(), original.weaknesses(),
+                    EnglishLevel.valueOf(level), original.levelFeedback(), original.grammarCorrections(),
+                    original.suggestedWords());
+        }).when(ai).review(any());
+        JsonNode review = data(postAs(token, "/conversations/" + id + "/finish", null)
+                .andExpect(status().isOk()));
+        assertThat(review.path("recommendedLevel").asText()).isEqualTo(level);
+        assertThat(jdbc.queryForObject("SELECT recommended_level FROM conversations WHERE id=?", String.class, id))
+                .isEqualTo(level);
+        long suggestionId = review.at("/suggestedWords/0/id").asLong();
+        JsonNode saved = data(postAs(token, "/saved-words/from-suggestions",
+                Map.of("suggestionIds", List.of(suggestionId))).andExpect(status().isOk()));
+        long wordId = saved.at("/created/0/savedWord/id").asLong();
+        for (String state : List.of("LEARNING", "MASTERED")) {
+            call(patch("/api/v1/saved-words/{id}/review", wordId), token, Map.of("status", state))
+                    .andExpect(status().isOk()).andExpect(jsonPath("$.data.status").value(state));
+        }
+        getAs(token, "/conversations?page=1&size=1").andExpect(jsonPath("$.data.meta.total").value(1))
+                .andExpect(jsonPath("$.data.result[0].id").value(id));
+        String other = account().path("access_token").asText();
+        getAs(other, "/conversations?page=1&size=1").andExpect(jsonPath("$.data.meta.total").value(0));
+        getAs(other, "/conversations/" + id).andExpect(status().isNotFound());
+        getAs(other, "/conversations/" + id + "/review").andExpect(status().isNotFound());
+        call(patch("/api/v1/saved-words/{id}/review", wordId), other, Map.of("status", "MASTERED"))
+                .andExpect(status().isNotFound());
+        postAs(token, "/conversations", Map.of("topicId", topicId, "level", "C3", "createRequestId", uuid()))
+                .andExpect(status().isBadRequest());
     }
 
     @Test

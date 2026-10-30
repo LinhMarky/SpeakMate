@@ -101,7 +101,7 @@ Chuỗi tên/từ dùng collation không phân biệt hoa thường, có phân b
 | email | VARCHAR(255) | Có, UNIQUE, chuẩn hóa khi đăng ký/đăng nhập |
 | password | VARCHAR(200), NULL | BCrypt hash; NULL khi chỉ đăng nhập Google; không trả trong DTO |
 | google_subject / googleSubject | VARCHAR(255), NULL, UNIQUE | `sub` Google, so sánh phân biệt ký tự; không dùng email làm định danh Google |
-| level | VARCHAR(2) | A1/A2/B1/B2, mặc định A1 |
+| level | VARCHAR(2) | A1/A2/B1/B2/C1/C2, mặc định A1 |
 | role | VARCHAR(20) | USER/ADMIN, mặc định USER |
 | is_active / active | BOOLEAN | Mặc định true, CHECK chỉ 0/1 |
 | refresh_token / refreshToken | TEXT, NULL | SHA-256 dạng hex 64 ký tự của refresh token hiện hành; không lưu token gốc |
@@ -122,7 +122,7 @@ Chi tiết request, transaction, giải thích từng file và cấu hình ở [
 | --- | --- | --- |
 | name | VARCHAR(100) | Có, UNIQUE; tên tình huống trên màn hình chọn |
 | description | TEXT, NULL | Mô tả ngắn cho người học |
-| level | VARCHAR(2) | A1/A2/B1/B2, mức gợi ý |
+| level | VARCHAR(2) | A1/A2/B1/B2/C1/C2, mức gợi ý |
 | scenario | TEXT | Có; bối cảnh, vai AI và nhiệm vụ giao tiếp |
 | is_active / active | BOOLEAN | Mặc định true; tắt để ngừng nhận bài mới |
 
@@ -150,7 +150,7 @@ Ví dụ nội dung scenario: “You are a hotel receptionist. Help the guest ch
 | processing_token | processingToken | CHAR(36), NULL | UUID của lần gọi AI đang được nhận xử lý |
 | processing_started_at | processingStartedAt | DATETIME(6), NULL | Thời điểm nhận tác vụ, dùng xác định quá hạn |
 
-Ba mức trình độ có ý nghĩa riêng: hồ sơ tại thời điểm mở, mức đã chọn và khuyến nghị cuối bài. AI không tự đổi users.level. Cả ba chỉ nhận A1/A2/B1/B2.
+Ba mức trình độ có ý nghĩa riêng: hồ sơ tại thời điểm mở, mức đã chọn và khuyến nghị cuối bài. AI không tự đổi users.level. Cả ba chỉ nhận A1/A2/B1/B2/C1/C2.
 
 Báo cáo đầy đủ yêu cầu các phần văn bản không rỗng. Nếu không thấy điểm yếu rõ, có thể ghi trung thực “Chưa ghi nhận điểm cần sửa rõ trong phạm vi bài này”, không bịa lỗi để lấp trường. Danh sách câu sửa/từ gợi ý có thể rỗng. Chưa đủ cơ sở nhận xét thì dùng INSUFFICIENT_DATA, không ép tạo báo cáo đầy đủ.
 

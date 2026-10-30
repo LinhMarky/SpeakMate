@@ -60,7 +60,7 @@ Một refresh token hiện hành/tài khoản. Mọi login mới thu hồi phiê
 | PUT /admin/topics/{id} | adminUpdateTopic | TopicRequest → 200 AdminTopicResponse | ADMIN |
 | PATCH /admin/topics/{id}/active | adminSetTopicActive | {active:boolean} → 200 AdminTopicResponse | ADMIN |
 
-TopicRequest: name bắt buộc 1–100 sau trim và UNIQUE; level bắt buộc A1/A2/B1/B2; scenario bắt buộc 1–4000; description tùy chọn, null hoặc tối đa 2000. POST mặc định active=true; không nhận active/role/id. PUT thay nội dung, description bị bỏ qua trong body thì thành null; không đổi active. Không có DELETE topic trong contract.
+TopicRequest: name bắt buộc 1–100 sau trim và UNIQUE; level bắt buộc A1/A2/B1/B2/C1/C2; scenario bắt buộc 1–4000; description tùy chọn, null hoặc tối đa 2000. POST mặc định active=true; không nhận active/role/id. PUT thay nội dung, description bị bỏ qua trong body thì thành null; không đổi active. Không có DELETE topic trong contract.
 
 Mức gợi ý không dùng để cấm người học chọn mức khác. Khi tắt topic, GET learner không còn trả topic đó; tạo bài mới bằng ID cũ trả 409 TOPIC_DISABLED. Bài đã mở vẫn tiếp tục theo snapshot.
 

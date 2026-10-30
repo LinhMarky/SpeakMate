@@ -54,7 +54,7 @@ CREATE TABLE users (
             AND CHAR_LENGTH(TRIM(password_reset_code_hash)) > 0
             AND password_reset_expires_at IS NOT NULL AND password_reset_sent_at IS NOT NULL
             AND password_reset_expires_at > password_reset_sent_at)),
-    CONSTRAINT chk_users_level CHECK (level IN ('A1', 'A2', 'B1', 'B2')),
+    CONSTRAINT chk_users_level CHECK (level IN ('A1', 'A2', 'B1', 'B2', 'C1', 'C2')),
     CONSTRAINT chk_users_role CHECK (role IN ('USER', 'ADMIN')),
     CONSTRAINT chk_users_active CHECK (is_active IN (0, 1))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_ci;
@@ -75,7 +75,7 @@ CREATE TABLE topics (
     CONSTRAINT pk_topics PRIMARY KEY (id),
     CONSTRAINT uk_topics_name UNIQUE (name),
     CONSTRAINT chk_topics_name CHECK (CHAR_LENGTH(TRIM(name)) > 0 AND name = TRIM(name)),
-    CONSTRAINT chk_topics_level CHECK (level IN ('A1', 'A2', 'B1', 'B2')),
+    CONSTRAINT chk_topics_level CHECK (level IN ('A1', 'A2', 'B1', 'B2', 'C1', 'C2')),
     CONSTRAINT chk_topics_scenario CHECK (CHAR_LENGTH(TRIM(scenario)) > 0),
     CONSTRAINT chk_topics_active CHECK (is_active IN (0, 1)),
     INDEX idx_topics_active_level (is_active, level)
@@ -138,8 +138,8 @@ CREATE TABLE conversations (
     CONSTRAINT fk_conversations_user FOREIGN KEY (user_id) REFERENCES users (id),
     CONSTRAINT fk_conversations_topic FOREIGN KEY (topic_id) REFERENCES topics (id),
     CONSTRAINT chk_conversations_create_request CHECK (CHAR_LENGTH(create_request_id) = 36),
-    CONSTRAINT chk_conversations_profile_level CHECK (profile_level_snapshot IN ('A1', 'A2', 'B1', 'B2')),
-    CONSTRAINT chk_conversations_level CHECK (level IN ('A1', 'A2', 'B1', 'B2')),
+    CONSTRAINT chk_conversations_profile_level CHECK (profile_level_snapshot IN ('A1', 'A2', 'B1', 'B2', 'C1', 'C2')),
+    CONSTRAINT chk_conversations_level CHECK (level IN ('A1', 'A2', 'B1', 'B2', 'C1', 'C2')),
     CONSTRAINT chk_conversations_topic_name CHECK (CHAR_LENGTH(TRIM(topic_name_snapshot)) > 0),
     CONSTRAINT chk_conversations_scenario CHECK (CHAR_LENGTH(TRIM(scenario_snapshot)) > 0),
     CONSTRAINT chk_conversations_review_status CHECK (
@@ -174,7 +174,7 @@ CREATE TABLE conversations (
     CONSTRAINT chk_conversations_strengths CHECK (strengths IS NULL OR CHAR_LENGTH(TRIM(strengths)) > 0),
     CONSTRAINT chk_conversations_weaknesses CHECK (weaknesses IS NULL OR CHAR_LENGTH(TRIM(weaknesses)) > 0),
     CONSTRAINT chk_conversations_recommendation CHECK (
-        recommended_level IS NULL OR recommended_level IN ('A1', 'A2', 'B1', 'B2')
+        recommended_level IS NULL OR recommended_level IN ('A1', 'A2', 'B1', 'B2', 'C1', 'C2')
     ),
     CONSTRAINT chk_conversations_level_feedback CHECK (
         level_feedback IS NULL OR CHAR_LENGTH(TRIM(level_feedback)) > 0

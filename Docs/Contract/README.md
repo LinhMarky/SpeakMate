@@ -1,6 +1,6 @@
 # SpeakMate — Bộ tài liệu chung FE và BE
 
-> **Trạng thái mới nhất 30/10/2026:** Docker backend/MySQL hoạt động; một lời đáp Gemini thật HTTP 200 được lưu và đọc lại đúng. Chưa xác nhận vòng học đầy đủ Android sau pull hoặc backend/database demo chung. Đọc [15 — Docker và bàn giao nhóm](15-docker-va-ban-giao-nhom.md) và [README chạy dự án](../../README.md) trước; file 13–14 và các cập nhật bên dưới là lịch sử, không chứng minh E2E hiện tại.
+> **Trạng thái mới nhất 30/10/2026:** từ AI/lưu và ôn flashcard, sáu trình độ và lịch sử server đã hoàn thiện. Vòng UI C2 → chat → review → lưu/ôn từ → lịch sử đã PASS với Gemini/MySQL thật và đối chiếu JDBC. Đọc [16 — Luồng học và migration C1/C2](16-hoan-thien-tu-ai-cap-do-va-lich-su.md), [15 — Docker và bàn giao nhóm](15-docker-va-ban-giao-nhom.md) và [README chạy dự án](../../README.md). Google/SMTP/âm thanh và demo nhiều thiết bị chưa nghiệm thu; các file cũ giữ kết quả lịch sử.
 
 Phiên bản contract **1.0.0**, lập ngày **25/10/2026**. Nhóm có **hai người: một FE, một BE**; người phụ trách BE là người dùng. Thời gian: **ba ngày liên tiếp từ mốc T0 do nhóm chọn**, giao bản demo ở T0 + 72 giờ. Chưa có ngày/giờ nộp cụ thể nên tài liệu không tự gán lịch theo ngày trên máy.
 
@@ -14,7 +14,7 @@ Cập nhật tiếp 29/10: Web OAuth client ID đã điền vào BE/Android và 
 
 ## Đọc theo thứ tự
 
-Tiến độ và kiểm chứng mới nhất: [15 — Docker và bàn giao nhóm](15-docker-va-ban-giao-nhom.md). Chi tiết code UI sau pull: [14 — Nối UI Android](14-android-ui-integration.md).
+Tiến độ và kiểm chứng mới nhất: [16 — Từ AI, C1/C2 và lịch sử](16-hoan-thien-tu-ai-cap-do-va-lich-su.md). Cài đặt Docker: [15 — Bàn giao nhóm](15-docker-va-ban-giao-nhom.md); đợt nối UI trước: [14](14-android-ui-integration.md).
 
 | Tài liệu | Dùng để quyết định gì? |
 | --- | --- |

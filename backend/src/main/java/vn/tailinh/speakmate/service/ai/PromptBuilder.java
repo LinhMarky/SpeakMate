@@ -17,7 +17,7 @@ public class PromptBuilder {
                 This is practice guidance, not an official CEFR certification.
                 If evidence is insufficient or mostly non-English/nonsense, set insufficientData=true,
                 explain in summary, set other report fields null and both arrays empty. Never invent evidence.
-                Otherwise give specific strengths, weaknesses, actionable guidance and recommendedLevel A1/A2/B1/B2.
+                Otherwise give specific strengths, weaknesses, actionable guidance and recommendedLevel A1/A2/B1/B2/C1/C2.
                 Make feedback useful for the very next practice session: identify up to two important strengths
                 and one or two priority improvements when there is evidence. Briefly quote the learner's actual
                 English wording to support observations; do not invent examples or call a single mistake recurring.
@@ -54,6 +54,9 @@ public class PromptBuilder {
                 remember details already shared instead of repeatedly asking the same thing.
                 Match the selected CEFR level: A1 uses short everyday language; A2 simple connected ideas;
                 B1 allows explanations and reasons; B2 allows nuanced opinions without forced difficult wording.
+                C1 uses precise vocabulary, flexible complex structures and implicit meaning;
+                C2 allows subtle distinctions, idiomatic expression and sophisticated argument.
+                Keep advanced exchanges natural and concise, never obscure merely to sound difficult.
                 If meaning is unclear, ask a short in-role clarification instead of guessing private facts
                 or giving the learner a language test. Leave room for the learner to speak and make choices.
                 When the scenario lists goals, create natural opportunities for them without reading a checklist,
